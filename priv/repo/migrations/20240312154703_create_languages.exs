@@ -3,11 +3,13 @@ defmodule LanguageTranslator.Repo.Migrations.CreateLanguages do
 
   def change do
     create table(:languages) do
-      add :name, :text
+      add :display_name, :text
+      add :code, :text
 
-      timestamps(type: :utc_datetime)
+      add :inserted_at, :utc_datetime_usec, default: fragment("NOW()")
+      add :updated_at, :utc_datetime_usec, default: fragment("NOW()")
     end
 
-    create index(:languages, [:name], unique: true)
+    create index(:languages, [:code], unique: true)
   end
 end

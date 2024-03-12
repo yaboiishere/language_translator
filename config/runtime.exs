@@ -20,8 +20,19 @@ if System.get_env("PHX_SERVER") do
   config :language_translator, LanguageTranslatorWeb.Endpoint, server: true
 end
 
-username = System.get_env("PGUSER") || raise "PGUSER is not set"
-password = System.get_env("PGPASSWORD") || raise "PGPASSWORD is not set"
+google_access_token =
+  System.get_env("GOOGLE_ACCESS_TOKEN") || raise "GOOGLE_ACCESS_TOKEN is not set"
+
+google_project_id = System.get_env("GOOGLE_PROJECT_ID") || raise "GOOGLE_PROJECT_ID is not set"
+
+config :language_translator, :google_translate,
+  base_url: "https://translation.googleapis.com/v3/projects/",
+  access_token: google_access_token,
+  project_id: google_project_id
+
+username = System.get_env("POSTGRES_USER") || raise "PGUSER is not set"
+password = System.get_env("POSTGRES_PASSWORD") || raise "PGPASSWORD is not set"
+db_host = System.get_env("POSTGRES_HOST") || raise "PGHOST is not set"
 
 maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 

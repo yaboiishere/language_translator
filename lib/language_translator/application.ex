@@ -10,10 +10,17 @@ defmodule LanguageTranslator.Application do
     children = [
       LanguageTranslatorWeb.Telemetry,
       LanguageTranslator.Repo,
-      {DNSCluster, query: Application.get_env(:language_translator, :dns_cluster_query) || :ignore},
+      {DNSCluster,
+       query: Application.get_env(:language_translator, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: LanguageTranslator.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: LanguageTranslator.Finch},
+      # Start process groups
+      %{id: :pg, start: {:pg, :start_link, []}},
+      # Start translators supervisor
+      LanguageTranslator.Translator.Supervisor,
+      # Start translation aggregator process
+      LanguageTranslator.Translator.Aggregator,
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry

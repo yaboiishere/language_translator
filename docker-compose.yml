@@ -1,25 +1,25 @@
 version: "3"
 
 services:
-  app:
-    env_file:
-      - .env
-    build:
-      context: .
-      dockerfile: dev.Dockerfile
-    volumes:
-      - .:/app
-    ports:
-      - "4001:4000"
-    environment:
-      PGUSER: $POSTGRES_USER
-      PGPASSWORD: $POSTGRES_PASSWORD
-      PGHOST: $POSTGRES_HOST
-      PGPORT: 5432
-    depends_on:
-      - postgres
-    command:
-      - "./entrypoint.sh"
+  # app:
+  #   env_file:
+  #     - .env
+  #   build:
+  #     context: .
+  #     dockerfile: dev.Dockerfile
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "4001:4000"
+  #   environment:
+  #     PGUSER: $POSTGRES_USER
+  #     PGPASSWORD: $POSTGRES_PASSWORD
+  #     PGHOST: $POSTGRES_HOST
+  #     PGPORT: 5432
+  #   depends_on:
+  #     - postgres
+  #   command:
+  #     - "./entrypoint.sh"
   postgres:
     image: postgres:16-alpine
     env_file:

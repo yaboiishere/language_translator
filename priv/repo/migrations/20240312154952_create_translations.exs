@@ -6,7 +6,8 @@ defmodule LanguageTranslator.Repo.Migrations.CreateTranslations do
       add :source_word_id, references(:words)
       add :target_word_id, references(:words)
 
-      timestamps(type: :utc_datetime)
+      add :inserted_at, :utc_datetime_usec, default: fragment("NOW()")
+      add :updated_at, :utc_datetime_usec, default: fragment("NOW()")
     end
 
     create index(:translations, [:source_word_id, :target_word_id], unique: true)

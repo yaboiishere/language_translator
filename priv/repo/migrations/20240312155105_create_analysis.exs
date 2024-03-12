@@ -5,7 +5,8 @@ defmodule LanguageTranslator.Repo.Migrations.CreateAnalysis do
     create table(:analysis) do
       add :name, :text
 
-      timestamps(type: :utc_datetime)
+      add :inserted_at, :utc_datetime_usec, default: fragment("NOW()")
+      add :updated_at, :utc_datetime_usec, default: fragment("NOW()")
     end
 
     create index(:analysis, [:name], unique: true)

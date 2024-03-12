@@ -2,8 +2,11 @@ defmodule LanguageTranslator.Models.Language do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @required_fields ~w(display_name code)a
+
   schema "languages" do
-    field :name, :string
+    field :display_name, :string
+    field :code, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -11,7 +14,8 @@ defmodule LanguageTranslator.Models.Language do
   @doc false
   def changeset(language, attrs) do
     language
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, @required_fields)
+    |> validate_required(@required_fields)
+    |> unique_constraint(:code)
   end
 end
