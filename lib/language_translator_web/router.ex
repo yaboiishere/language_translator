@@ -17,7 +17,14 @@ defmodule LanguageTranslatorWeb.Router do
   scope "/", LanguageTranslatorWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", AnalysisLive.Index, :index
+
+    live "/analysis", AnalysisLive.Index, :index
+    live "/analysis/new", AnalysisLive.Index, :new
+    live "/analysis/:id/edit", AnalysisLive.Index, :edit
+
+    live "/analysis/:id", AnalysisLive.Show, :show
+    live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

@@ -1,0 +1,41 @@
+<.header>
+  Listing Analysis
+  <:actions>
+    <.link patch={~p"/analysis/new"}>
+      <.button>New Analysis</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="analysis"
+  rows={@streams.analysis_collection}
+  row_click={fn {_id, analysis} -> JS.navigate(~p"/analysis/#{analysis}") end}
+>
+  <:col :let={{_id, analysis}} label="Name"><%= analysis.name %></:col>
+  <:action :let={{_id, analysis}}>
+    <div class="sr-only">
+      <.link navigate={~p"/analysis/#{analysis}"}>Show</.link>
+    </div>
+    <.link patch={~p"/analysis/#{analysis}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, analysis}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: analysis.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="analysis-modal" show on_cancel={JS.patch(~p"/analysis")}>
+  <.live_component
+    module={LanguageTranslatorWeb.AnalysisLive.FormComponent}
+    id={@analysis.id || :new}
+    title={@page_title}
+    action={@live_action}
+    analysis={@analysis}
+    patch={~p"/analysis"}
+  />
+</.modal>

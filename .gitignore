@@ -35,3 +35,7 @@ language_translator-*.tar
 npm-debug.log
 /assets/node_modules/
 
+**.env**
+
+# Ignore docker related files.
+/_pgdata
