@@ -6,6 +6,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+      socket = assign(socket, :is_file, false)
     {:ok, stream(socket, :analysis_collection, Models.list_analysis([:source_language]))}
   end
 
