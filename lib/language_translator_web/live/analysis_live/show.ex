@@ -2,6 +2,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   use LanguageTranslatorWeb, :live_view
 
   alias LanguageTranslator.Models
+  alias LanguageTranslatorWeb.TranslationsTable
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +14,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:analysis, Models.get_analysis!(id))}
+     |> assign(:analysis, Models.get_analysis!(id, [:source_language]))}
   end
 
   defp page_title(:show), do: "Show Analysis"

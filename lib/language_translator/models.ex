@@ -7,6 +7,8 @@ defmodule LanguageTranslator.Models do
   alias LanguageTranslator.Repo
 
   alias LanguageTranslator.Models.Language
+  alias LanguageTranslator.Models.AnalysisTranslation
+  alias LanguageTranslator.Models.Word
 
   @doc """
   Returns the list of languages.
@@ -305,8 +307,34 @@ defmodule LanguageTranslator.Models do
       [%Analysis{}, ...]
 
   """
-  def list_analysis do
-    Repo.all(Analysis)
+  def list_analysis(preloads \\ []) do
+    Analysis
+    |> Repo.all()
+    |> Repo.preload(preloads)
+  end
+
+  def words_ordered_by_language(analysis_id) do
+    from(a in Analysis,
+      where: a.id == ^analysis_id,
+      join: at in AnalysisTranslation,
+      on: at.analysis_id == a.id,
+      join: t in Translation,
+      on: t.id == at.translation_id,
+      join: tw in Word,
+      on: t.target_word_id == tw.id,
+      join: tl in Language,
+      on: tw.language_code == tl.code,
+      join: sw in Word,
+      on: t.source_word_id == sw.id,
+      join: sl in Language,
+      on: sw.language_code == sl.code,
+      order_by: [desc: tl.display_name],
+      select: %{
+        target: %{language: tl, word: tw},
+        source: %{language: sl, word: sw}
+      }
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -323,7 +351,11 @@ defmodule LanguageTranslator.Models do
       ** (Ecto.NoResultsError)
 
   """
-  def get_analysis!(id), do: Repo.get!(Analysis, id)
+  def get_analysis!(id, preloads \\ []) do
+    Analysis
+    |> Repo.get!(id)
+    |> Repo.preload(preloads)
+  end
 
   @doc """
   Creates a analysis.

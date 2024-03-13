@@ -3,10 +3,16 @@ defmodule LanguageTranslator.Models.Translation do
   import Ecto.Changeset
 
   alias LanguageTranslator.Models.Word
+  alias LanguageTranslator.Models.Analysis
+  alias LanguageTranslator.Models.AnalysisTranslation
 
   schema "translations" do
     belongs_to :source_word, Word
     belongs_to :target_word, Word
+
+    many_to_many :analysis, Analysis,
+      join_through: AnalysisTranslation,
+      on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end

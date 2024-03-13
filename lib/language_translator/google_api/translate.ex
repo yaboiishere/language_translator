@@ -34,8 +34,19 @@ defmodule LanguageTranslator.GoogleApi.Translate do
   end
 
   defp parse_response(%{"languages" => languages}) do
-    Enum.map(languages, fn %{"displayName" => display_name, "languageCode" => code} ->
-      %Language{display_name: display_name, code: code}
+    IO.inspect(languages)
+
+    Enum.flat_map(languages, fn %{
+                                  "displayName" => display_name,
+                                  "languageCode" => code,
+                                  "supportTarget" => supportTarget,
+                                  "supportSource" => supportSource
+                                } ->
+      if supportTarget && supportSource do
+        [%Language{display_name: display_name, code: code}]
+      else
+        []
+      end
     end)
   end
 

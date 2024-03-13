@@ -3,22 +3,32 @@ defmodule LanguageTranslator.Translator do
 
   alias LanguageTranslator.Models.AnalysisTranslation
   alias LanguageTranslator.Models.Analysis
-  alias LanguageTranslator.Repo
+  alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.Word
+  alias LanguageTranslator.Repo
   alias LanguageTranslator.Translator.Aggregator
 
   def translate(words, language) when is_list(words) and is_binary(language) do
+    Language
+    |> Repo.get_by(code: language)
+    |> case do
+      %Language{} = language_struct -> translate(words, language_struct)
+      _ -> {:error, "Language not found"}
+    end
+  end
+
+  def translate(words, %Language{code: code} = language) when is_list(words) do
     Repo.transaction(fn ->
-      analysis = Repo.insert!(%Analysis{})
+      analysis = Repo.insert!(%Analysis{source_language_code: code})
 
       Stream.flat_map(words, fn word ->
         translations = Aggregator.translate(language, word)
 
-        %Word{language: language, text: word}
+        %Word{language_code: code, text: word}
         |> Repo.insert(
           on_conflict: {:replace_all_except, [:id, :inserted_at]},
-          conflict_target: [:language, :text]
+          conflict_target: [:language_code, :text]
         )
         |> case do
           {:ok, initial_word} ->
@@ -50,10 +60,10 @@ defmodule LanguageTranslator.Translator do
   defp persist_translations([], _initial_word), do: []
 
   defp persist_translation({translated_language, translated_word}, %Word{} = initial_word) do
-    %Word{language: translated_language, text: translated_word}
+    %Word{language_code: translated_language, text: translated_word}
     |> Repo.insert(
       on_conflict: {:replace_all_except, [:id, :inserted_at]},
-      conflict_target: [:language, :text]
+      conflict_target: [:language_code, :text]
     )
     |> case do
       {:ok, target_word} ->

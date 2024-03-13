@@ -6,7 +6,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :analysis_collection, Models.list_analysis())}
+    {:ok, stream(socket, :analysis_collection, Models.list_analysis([:source_language]))}
   end
 
   @impl true
@@ -17,7 +17,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Analysis")
-    |> assign(:analysis, Models.get_analysis!(id))
+    |> assign(:analysis, Models.get_analysis!(id, [:source_language]))
   end
 
   defp apply_action(socket, :new, _params) do
