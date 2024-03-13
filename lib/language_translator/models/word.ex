@@ -4,7 +4,7 @@ defmodule LanguageTranslator.Models.Word do
 
   schema "words" do
     field :text, :string
-    field :language_id, :id
+    field :language, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -12,7 +12,8 @@ defmodule LanguageTranslator.Models.Word do
   @doc false
   def changeset(word, attrs) do
     word
-    |> cast(attrs, [:text])
-    |> validate_required([:text])
+    |> cast(attrs, [:text, :language])
+    |> validate_required([:text, :language])
+    |> unique_constraint([:language, :text], name: :words_language_text_index)
   end
 end

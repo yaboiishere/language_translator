@@ -1,7 +1,9 @@
 defmodule LanguageTranslator.Models.Analysis do
-  alias LanguageTranslator.Models.Translation
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias LanguageTranslator.Models.Translation
+  alias LanguageTranslator.Models.AnalysisTranslation
 
   schema "analysis" do
     field :name, :string

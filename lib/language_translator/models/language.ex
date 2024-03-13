@@ -4,9 +4,10 @@ defmodule LanguageTranslator.Models.Language do
 
   @required_fields ~w(display_name code)a
 
+  @primary_key {:code, :string, []}
+
   schema "languages" do
     field :display_name, :string
-    field :code, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -16,6 +17,5 @@ defmodule LanguageTranslator.Models.Language do
     language
     |> cast(attrs, @required_fields)
     |> validate_required(@required_fields)
-    |> unique_constraint(:code)
   end
 end

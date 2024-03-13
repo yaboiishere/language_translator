@@ -5,8 +5,8 @@ defmodule LanguageTranslator.Models.Translation do
   alias LanguageTranslator.Models.Word
 
   schema "translations" do
-    has_one :source_word, Word
-    has_one :target_word, Word
+    belongs_to :source_word, Word
+    belongs_to :target_word, Word
 
     timestamps(type: :utc_datetime)
   end
@@ -16,5 +16,7 @@ defmodule LanguageTranslator.Models.Translation do
     translation
     |> cast(attrs, [])
     |> validate_required([])
+    |> cast_assoc(:source_word, with: &Word.changeset/2)
+    |> cast_assoc(:target_word, with: &Word.changeset/2)
   end
 end

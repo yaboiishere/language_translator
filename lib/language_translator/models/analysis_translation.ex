@@ -2,10 +2,13 @@ defmodule LanguageTranslator.Models.AnalysisTranslation do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "analysis_translations" do
+  alias LanguageTranslator.Models.Translation
+  alias LanguageTranslator.Models.Analysis
 
-    field :analysis_id, :id
-    field :translation_id, :id
+  @required_fields ~w(analysis_id translation_id)a
+  schema "analysis_translations" do
+    belongs_to :analysis, Analysis
+    belongs_to :translation, Translation
 
     timestamps(type: :utc_datetime)
   end
@@ -13,7 +16,7 @@ defmodule LanguageTranslator.Models.AnalysisTranslation do
   @doc false
   def changeset(analysis_translation, attrs) do
     analysis_translation
-    |> cast(attrs, [])
-    |> validate_required([])
+    |> cast(attrs, @required_fields)
+    |> validate_required(@required_fields)
   end
 end
