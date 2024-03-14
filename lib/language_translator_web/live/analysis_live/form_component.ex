@@ -2,11 +2,14 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   use LanguageTranslatorWeb, :live_component
 
   alias LanguageTranslator.Models
+  alias LanguageTranslator.Repo
+  alias LanguageTranslator.Translator
+  alias Ecto.Changeset
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="max-w-98">
       <.header>
         <%= @title %>
         <:subtitle>Use this form to manage analysis records in your database.</:subtitle>
@@ -18,27 +21,59 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
+        multipart={true}
       >
-        <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
 
         <%= if @action == :new do %>
-         <label class="inline-flex items-center cursor-pointer">
-           <input type="checkbox" value={@is_file} checked={@is_file} class="sr-only peer" phx-target={@myself} phx-click={:toggle_is_file}>
-           <div class="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-           <span class="ms-3  text-gray-300 dark:text-gray-900">
-            <%= if @is_file do %>
-              Upload File
-            <% else %>
-              Enter Text
-            <% end %>
-           </span>
-         </label> 
-         <%= if @is_file do %>
-            <.input field={@form[:file]} type="file" label="File with words" />
-         <% else %>
-            <.input field={@form[:file]} type="textarea" label="Write words to be translated" />
-         <% end %>
+          <.input
+            field={@form[:source_language_code]}
+            type="select"
+            label="Source Language"
+            options={@languages}
+          />
+          <div class="flex min-w-full justify-between">
+            <div class="flex-none max-w-50">
+              <div class="ms-3 mx-5 text-gray-300 dark:text-gray-900">
+                <.label>
+                  <%= if @is_file do %>
+                    Upload File
+                  <% else %>
+                    Enter Text
+                  <% end %>
+                </.label>
+              </div>
+              <label class="flex mx-auto items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  value={@is_file}
+                  checked={@is_file}
+                  class="sr-only peer"
+                  phx-target={@myself}
+                  phx-click={:toggle_is_file}
+                />
+                <div class="mt-2 mx-auto relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                </div>
+              </label>
+            </div>
+            <div class="flex-grow ml-5">
+              <%= if @is_file do %>
+                <label class="block text-sm font-semibold leading-6 text-zinc-800">
+                  Upload a file with words to be analyzed
+                  <.live_file_input upload={@uploads[:words]} accept="text/plain" />
+                </label>
+              <% else %>
+                <label class="block text-sm font-semibold leading-6 text-zinc-800">
+                  Enter the words to be analyzed
+                  <input
+                    type="textarea"
+                    name="words"
+                    class="w-full h-40 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none"
+                  />
+                </label>
+              <% end %>
+            </div>
+          </div>
         <% end %>
         <:actions>
           <.button phx-disable-with="Saving...">Save Analysis</.button>
@@ -60,21 +95,71 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   @impl true
   def handle_event("toggle_is_file", _, socket) do
-    {:noreply, assign(socket, :is_file, !socket.assigns.is_file)}
+    is_file = !socket.assigns.is_file
+
+    socket =
+      if is_file do
+        socket
+        |> assign(:is_file, true)
+        |> allow_upload(:words, accept: ["text/plain"], max_entries: 1, max_file_size: 500_000)
+        |> assign(:uploaded_files, [])
+      else
+        socket
+        |> assign(:is_file, false)
+      end
+
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_event("validate", %{"analysis" => analysis_params}, socket) do
+  def handle_event(
+        "validate",
+        %{"analysis" => analysis_params},
+        socket
+      ) do
     changeset =
       socket.assigns.analysis
       |> Models.change_analysis(analysis_params)
       |> Map.put(:action, :validate)
 
+    socket =
+      socket |> assign_form(changeset)
+
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"analysis" => analysis_params}, socket) do
-    save_analysis(socket, socket.assigns.action, analysis_params)
+  def handle_event(
+        "save",
+        %{"analysis" => analysis_params} = params,
+        %{assigns: %{is_file: is_file}} = socket
+      ) do
+    words =
+      if is_file do
+        consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->
+          File.read!(path)
+          |> clean_words()
+          |> then(&{:ok, &1})
+        end)
+        |> List.flatten()
+      else
+        params["words"]
+        |> clean_words()
+      end
+
+    case words do
+      words when is_list(words) and length(words) > 0 ->
+        analysis_params = Map.put(analysis_params, "words", words)
+        save_analysis(socket, socket.assigns.action, analysis_params)
+
+      _ ->
+        changeset =
+          socket.assigns.analysis
+          |> Models.change_analysis(analysis_params)
+          |> Map.put(:action, :validate)
+          |> Changeset.add_error(:words, "At least one word is required")
+
+        {:noreply, assign_form(socket, changeset)}
+    end
   end
 
   defp save_analysis(socket, :edit, analysis_params) do
@@ -93,8 +178,17 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   end
 
   defp save_analysis(socket, :new, analysis_params) do
-    case Models.create_analysis(analysis_params) do
+    case Models.create_analysis(%{"words" => words} = analysis_params) do
       {:ok, analysis} ->
+        analysis = Repo.preload(analysis, :source_language)
+
+        {:ok, _pid} =
+          Translator.async_translate(
+            analysis,
+            words,
+            analysis.source_language
+          )
+
         notify_parent({:saved, analysis})
 
         {:noreply,
@@ -112,4 +206,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp clean_words(words) do
+    words
+    |> String.replace(~r/[.,!?]/, " ")
+    |> String.replace(~r/\s+/, "\n")
+    |> String.trim()
+    |> String.split("\n")
+  end
 end

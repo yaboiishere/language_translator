@@ -8,6 +8,8 @@ defmodule LanguageTranslator.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      LanguageTranslator.Config,
+      {Task.Supervisor, name: LanguageTranslator.TaskSupervisor},
       LanguageTranslatorWeb.Telemetry,
       LanguageTranslator.Repo,
       {DNSCluster,

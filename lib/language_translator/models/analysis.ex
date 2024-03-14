@@ -6,11 +6,11 @@ defmodule LanguageTranslator.Models.Analysis do
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.AnalysisTranslation
 
-  @required_fields ~w(source_language_code)a
-  @available_fields ~w(name description)a
+  @required_fields ~w(source_language_code status)a
+  @available_fields ~w(description)a ++ @required_fields
   schema "analysis" do
-    field :name, :string
     field :description, :string
+    field :status, Ecto.Enum, values: ~w(pending processing completed failed)a, default: :pending
 
     belongs_to :source_language, Language,
       foreign_key: :source_language_code,

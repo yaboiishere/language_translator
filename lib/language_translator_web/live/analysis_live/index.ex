@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
+  alias LanguageTranslator.ProcessGroups
   use LanguageTranslatorWeb, :live_view
 
   alias LanguageTranslator.Models
@@ -6,7 +7,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-      socket = assign(socket, :is_file, false)
+    ProcessGroups.Analysis.join(self())
+    socket = assign(socket, :is_file, false)
     {:ok, stream(socket, :analysis_collection, Models.list_analysis([:source_language]))}
   end
 
@@ -22,9 +24,14 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    languages =
+      Models.list_languages()
+      |> Enum.map(&{&1.display_name, &1.code})
+
     socket
     |> assign(:page_title, "New Analysis")
     |> assign(:analysis, %Analysis{})
+    |> assign(:languages, languages)
   end
 
   defp apply_action(socket, :index, _params) do
@@ -34,8 +41,21 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   @impl true
-  def handle_info({LanguageTranslatorWeb.AnalysisLive.FormComponent, {:saved, analysis}}, socket) do
+  def handle_info(
+        {LanguageTranslatorWeb.AnalysisLive.FormComponent, {:saved, analysis}},
+        socket
+      ) do
     {:noreply, stream_insert(socket, :analysis_collection, analysis)}
+  end
+
+  @impl true
+  def handle_info({:update_analysis, analysis}, socket) do
+    socket =
+      socket
+      |> put_flash(:info, "Analysis #{analysis.id} completed with status: #{analysis.status}")
+      |> stream_insert(:analysis_collection, analysis)
+
+    {:noreply, socket}
   end
 
   @impl true

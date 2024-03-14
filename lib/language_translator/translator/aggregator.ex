@@ -16,7 +16,7 @@ defmodule LanguageTranslator.Translator.Aggregator do
   end
 
   def translate(%Language{} = source_language, word) do
-    GenServer.call(__MODULE__, {:translate, source_language, word})
+    GenServer.call(__MODULE__, {:translate, source_language, word}, 60000)
   end
 
   def translate(source_language, word) when is_binary(source_language) do

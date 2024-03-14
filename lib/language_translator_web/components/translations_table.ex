@@ -29,40 +29,41 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
         Map.update(acc, source, [text], &[text | &1])
       end)
 
-    Enum.each(rows, fn {source, translations} ->
-      IO.inspect({source, translations})
-    end)
-
     socket = assign(socket, rows: rows, columns: columns)
-
     {:ok, socket}
   end
 
   def render(assigns) do
     ~H"""
     <div class="w-full">
-      <div class="overflow-x-auto">
-        <table class="auto w-full whitespace-nowrap">
-          <thead>
-            <tr>
-              <th class="border border-slate-600 px-3">Source</th>
-              <%= for column <- @columns do %>
-                <th class="border border-slate-600 px-5"><%= column %></th>
-              <% end %>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for {source, translations} <- @rows do %>
+      <%= if Kernel.map_size(@rows) == 0 do %>
+        <div class="text-center text-gray-300 dark:text-gray-900">
+          No translations available
+        </div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="auto w-full whitespace-nowrap">
+            <thead>
               <tr>
-                <td class="border border-slate-600"><%= source %></td>
-                <%= for translation <- translations do %>
-                  <td class="border border-slate-600"><%= translation %></td>
+                <th class="border border-slate-600 px-3">Source</th>
+                <%= for column <- @columns do %>
+                  <th class="border border-slate-600 px-5"><%= column %></th>
                 <% end %>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              <%= for {source, translations} <- @rows do %>
+                <tr>
+                  <td class="border border-slate-600"><%= source %></td>
+                  <%= for translation <- translations do %>
+                    <td class="border border-slate-600"><%= translation %></td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
     </div>
     """
   end

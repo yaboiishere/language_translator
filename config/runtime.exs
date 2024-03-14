@@ -20,14 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :language_translator, LanguageTranslatorWeb.Endpoint, server: true
 end
 
-google_access_token =
-  System.get_env("GOOGLE_ACCESS_TOKEN") || raise "GOOGLE_ACCESS_TOKEN is not set"
-
 google_project_id = System.get_env("GOOGLE_PROJECT_ID") || raise "GOOGLE_PROJECT_ID is not set"
 
 config :language_translator, :google_translate,
   base_url: "https://translation.googleapis.com/v3/projects/",
-  access_token: google_access_token,
   project_id: google_project_id
 
 username = System.get_env("POSTGRES_USER") || raise "PGUSER is not set"
@@ -42,7 +38,10 @@ config :language_translator, LanguageTranslator.Repo,
   password: password,
   port: String.to_integer(db_port),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-  socket_options: maybe_ipv6
+  socket_options: maybe_ipv6,
+  queue_target: 60_000,
+  queue_interval: 160_000,
+  timeout: 160_000
 
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.

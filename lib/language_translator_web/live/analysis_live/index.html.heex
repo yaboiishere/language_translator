@@ -13,10 +13,12 @@
   row_click={fn {_id, analysis} -> JS.navigate(~p"/analysis/#{analysis}") end}
 >
   <:col :let={{_id, analysis}} label="Id"><%= analysis.id %></:col>
-  <:col :let={{_id, analysis}} label="Name"><%= analysis.name %></:col>
   <:col :let={{_id, analysis}} label="Description"><%= analysis.description %></:col>
   <:col :let={{_id, analysis}} label="Source Language">
     <%= analysis.source_language.display_name %>
+  </:col>
+  <:col :let={{_id, analysis}} label="Status">
+    <%= String.capitalize(to_string(analysis.status)) %>
   </:col>
   <:col :let={{_id, analysis}} label="Created at"><%= analysis.inserted_at %></:col>
   <:col :let={{_id, analysis}} label="Updated at"><%= analysis.updated_at %></:col>
@@ -50,5 +52,6 @@
     analysis={@analysis}
     patch={~p"/analysis"}
     is_file={@is_file}
+    languages={@languages}
   />
 </.modal>
