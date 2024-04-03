@@ -14,10 +14,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        text: {
+          dark: "#20064B",
+          light: "#5C374C"
+
+        },
         background: {
-          primary: "#8daaba",
-          secondary: "#8dbab4",
-          tertiary: "#8d94ba"
+          primary: "#C2F9BB",
+          secondary: "#70877F",
+          tertiary: "#FFC6D9"
         },
       }
     },
