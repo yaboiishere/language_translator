@@ -17,19 +17,6 @@ defmodule LanguageTranslatorWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", LanguageTranslatorWeb do
-    pipe_through :browser
-
-    live "/", AnalysisLive.Index, :index
-
-    live "/analysis", AnalysisLive.Index, :index
-    live "/analysis/new", AnalysisLive.Index, :new
-    live "/analysis/:id/edit", AnalysisLive.Index, :edit
-
-    live "/analysis/:id", AnalysisLive.Show, :show
-    live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", LanguageTranslatorWeb do
   #   pipe_through :api
@@ -75,6 +62,9 @@ defmodule LanguageTranslatorWeb.Router do
       on_mount: [{LanguageTranslatorWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+      live "/analysis/new", AnalysisLive.Index, :new
+      live "/analysis/:id/edit", AnalysisLive.Index, :edit
+      live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
     end
   end
 
@@ -88,5 +78,15 @@ defmodule LanguageTranslatorWeb.Router do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
+  end
+
+  scope "/", LanguageTranslatorWeb do
+    pipe_through :browser
+
+    live "/", AnalysisLive.Index, :index
+
+    live "/analysis", AnalysisLive.Index, :index
+
+    live "/analysis/:id", AnalysisLive.Show, :show
   end
 end

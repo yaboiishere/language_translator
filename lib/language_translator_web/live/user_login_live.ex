@@ -3,7 +3,7 @@ defmodule LanguageTranslatorWeb.UserLoginLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="mx-auto max-w-lg bg-white rounded-lg text-secondary-950 p-5">
       <.header class="text-center">
         Sign in to account
         <:subtitle>

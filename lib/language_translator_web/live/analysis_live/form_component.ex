@@ -131,8 +131,10 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   def handle_event(
         "save",
         %{"analysis" => analysis_params} = params,
-        %{assigns: %{is_file: is_file}} = socket
+        %{assigns: %{is_file: is_file, current_user: current_user}} = socket
       ) do
+    analysis_params = Map.put(analysis_params, "user_id", current_user.id)
+
     words =
       if is_file do
         consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->

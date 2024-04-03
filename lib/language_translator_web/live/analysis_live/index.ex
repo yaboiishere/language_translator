@@ -2,14 +2,30 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   alias LanguageTranslator.ProcessGroups
   use LanguageTranslatorWeb, :live_view
 
+  alias LanguageTranslator.Accounts
   alias LanguageTranslator.Models
   alias LanguageTranslator.Models.Analysis
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"user_token" => user_token}, socket) do
     ProcessGroups.Analysis.join(self())
-    socket = assign(socket, :is_file, false)
-    {:ok, stream(socket, :analysis_collection, Models.list_analysis([:source_language]))}
+
+    current_user = Accounts.get_user_by_session_token(user_token)
+
+    socket =
+      socket
+      |> assign(:is_file, false)
+      |> assign(:languages, [])
+      |> assign_new(:current_user, fn -> current_user end)
+
+    IO.inspect(current_user)
+
+    {:ok,
+     stream(
+       socket,
+       :analysis_collection,
+       Models.list_analysis(current_user, [:source_language, :user])
+     )}
   end
 
   @impl true
@@ -20,10 +36,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Analysis")
-    |> assign(:analysis, Models.get_analysis!(id, [:source_language]))
+    |> assign(:analysis, Models.get_analysis!(id, [:source_language, :user]))
   end
 
   defp apply_action(socket, :new, _params) do
+    IO.inspect(socket.assigns)
+
     languages =
       Models.list_languages()
       |> Enum.map(&{&1.display_name, &1.code})

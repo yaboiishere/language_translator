@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Models do
   """
 
   import Ecto.Query, warn: false
+  alias LanguageTranslator.Accounts.User
   alias LanguageTranslator.Repo
 
   alias LanguageTranslator.Models.Language
@@ -307,6 +308,13 @@ defmodule LanguageTranslator.Models do
       [%Analysis{}, ...]
 
   """
+  def list_analysis(%User{id: user_id}, preloads) do
+    Analysis
+    |> where([a], a.user_id == ^user_id)
+    |> Repo.all()
+    |> Repo.preload(preloads)
+  end
+
   def list_analysis(preloads \\ []) do
     Analysis
     |> Repo.all()

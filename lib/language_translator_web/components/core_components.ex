@@ -313,7 +313,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
 
     ~H"""
     <div phx-feedback-for={@name}>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <label class="flex items-center gap-4 text-sm leading-6 text-secondary-950">
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"
@@ -321,7 +321,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class="rounded border-secondary-200 text-secondary-950 focus:ring-0"
           {@rest}
         />
         <%= @label %>

@@ -1,4 +1,5 @@
 defmodule LanguageTranslator.Accounts.User do
+  alias LanguageTranslator.Models.Analysis
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -7,6 +8,8 @@ defmodule LanguageTranslator.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+
+    has_many :analysis, Analysis, on_delete: :nilify_all
 
     timestamps(type: :utc_datetime)
   end
@@ -135,7 +138,10 @@ defmodule LanguageTranslator.Accounts.User do
   If there is no user or the user doesn't have a password, we call
   `Bcrypt.no_user_verify/0` to avoid timing attacks.
   """
-  def valid_password?(%LanguageTranslator.Accounts.User{hashed_password: hashed_password}, password)
+  def valid_password?(
+        %LanguageTranslator.Accounts.User{hashed_password: hashed_password},
+        password
+      )
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Bcrypt.verify_pass(password, hashed_password)
   end
