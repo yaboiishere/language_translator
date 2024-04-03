@@ -3,3 +3,33 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 5px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    background: #8d94ba;
+    border-radius: 5px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #8dbab4;
+    border-radius: 5px;
+}
+ 
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.scrollbar-top {
+  transform: rotateX(180deg);
+}
+
+.scrollbar-top-content {
+  transform: rotateX(180deg);
+}

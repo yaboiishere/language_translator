@@ -1,29 +1,28 @@
-<.header>
-  Analysis <%= @analysis.id %>
-  <:actions>
-    <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit analysis</.button>
-    </.link>
-  </:actions>
-</.header>
+<div class="2xl:mx-60 bg-gray-50 rounded-t-xl px-5 pt-5">
+  <.header>
+    Analysis <%= @analysis.id %>
+    <:actions>
+      <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
+        <.button>Edit analysis</.button>
+      </.link>
+      <.link patch="/analysis" phx-click={JS.push_focus()}>
+        <.button>Back to analysis</.button>
+      </.link>
+    </:actions>
+  </.header>
 
-<div class="mt-4">
-  <h2 class="text-lg font-semibold">Details</h2>
-  <.list>
-    <:item title="Description"><%= @analysis.description %></:item>
-    <:item title="Language"><%= @analysis.source_language.display_name %></:item>
-    <:item title="Status"><%= @analysis.status %></:item>
-    <:item title="Created at"><%= @analysis.inserted_at %></:item>
-    <:item title="Updated at"><%= @analysis.updated_at %></:item>
-  </.list>
-</div>
-
-<div class="mt-4">
-  <h2 class="text-lg font-semibold">Translations</h2>
-  <div class="mt-2"></div>
+  <div class="mt-4">
+    <.list>
+      <:item title="Description"><%= @analysis.description %></:item>
+      <:item title="Language"><%= @analysis.source_language.display_name %></:item>
+      <:item title="Status"><%= @analysis.status %></:item>
+      <:item title="Created at"><%= @analysis.inserted_at %></:item>
+      <:item title="Updated at"><%= @analysis.updated_at %></:item>
+    </.list>
+  </div>
+  <div class="mt-4"></div>
 </div>
 <.live_component id={@analysis.id} module={TranslationsTable} analysis_id={@analysis.id} />
-<.back navigate={~p"/analysis"}>Back to analysis</.back>
 
 <.modal
   :if={@live_action == :edit}

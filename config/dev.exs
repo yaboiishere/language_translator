@@ -63,7 +63,7 @@ config :language_translator, LanguageTranslatorWeb.Endpoint,
 config :language_translator, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n", truncate: :infinity, level: :info
+config :logger, :console, format: "[$level] $message\n", truncate: :infinity
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

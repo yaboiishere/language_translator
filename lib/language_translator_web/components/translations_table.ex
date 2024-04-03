@@ -41,22 +41,32 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
           No translations available
         </div>
       <% else %>
-        <div class="overflow-x-auto">
-          <table class="auto w-full whitespace-nowrap">
-            <thead>
+        <div class="relative overflow-auto shadow-md rounded-lg scrollbar-top">
+          <table class="auto w-full whitespace-nowrap text-sm text-left rtl:text-right text-gray-500 scrollbar-top-content">
+            <thead class="sticky top-0 text-xs text-gray-700 uppercase bg-gray-100">
               <tr>
-                <th class="border border-slate-600 px-3">Source</th>
+                <th scope="col" class="sticky left-0 px-6 py-3 bg-gray-100">Source</th>
                 <%= for column <- @columns do %>
-                  <th class="border border-slate-600 px-5"><%= column %></th>
+                  <th scope="col" class="px-6 py-3"><%= column %></th>
                 <% end %>
               </tr>
             </thead>
             <tbody>
               <%= for {source, translations} <- @rows do %>
-                <tr>
-                  <td class="border border-slate-600"><%= source %></td>
-                  <%= for translation <- translations do %>
-                    <td class="border border-slate-600"><%= translation %></td>
+                <tr class="group bg-white border-b hover:bg-background-secondary hover:text-gray-100">
+                  <th class="sticky left-0 px-6 py-4 font-medium text-gray-900 whitespace-nowrap bg-gray-100 group-hover:bg-background-secondary">
+                    <%= source %>
+                  </th>
+                  <%= for {translation, i} <- Enum.with_index(translations) do %>
+                    <%= if rem(i, 2) == 1 do %>
+                      <td class="px-6 py-4 font-medium bg-gray-50 group-hover:bg-background-secondary">
+                        <%= translation %>
+                      </td>
+                    <% else %>
+                      <td class="px-6 py-4 font-medium ">
+                        <%= translation %>
+                      </td>
+                    <% end %>
                   <% end %>
                 </tr>
               <% end %>
