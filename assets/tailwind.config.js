@@ -14,16 +14,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        text: {
           dark: "#20064B",
-          light: "#5C374C"
+          light: "#F1E4F3",
+          medium: "#5C374C",
 
-        },
-        background: {
-          primary: "#C2F9BB",
-          secondary: "#70877F",
-          tertiary: "#FFC6D9"
-        },
+          tertiary: "#FFC6D9",
+        'secondary': {
+        '50': '#f4f2ff',
+        '100': '#ede7ff',
+        '200': '#dcd3ff',
+        '300': '#c2afff',
+        '400': '#a581ff',
+        '500': '#8a4fff',
+        '600': '#7d2bfc',
+        '700': '#6f19e8',
+        '800': '#5c14c3',
+        '900': '#4d139f',
+        '950': '#20064b',
+    },
+
+           'primary': {
+        '50': '#f2fdf0',
+        '100': '#dffddb',
+        '200': '#c2f9bb',
+        '300': '#8ef283',
+        '400': '#54e345',
+        '500': '#2dca1d',
+        '600': '#20a712',
+        '700': '#1c8312',
+        '800': '#1b6714',
+        '900': '#165512',
+        '950': '#062f04',
+    },
       }
     },
   },

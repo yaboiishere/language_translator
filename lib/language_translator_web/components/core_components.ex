@@ -50,7 +50,11 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="bg-primary-100/90 fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -231,8 +235,8 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg hover:bg-background-secondary bg-background-primary py-2 px-3",
-        "text-sm font-semibold leading-6 text-text-light",
+        "phx-submit-loading:opacity-75 rounded-lg hover:bg-primary-200 bg-primary-300 py-2 px-3",
+        "text-sm font-semibold leading-6 text-text-light hover:text-text-medium",
         @class
       ]}
       {@rest}
@@ -334,7 +338,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
+        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900"
         multiple={@multiple}
         {@rest}
       >
@@ -377,7 +381,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
+          "mt-2 block w-full rounded-lg text-primary-950 focus:ring-0 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400"
@@ -397,7 +401,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-secondary-950">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -430,10 +434,10 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-lg font-semibold leading-8 text-secondary-950">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-secondary-950">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -476,7 +480,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="w-[40rem] mt-11 sm:w-full">
-        <thead class="text-sm text-left leading-6 text-zinc-500">
+        <thead class="text-sm text-left leading-6 text-secondary-950">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th :if={@action != []} class="relative p-0 pb-4">
@@ -487,7 +491,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
+          class="relative divide-y divide-secondary-200 border-t border-secondary-200 text-sm leading-6 text-zinc-700"
         >
           <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
             <td
@@ -496,18 +500,18 @@ defmodule LanguageTranslatorWeb.CoreComponents do
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
               <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
-                <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
+                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-primary-200 sm:rounded-l-xl" />
+                <span class={["relative", i == 0 && "font-semibold text-secondary-950"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>
               </div>
             </td>
             <td :if={@action != []} class="relative w-14 p-0">
               <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
+                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-primary-200 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+                  class="relative ml-4 font-semibold leading-6 text-secondary-950 hover:text-zinc-700"
                 >
                   <%= render_slot(action, @row_item.(row)) %>
                 </span>
@@ -537,10 +541,13 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100 flex justify-around">
-        <div :for={item <- @item} class="gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="flex-none text-text-light"><%= item.title %></dt>
-          <dd class="text-text-dark"><%= render_slot(item) %></dd>
+      <dl class="-my-4 divide-x divide-secondary-200 flex justify-between">
+        <div
+          :for={item <- @item}
+          class="gap-4 py-4 text-md leading-6 sm:gap-8 w-full mx-auto text-center"
+        >
+          <dt class="text-secondary-950 font-bold"><%= item.title %></dt>
+          <dd class="text-secondary-950"><%= render_slot(item) %></dd>
         </div>
       </dl>
     </div>

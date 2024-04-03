@@ -9,7 +9,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-98">
+    <div class="max-w-98 text-secondary-950 bg-white">
       <.header>
         <%= @title %>
         <:subtitle>Use this form to manage analysis records in your database.</:subtitle>
@@ -34,7 +34,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           />
           <div class="flex min-w-full justify-between">
             <div class="flex-none max-w-50">
-              <div class="ms-3 mx-5 text-gray-300 dark:text-gray-900">
+              <div class="ms-3 mx-5">
                 <.label>
                   <%= if @is_file do %>
                     Upload File
@@ -52,18 +52,18 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                   phx-target={@myself}
                   phx-click={:toggle_is_file}
                 />
-                <div class="mt-2 mx-auto relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                <div class="mt-2 mx-auto relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-300">
                 </div>
               </label>
             </div>
             <div class="flex-grow ml-5">
               <%= if @is_file do %>
-                <label class="block text-sm font-semibold leading-6 text-zinc-800">
+                <label class="block text-sm font-semibold leading-6">
                   Upload a file with words to be analyzed
                   <.live_file_input upload={@uploads[:words]} accept="text/plain" />
                 </label>
               <% else %>
-                <label class="block text-sm font-semibold leading-6 text-zinc-800">
+                <label class="block text-sm font-semibold leading-6">
                   Enter the words to be analyzed
                   <input
                     type="textarea"
