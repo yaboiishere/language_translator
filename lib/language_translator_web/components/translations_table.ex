@@ -66,30 +66,22 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
       <% else %>
         <div class="relative flex flex-grow overflow-x-auto shadow-md rounded-lg h-screen">
           <table class="auto w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950">
-            <thead class="text-xs ">
-              <tr>
-                <th
-                  scope="col"
-                  class="sticky left-0 px-6 py-3 text-secondary-950 uppercase bg-primary-200"
-                >
+            <tbody class="text-xs">
+              <tr class="sticky top-0 z-40">
+                <th scope="col" class="relative px-6 py-3 text-secondary-950 uppercase bg-primary-300">
                   Source
                 </th>
                 <%= for column <- @columns do %>
-                  <th
-                    scope="col"
-                    class="sticky top-0 px-6 py-3 text-text-dark uppercase bg-primary-200"
-                  >
+                  <th scope="col" class="px-6 py-3 text-text-dark uppercase bg-primary-300">
                     <%= column %>
                   </th>
                 <% end %>
               </tr>
-            </thead>
-            <tbody>
               <%= for {source, translations} <- @rows do %>
                 <tr class="group bg-white border-b hover:bg-primary-300 hover:text-secondary-800 overflow-y-auto">
-                  <th class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-primary-200 group-hover:bg-primary-300">
+                  <td class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-primary-200 group-hover:bg-primary-300">
                     <%= "#{source} (#{source |> AnyAscii.transliterate() |> IO.iodata_to_binary()})" %>
-                  </th>
+                  </td>
                   <%= for {%Translation{text: text, romanized_text: romanized_text, lavenshtein: lavenshtein}, i} <- Enum.with_index(translations) do %>
                     <%= if rem(i, 2) == 1 do %>
                       <td class="px-10 py-4 font-medium bg-primary-200 group-hover:bg-primary-300">
