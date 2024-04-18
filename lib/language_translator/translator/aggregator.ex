@@ -78,7 +78,10 @@ defmodule LanguageTranslator.Translator.Aggregator do
     end
   end
 
-  def handle_info({:error, %Language{display_name: display_name, code: code}, ref}, state) do
+  def handle_info(
+        {:error, %Language{display_name: display_name, code: code}, ref} = retry_params,
+        state
+      ) do
     case Map.fetch(state, ref) do
       {:ok,
        %LeftToReceiveWithTranslations{
@@ -96,6 +99,9 @@ defmodule LanguageTranslator.Translator.Aggregator do
           _ ->
             {:noreply, %LeftToReceiveWithTranslations{old_state | to_receive: to_receive - 1}}
         end
+
+      _ ->
+        Process.send_after(self(), retry_params, 50)
     end
   end
 end

@@ -37,7 +37,9 @@ defmodule LanguageTranslator.Translator do
       end)
 
       {:ok, analysis} = Models.update_analysis(analysis, %{status: :completed})
+
       analysis
+      |> Repo.preload([:source_language, :user])
     end)
   end
 

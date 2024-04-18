@@ -1,21 +1,24 @@
-<div class="2xl:mx-60 bg-white rounded-t-xl px-5 pt-5 text-secondary-950">
+<div class="2xl:mx-60 bg-white rounded-t-xl px-5 pt-5 text-secondary-950 border-b border-secondary-200">
   <.header>
     Analysis <%= @analysis.id %>
     <:actions>
-      <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
-        <.button>Edit analysis</.button>
-      </.link>
+      <%= if @current_user == @analysis.user do %>
+        <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
+          <.button>Edit analysis</.button>
+        </.link>
+      <% end %>
       <.link patch="/analysis" phx-click={JS.push_focus()}>
         <.button>Back to analysis</.button>
       </.link>
     </:actions>
   </.header>
 
-  <div class="mt-4">
+  <div class="mt-4 ">
     <.list>
       <:item title="Description"><%= @analysis.description %></:item>
       <:item title="Language"><%= @analysis.source_language.display_name %></:item>
       <:item title="Status"><%= @analysis.status %></:item>
+      <:item title="Public"><%= if @analysis.is_public, do: "Yes", else: "No" %></:item>
       <:item title="Created at"><%= @analysis.inserted_at %></:item>
       <:item title="Updated at"><%= @analysis.updated_at %></:item>
     </.list>
@@ -36,6 +39,7 @@
     title={@page_title}
     action={@live_action}
     analysis={@analysis}
+    current_user={@current_user}
     patch={~p"/analysis/#{@analysis}"}
   />
 </.modal>

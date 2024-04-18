@@ -38,9 +38,7 @@ defmodule LanguageTranslator.ModelsFixtures do
   def translation_fixture(attrs \\ %{}) do
     {:ok, translation} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> LanguageTranslator.Models.create_translation()
 
     translation
@@ -66,9 +64,7 @@ defmodule LanguageTranslator.ModelsFixtures do
   def analysis_translation_fixture(attrs \\ %{}) do
     {:ok, analysis_translation} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> LanguageTranslator.Models.create_analysis_translation()
 
     analysis_translation

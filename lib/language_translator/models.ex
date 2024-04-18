@@ -4,7 +4,6 @@ defmodule LanguageTranslator.Models do
   """
 
   import Ecto.Query, warn: false
-  alias LanguageTranslator.Accounts.User
   alias LanguageTranslator.Repo
 
   alias LanguageTranslator.Models.Language
@@ -298,52 +297,6 @@ defmodule LanguageTranslator.Models do
   end
 
   alias LanguageTranslator.Models.Analysis
-
-  @doc """
-  Returns the list of analysis.
-
-  ## Examples
-
-      iex> list_analysis()
-      [%Analysis{}, ...]
-
-  """
-  def list_analysis(%User{id: user_id}, preloads) do
-    Analysis
-    |> where([a], a.user_id == ^user_id)
-    |> Repo.all()
-    |> Repo.preload(preloads)
-  end
-
-  def list_analysis(preloads \\ []) do
-    Analysis
-    |> Repo.all()
-    |> Repo.preload(preloads)
-  end
-
-  def words_ordered_by_language(analysis_id) do
-    from(a in Analysis,
-      where: a.id == ^analysis_id,
-      join: at in AnalysisTranslation,
-      on: at.analysis_id == a.id,
-      join: t in Translation,
-      on: t.id == at.translation_id,
-      join: tw in Word,
-      on: t.target_word_id == tw.id,
-      join: tl in Language,
-      on: tw.language_code == tl.code,
-      join: sw in Word,
-      on: t.source_word_id == sw.id,
-      join: sl in Language,
-      on: sw.language_code == sl.code,
-      order_by: [desc: tl.display_name],
-      select: %{
-        target: %{language: tl, word: tw},
-        source: %{language: sl, word: sw}
-      }
-    )
-    |> Repo.all()
-  end
 
   @doc """
   Gets a single analysis.

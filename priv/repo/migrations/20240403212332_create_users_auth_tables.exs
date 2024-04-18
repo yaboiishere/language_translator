@@ -6,6 +6,7 @@ defmodule LanguageTranslator.Repo.Migrations.CreateUsersAuthTables do
 
     create table(:users) do
       add :email, :citext, null: false
+      add :username, :text, null: false
       add :hashed_password, :string, null: false
       add :confirmed_at, :naive_datetime
       timestamps(type: :utc_datetime)

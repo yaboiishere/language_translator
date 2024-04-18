@@ -1,7 +1,8 @@
 defmodule LanguageTranslatorWeb.Router do
   use LanguageTranslatorWeb, :router
-
   import LanguageTranslatorWeb.UserAuth
+
+  alias LanguageTranslatorWeb.Plugs.PublicAnalysisPlug
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -15,6 +16,19 @@ defmodule LanguageTranslatorWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  pipeline :authorize do
+    plug :require_authenticated_user
+    # plug AuthorizationPlug
+  end
+
+  pipeline :analysis_is_public do
+    plug PublicAnalysisPlug, :show
+  end
+
+  pipeline :analysis_auth do
+    plug PublicAnalysisPlug
   end
 
   # Other scopes may use custom stacks.
@@ -56,15 +70,13 @@ defmodule LanguageTranslatorWeb.Router do
   end
 
   scope "/", LanguageTranslatorWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser, :authorize]
 
     live_session :require_authenticated_user,
       on_mount: [{LanguageTranslatorWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/analysis/new", AnalysisLive.Index, :new
-      live "/analysis/:id/edit", AnalysisLive.Index, :edit
-      live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
     end
   end
 
@@ -84,9 +96,17 @@ defmodule LanguageTranslatorWeb.Router do
     pipe_through :browser
 
     live "/", AnalysisLive.Index, :index
-
     live "/analysis", AnalysisLive.Index, :index
+  end
 
+  scope "/", LanguageTranslatorWeb do
+    pipe_through [:browser, :analysis_is_public]
     live "/analysis/:id", AnalysisLive.Show, :show
+  end
+
+  scope "/", LanguageTranslatorWeb do
+    pipe_through [:browser, :analysis_auth]
+    live "/analysis/:id/edit", AnalysisLive.Index, :edit
+    live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
   end
 end

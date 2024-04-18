@@ -5,26 +5,33 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   alias LanguageTranslator.Accounts
   alias LanguageTranslator.Models
   alias LanguageTranslator.Models.Analysis
+  alias LanguageTranslator.Repo
+
+  @analysis_preloads [:source_language, :user]
 
   @impl true
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(_params, session, socket) do
     ProcessGroups.Analysis.join(self())
 
-    current_user = Accounts.get_user_by_session_token(user_token)
+    current_user =
+      session
+      |> Map.get("user_token")
+      |> case do
+        nil -> nil
+        user_token -> Accounts.get_user_by_session_token(user_token)
+      end
 
     socket =
       socket
-      |> assign(:is_file, false)
+      |> assign(:is_file, true)
       |> assign(:languages, [])
       |> assign_new(:current_user, fn -> current_user end)
-
-    IO.inspect(current_user)
 
     {:ok,
      stream(
        socket,
        :analysis_collection,
-       Models.list_analysis(current_user, [:source_language, :user])
+       Analysis.get_all(current_user, @analysis_preloads)
      )}
   end
 
@@ -36,12 +43,10 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Analysis")
-    |> assign(:analysis, Models.get_analysis!(id, [:source_language, :user]))
+    |> assign(:analysis, Models.get_analysis!(id, @analysis_preloads))
   end
 
   defp apply_action(socket, :new, _params) do
-    IO.inspect(socket.assigns)
-
     languages =
       Models.list_languages()
       |> Enum.map(&{&1.display_name, &1.code})
@@ -63,6 +68,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         {LanguageTranslatorWeb.AnalysisLive.FormComponent, {:saved, analysis}},
         socket
       ) do
+    analysis =
+      Repo.preload(analysis, @analysis_preloads)
+
     {:noreply, stream_insert(socket, :analysis_collection, analysis)}
   end
 

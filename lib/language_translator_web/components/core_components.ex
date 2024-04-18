@@ -478,7 +478,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+    <div class="overflow-y-auto px-4 lg:overflow-visible sm:px-0">
       <table class="w-[40rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-secondary-950">
           <tr>
@@ -507,7 +507,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
               </div>
             </td>
             <td :if={@action != []} class="relative w-14 p-0">
-              <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+              <div class="flex text-right text-sm font-medium">
                 <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-primary-200 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}

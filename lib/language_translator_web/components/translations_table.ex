@@ -1,7 +1,7 @@
 defmodule LanguageTranslatorWeb.TranslationsTable do
   use LanguageTranslatorWeb, :live_component
 
-  alias LanguageTranslator.Models
+  alias LanguageTranslator.Models.Word
 
   defmodule Translation do
     defstruct lavenshtein: "0%", romanized_text: "", text: ""
@@ -12,7 +12,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
   end
 
   def update(%{analysis_id: analysis_id}, socket) do
-    words = Models.words_ordered_by_language(analysis_id)
+    words = Word.words_ordered_by_language(analysis_id)
 
     columns =
       Enum.reduce(words, [], fn %{target: %{language: %{code: code, display_name: language}}},
@@ -66,29 +66,37 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
       <% else %>
         <div class="relative flex flex-grow overflow-x-auto shadow-md rounded-lg h-screen">
           <table class="auto w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950">
-            <tbody class="text-xs">
-              <tr class="sticky top-0 z-40">
-                <th scope="col" class="relative px-6 py-3 text-secondary-950 uppercase bg-primary-300">
+            <thead class="text-sm">
+              <tr class="sticky top-0 z-40 border-b">
+                <th scope="col" class="relative px-6 py-3 text-secondary-950 uppercase bg-white">
                   Source
                 </th>
-                <%= for column <- @columns do %>
-                  <th scope="col" class="px-6 py-3 text-text-dark uppercase bg-primary-300">
-                    <%= column %>
-                  </th>
+                <%= for {column, i} <- Enum.with_index(@columns) do %>
+                  <%= if rem(i, 2) == 1 do %>
+                    <th scope="col" class="px-6 py-3 text-secondary-950 uppercase bg-white">
+                      <%= column %>
+                    </th>
+                  <% else %>
+                    <th scope="col" class="px-6 py-3 text-secondary-950 uppercase bg-primary-100">
+                      <%= column %>
+                    </th>
+                  <% end %>
                 <% end %>
               </tr>
+            </thead>
+            <tbody class="text-xs">
               <%= for {source, translations} <- @rows do %>
-                <tr class="group bg-white border-b hover:bg-primary-300 hover:text-secondary-800 overflow-y-auto">
-                  <td class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-primary-200 group-hover:bg-primary-300">
+                <tr class="group bg-white border-b hover:bg-primary-100 hover:text-secondary-800 overflow-y-auto">
+                  <td class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-white group-hover:bg-primary-100 max-w-80">
                     <%= "#{source} (#{source |> AnyAscii.transliterate() |> IO.iodata_to_binary()})" %>
                   </td>
                   <%= for {%Translation{text: text, romanized_text: romanized_text, lavenshtein: lavenshtein}, i} <- Enum.with_index(translations) do %>
                     <%= if rem(i, 2) == 1 do %>
-                      <td class="px-10 py-4 font-medium bg-primary-200 group-hover:bg-primary-300">
+                      <td class="px-10 py-4 font-medium ">
                         <%= "#{text} (#{romanized_text}) - #{lavenshtein}" %>
                       </td>
                     <% else %>
-                      <td class="px-10 py-4 font-medium">
+                      <td class="px-10 py-4 font-medium bg-primary-100 group-hover:bg-primary-200">
                         <%= "#{text} (#{romanized_text}) - #{lavenshtein}" %>
                       </td>
                     <% end %>
