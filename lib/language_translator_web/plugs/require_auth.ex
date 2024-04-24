@@ -1,4 +1,4 @@
-defmodule LanguageTranslatorWeb.Plugs.PublicAnalysisPlug do
+defmodule LanguageTranslatorWeb.Plugs.RequireAuth do
   import Plug.Conn
   alias LanguageTranslator.Models
   alias LanguageTranslator.Repo
@@ -27,13 +27,13 @@ defmodule LanguageTranslatorWeb.Plugs.PublicAnalysisPlug do
     end
   end
 
-  def not_found(conn) do
+  defp not_found(conn) do
     conn
     |> send_resp(404, "Not Found")
     |> halt()
   end
 
-  def not_authorized(conn) do
+  defp not_authorized(conn) do
     conn
     |> send_resp(401, "Unauthorized")
     |> halt()

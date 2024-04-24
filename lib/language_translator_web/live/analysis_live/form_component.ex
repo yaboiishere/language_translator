@@ -34,14 +34,15 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
               </.label>
             </div>
             <label class="flex items-center cursor-pointer mb-8">
-              <input
-                type="checkbox"
-                value={@is_public}
-                checked={@is_public}
-                class="sr-only peer"
-                name="is_public"
-              />
-              <div class="mt-4 ml-2 relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-300">
+              <div class="mt-4 ml-2">
+                <input
+                  type="checkbox"
+                  value={@is_public}
+                  checked={@is_public}
+                  class="sr-only peer"
+                  name="is_public"
+                />
+                <.toggle />
               </div>
             </label>
           </div>
@@ -78,15 +79,16 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                   </.label>
                 </div>
                 <label class="flex mx-auto items-center cursor-pointer mb-8">
-                  <input
-                    type="checkbox"
-                    value={@is_file}
-                    checked={@is_file}
-                    class="sr-only peer"
-                    phx-target={@myself}
-                    phx-click={:toggle_is_file}
-                  />
-                  <div class="mt-4 mx-auto relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-300">
+                  <div class="mt-4 ml-2">
+                    <input
+                      type="checkbox"
+                      value={@is_file}
+                      checked={@is_file}
+                      class="sr-only peer"
+                      phx-target={@myself}
+                      phx-click={:toggle_is_file}
+                    />
+                    <.toggle />
                   </div>
                 </label>
               </div>
@@ -134,16 +136,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       |> assign(:uploaded_files, [])
       |> assign(:is_public, false)
 
-    IO.inspect(socket.assigns)
-
-    socket
-    |> then(&{:ok, &1})
+    {:ok, socket}
   end
 
   @impl true
   def update(%{analysis: analysis} = assigns, socket) do
     changeset = Models.change_analysis(analysis)
-    IO.inspect(assigns)
 
     {:ok,
      socket

@@ -1,7 +1,9 @@
 defmodule LanguageTranslator.Accounts.User do
-  alias LanguageTranslator.Models.Analysis
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias LanguageTranslator.Models.Analysis
+  alias LanguageTranslator.Repo
 
   schema "users" do
     field :email, :string
@@ -9,6 +11,7 @@ defmodule LanguageTranslator.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+    field :is_admin, :boolean, default: false
 
     has_many :analysis, Analysis, on_delete: :nilify_all
 
@@ -162,5 +165,13 @@ defmodule LanguageTranslator.Accounts.User do
     else
       add_error(changeset, :current_password, "is not valid")
     end
+  end
+
+  def make_admin(user) do
+    change(user, is_admin: true)
+  end
+
+  def get_all(preloads \\ []) do
+    Repo.all(__MODULE__, preloads)
   end
 end

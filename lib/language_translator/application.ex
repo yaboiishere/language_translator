@@ -23,6 +23,10 @@ defmodule LanguageTranslator.Application do
       LanguageTranslator.Translator.Supervisor,
       # Start translation aggregator process
       LanguageTranslator.Translator.Aggregator,
+      # Start the cache with size 2000
+      {LanguageTranslator.Http.Cache, %{size: 2000}},
+      # Start the limitter
+      {LanguageTranslator.Http.Limitter, %{requests_per_second: 100}},
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry

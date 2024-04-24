@@ -2,7 +2,7 @@ defmodule LanguageTranslatorWeb.Router do
   use LanguageTranslatorWeb, :router
   import LanguageTranslatorWeb.UserAuth
 
-  alias LanguageTranslatorWeb.Plugs.PublicAnalysisPlug
+  alias LanguageTranslatorWeb.Plugs.{RequireAuth, RequireAdmin}
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -23,12 +23,16 @@ defmodule LanguageTranslatorWeb.Router do
     # plug AuthorizationPlug
   end
 
-  pipeline :analysis_is_public do
-    plug PublicAnalysisPlug, :show
+  pipeline :no_auth do
+    plug RequireAuth, :show
   end
 
-  pipeline :analysis_auth do
-    plug PublicAnalysisPlug
+  pipeline :require_auth do
+    plug RequireAuth
+  end
+
+  pipeline :require_admin do
+    plug RequireAdmin
   end
 
   # Other scopes may use custom stacks.
@@ -100,13 +104,18 @@ defmodule LanguageTranslatorWeb.Router do
   end
 
   scope "/", LanguageTranslatorWeb do
-    pipe_through [:browser, :analysis_is_public]
+    pipe_through [:browser, :no_auth]
     live "/analysis/:id", AnalysisLive.Show, :show
   end
 
   scope "/", LanguageTranslatorWeb do
-    pipe_through [:browser, :analysis_auth]
+    pipe_through [:browser, :require_auth]
     live "/analysis/:id/edit", AnalysisLive.Index, :edit
     live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
+  end
+
+  scope "/", LanguageTranslatorWeb do
+    pipe_through [:browser, :require_admin]
+    live "/users", UserLive.Index, :index
   end
 end

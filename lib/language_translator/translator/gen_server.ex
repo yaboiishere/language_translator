@@ -13,6 +13,10 @@ defmodule LanguageTranslator.Translator.GenServer do
     GenServer.start_link(__MODULE__, %__MODULE__{language: language}, name: name)
   end
 
+  def translate(pid, source_language, word, ref) do
+    GenServer.cast(pid, {:translate, source_language, word, ref})
+  end
+
   def init(state) do
     ProcessGroup.join(self())
     {:ok, state}

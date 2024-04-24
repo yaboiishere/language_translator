@@ -1,0 +1,25 @@
+<div class="2xl:mx-40 bg-white rounded-xl p-5 max-h-screen text-secondary-950">
+  <.header>
+    Listing Users
+  </.header>
+
+  <.table id="users" rows={@streams.users}>
+    <:col :let={{_id, user}} label="Id"><%= user.id %></:col>
+    <:col :let={{_id, user}} label="Email"><%= user.email %></:col>
+    <:col :let={{_id, user}} label="Username"><%= user.username %></:col>
+    <:col :let={{_id, user}} label="Admin">
+      <label class="items-center cursor-pointer">
+        <% is_disabled = user.id == @current_user.id %>
+        <input
+          type="checkbox"
+          checked={user.is_admin}
+          class="sr-only peer"
+          disabled={is_disabled}
+        />
+        <.toggle />
+      </label>
+    </:col>
+    <:col :let={{_id, user}} label="Created at"><%= user.inserted_at %></:col>
+    <:col :let={{_id, user}} label="Updated at"><%= user.updated_at %></:col>
+  </.table>
+</div>
