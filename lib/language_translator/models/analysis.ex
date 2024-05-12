@@ -9,12 +9,13 @@ defmodule LanguageTranslator.Models.Analysis do
   alias LanguageTranslator.Models.AnalysisTranslation
   alias LanguageTranslator.Accounts.User
 
-  @required_fields ~w(source_language_code status user_id)a
+  @required_fields ~w(source_language_code status user_id source_words)a
   @available_fields ~w(description is_public)a ++ @required_fields
   schema "analysis" do
     field :description, :string
     field :status, Ecto.Enum, values: ~w(pending processing completed failed)a, default: :pending
     field :is_public, :boolean, default: false
+    field :source_words, {:array, :string}
 
     belongs_to :user, User
 

@@ -9,24 +9,17 @@ defmodule LanguageTranslator.Translator do
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Repo
+  alias LanguageTranslator.TaskSupervisor
   alias LanguageTranslator.Translator.Aggregator
 
-  def translate(%Analysis{} = analysis, words, language)
-      when is_list(words) and is_binary(language) do
-    Language
-    |> Repo.get_by(code: language)
-    |> case do
-      %Language{} = language_struct -> translate(analysis, words, language_struct)
-      _ -> {:error, "Language not found"}
-    end
-  end
-
-  def translate(%Analysis{} = analysis, words, %Language{} = language)
+  def translate(
+        %Analysis{source_words: words, source_language: %Language{} = language} = analysis
+      )
       when is_list(words) do
     Repo.transaction(fn ->
       Enum.map(
         words,
-        &Task.async(fn -> translate_word(&1, language) end)
+        &Task.Supervisor.async(TaskSupervisor, fn -> translate_word(&1, language) end)
       )
       |> Enum.flat_map(&Task.await(&1, 60_000))
       |> Enum.map(fn translation ->
@@ -43,17 +36,21 @@ defmodule LanguageTranslator.Translator do
     end)
   end
 
-  def async_translate(%Analysis{} = analysis, words, %Language{} = language) do
-    Task.Supervisor.start_child(LanguageTranslator.TaskSupervisor, fn ->
-      translate(analysis, words, language)
-      |> case do
-        {:ok, analysis} ->
-          ProcessGroups.Analysis.update_analysis(analysis)
+  def async_translate(%Analysis{} = analysis) do
+    Task.Supervisor.start_child(
+      TaskSupervisor,
+      fn ->
+        translate(analysis)
+        |> case do
+          {:ok, analysis} ->
+            ProcessGroups.Analysis.update_analysis(analysis)
 
-        {:error, reason} ->
-          Logger.error("Failed to translate analysis: #{inspect(reason)}")
-      end
-    end)
+          {:error, reason} ->
+            Logger.error("Failed to translate analysis: #{inspect(reason)}")
+        end
+      end,
+      restart: :transient
+    )
   end
 
   defp translate_word(word, %Language{code: code} = language) do

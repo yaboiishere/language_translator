@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   use LanguageTranslatorWeb, :live_component
 
   alias LanguageTranslator.Models
@@ -63,8 +64,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                 type="select"
                 label="Separator"
                 options={@separators}
-                name="separator"
                 value={@separator}
+                field={@form[:separator]}
               />
             </div>
             <div class="flex min-w-full justify-between">
@@ -102,11 +103,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
               <% else %>
                 <label class="text-start text-sm font-semibold leading-6">
                   Enter the words to be analyzed
-                  <textarea
-                    name="words"
-                    value={@words}
+                  <.input
+                    type="textarea"
                     class="w-full h-40 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none text-md"
-                  />
+                    field={@form[:words]}
+                  >
+                  </.input>
                 </label>
               <% end %>
             </div>
@@ -127,21 +129,22 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       |> assign(:separators, [
         {"Comma", ","},
         {"Semicolon", ";"},
-        {"Space", " "},
-        {"Newline", "\n"}
+        {"Space", "space"},
+        {"Newline", "newline"}
       ])
       |> allow_upload(:words, accept: ["text/plain"], max_entries: 1, max_file_size: 500_000)
       |> assign(:words, "")
       |> assign(:separator, ",")
       |> assign(:uploaded_files, [])
       |> assign(:is_public, false)
+      |> assign(:form_data, %AnalysisCreateChangeset{})
 
     {:ok, socket}
   end
 
   @impl true
-  def update(%{analysis: analysis} = assigns, socket) do
-    changeset = Models.change_analysis(analysis)
+  def update(%{form_data: form_data} = assigns, socket) do
+    changeset = AnalysisCreateChangeset.changeset(form_data, %{})
 
     {:ok,
      socket
@@ -168,26 +171,27 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   @impl true
   def handle_event(
         "validate",
-        %{"analysis" => analysis_params} = params,
-        socket
+        %{"analysis_create_changeset" => analysis_params} = params,
+        %{assigns: %{form_data: form_data}} = socket
       ) do
-    words = params["words"]
-    separator = params["separator"]
+    # words = params["words"]
+    # separator = params["separator"]
     is_public = params["is_public"]
 
     changeset =
-      socket.assigns.analysis
-      |> Models.change_analysis(analysis_params)
+      form_data
+      |> AnalysisCreateChangeset.changeset(analysis_params)
       |> Map.put(:action, :validate)
 
     socket =
       socket
       |> assign_form(changeset)
-      |> assign(:words, words)
-      |> assign(:separator, separator)
+
+      # |> assign(:words, words)
+      # |> assign(:separator, separator)
       |> assign(:is_public, is_public)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply, socket}
   end
 
   def handle_event(
@@ -222,49 +226,65 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   def handle_event(
         "save",
-        %{"analysis" => analysis_params} = params,
-        %{assigns: %{current_user: current_user} = assigns} = socket
+        %{"analysis_create_changeset" => analysis_params} = params,
+        %{
+          assigns: %{current_user: current_user, form_data: form_data} = assigns
+        } = socket
       ) do
     is_file = Map.get(assigns, :is_file)
 
-    is_public =
-      params
-      |> Map.get("is_public", "off")
-      |> case do
-        "on" -> true
-        _ -> false
-      end
+    analysis_params_changeset =
+      %AnalysisCreateChangeset{}
+      |> AnalysisCreateChangeset.changeset(analysis_params)
+      |> Map.put(:action, :validate)
 
-    extra_fields = %{"user_id" => current_user.id, "is_public" => is_public}
-    analysis_params = Map.merge(analysis_params, extra_fields)
-    separator = params["separator"]
+    if analysis_params_changeset.valid? do
+      separator =
+        analysis_params
+        |> Map.get("separator")
+        |> AnalysisCreateChangeset.resolve_separator()
 
-    words =
-      if is_file do
-        consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->
-          File.read!(path)
+      is_public =
+        params
+        |> Map.get("is_public", "off")
+        |> case do
+          "on" -> true
+          _ -> false
+        end
+
+      extra_fields = %{"user_id" => current_user.id, "is_public" => is_public}
+      analysis = Map.merge(analysis_params, extra_fields)
+
+      words =
+        if is_file do
+          consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->
+            File.read!(path)
+            |> clean_words(separator)
+            |> then(&{:ok, &1})
+          end)
+          |> List.flatten()
+        else
+          analysis_params
+          |> Map.get("words")
           |> clean_words(separator)
-          |> then(&{:ok, &1})
-        end)
-        |> List.flatten()
-      else
-        params["words"]
-        |> clean_words(separator)
+        end
+
+      case words do
+        words when is_list(words) and length(words) > 0 ->
+          analysis = Map.put(analysis, "source_words", words)
+          save_analysis(socket, socket.assigns.action, analysis)
+
+        _ ->
+          changeset =
+            form_data
+            |> AnalysisCreateChangeset.changeset(analysis_params)
+            |> Map.put(:action, :validate)
+            |> Changeset.add_error(:words, "At least one word is required")
+
+          {:noreply, assign_form(socket, changeset)}
       end
-
-    case words do
-      words when is_list(words) and length(words) > 0 ->
-        analysis_params = Map.put(analysis_params, "words", words)
-        save_analysis(socket, socket.assigns.action, analysis_params)
-
-      _ ->
-        changeset =
-          socket.assigns.analysis
-          |> Models.change_analysis(analysis_params)
-          |> Map.put(:action, :validate)
-          |> Changeset.add_error(:words, "At least one word is required")
-
-        {:noreply, assign_form(socket, changeset)}
+    else
+      {:noreply, assign_form(socket, analysis_params_changeset)}
     end
   end
 
@@ -284,16 +304,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   end
 
   defp save_analysis(socket, :new, analysis_params) do
-    case Models.create_analysis(%{"words" => words} = analysis_params) do
+    case Models.create_analysis(analysis_params) do
       {:ok, analysis} ->
         analysis = Repo.preload(analysis, :source_language)
 
         {:ok, _pid} =
-          Translator.async_translate(
-            analysis,
-            words,
-            analysis.source_language
-          )
+          Translator.async_translate(analysis)
 
         notify_parent({:saved, analysis})
 

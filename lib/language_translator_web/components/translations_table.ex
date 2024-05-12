@@ -64,7 +64,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
           No translations available
         </div>
       <% else %>
-        <div class="relative flex flex-grow overflow-x-auto shadow-md rounded-lg h-screen">
+        <div class="relative overflow-x-auto shadow-md rounded-lg max-h-screen">
           <table class="auto w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950">
             <thead class="text-sm">
               <tr class="sticky top-0 z-40 border-b">
@@ -84,7 +84,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
                 <% end %>
               </tr>
             </thead>
-            <tbody class="text-xs">
+            <tbody class="text-sm">
               <%= for {source, translations} <- @rows do %>
                 <tr class="group bg-white border-b hover:bg-primary-100 hover:text-secondary-800 overflow-y-auto">
                   <td class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-white group-hover:bg-primary-100 max-w-80">

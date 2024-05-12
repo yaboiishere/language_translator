@@ -16,9 +16,16 @@ defmodule LanguageTranslator.Translator.Aggregator do
     GenServer.start_link(__MODULE__, source_language, name: name)
   end
 
-  def translate(%Language{code: code} = _source_language, word) do
+  def translate(%Language{code: code} = source_language, word) do
     name = String.to_atom("#{code}_aggregator")
-    GenServer.call(name, {:translate, word}, 60000)
+
+    try do
+      GenServer.call(name, {:translate, word})
+    catch
+      :exit, {:timeout, _} ->
+        Logger.error("Timeout while translating #{word}, retrying...")
+        translate(source_language, word)
+    end
   end
 
   def translate(source_language, word) when is_binary(source_language) do

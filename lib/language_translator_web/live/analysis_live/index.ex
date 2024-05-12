@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   alias LanguageTranslator.ProcessGroups
   use LanguageTranslatorWeb, :live_view
 
@@ -53,6 +54,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
     socket
     |> assign(:page_title, "New Analysis")
+    |> assign(:form_data, %AnalysisCreateChangeset{})
     |> assign(:analysis, %Analysis{})
     |> assign(:languages, languages)
   end

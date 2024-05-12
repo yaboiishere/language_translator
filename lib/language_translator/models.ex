@@ -370,19 +370,6 @@ defmodule LanguageTranslator.Models do
     Repo.delete(analysis)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking analysis changes.
-
-  ## Examples
-
-      iex> change_analysis(analysis)
-      %Ecto.Changeset{data: %Analysis{}}
-
-  """
-  def change_analysis(%Analysis{} = analysis, attrs \\ %{}) do
-    Analysis.changeset(analysis, attrs)
-  end
-
   alias LanguageTranslator.Models.AnalysisTranslation
 
   @doc """
