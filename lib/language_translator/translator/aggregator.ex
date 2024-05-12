@@ -11,12 +11,14 @@ defmodule LanguageTranslator.Translator.Aggregator do
     defstruct to_receive: 0, translations: [], initial_word: "", from: nil
   end
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+  def start_link(source_language = %Language{code: code}) do
+    name = String.to_atom("#{code}_aggregator")
+    GenServer.start_link(__MODULE__, source_language, name: name)
   end
 
-  def translate(%Language{} = source_language, word) do
-    GenServer.call(__MODULE__, {:translate, source_language, word}, 60000)
+  def translate(%Language{code: code} = _source_language, word) do
+    name = String.to_atom("#{code}_aggregator")
+    GenServer.call(name, {:translate, word}, 60000)
   end
 
   def translate(source_language, word) when is_binary(source_language) do
@@ -25,11 +27,16 @@ defmodule LanguageTranslator.Translator.Aggregator do
     |> translate(word)
   end
 
-  def init(_) do
-    {:ok, %{}}
+  def init(%Language{} = source_language) do
+    state = %{source_language: source_language, translations: %{}}
+    {:ok, state}
   end
 
-  def handle_call({:translate, %Language{} = source_language, word}, from, state) do
+  def handle_call(
+        {:translate, word},
+        from,
+        %{source_language: source_language, translations: translations} = state
+      ) do
     pg_members_count = ProcessGroup.count_members()
 
     ref = make_ref()
@@ -39,8 +46,8 @@ defmodule LanguageTranslator.Translator.Aggregator do
         {:reply, "No translators available", state}
 
       _ ->
-        state =
-          Map.put(state, ref, %LeftToReceiveWithTranslations{
+        translations =
+          Map.put(translations, ref, %LeftToReceiveWithTranslations{
             to_receive: pg_members_count,
             initial_word: word,
             from: from
@@ -48,56 +55,66 @@ defmodule LanguageTranslator.Translator.Aggregator do
 
         ProcessGroup.translate(source_language, word, {self(), ref})
 
-        {:noreply, state}
+        {:noreply, %{state | translations: translations}}
     end
   end
 
-  def handle_info({:translated, %Language{code: code}, translated_word, ref}, state) do
-    case Map.fetch(state, ref) do
+  def handle_info(
+        {:translated, %Language{code: code}, translated_word, ref},
+        %{translations: translations_state} = state
+      ) do
+    case Map.fetch(translations_state, ref) do
       {:ok,
        %LeftToReceiveWithTranslations{
          to_receive: to_receive,
          translations: translations,
          from: from
-       } = old_state} ->
+       } = old_translation} ->
         new_translations = [{code, translated_word} | translations]
 
         if to_receive == 1 do
           GenServer.reply(from, new_translations)
-          {:noreply, Map.delete(state, ref)}
+          {:noreply, %{state | translations: Map.delete(translations_state, ref)}}
         else
-          new_state =
-            Map.put(state, ref, %LeftToReceiveWithTranslations{
-              old_state
+          new_translations_state =
+            Map.put(translations_state, ref, %LeftToReceiveWithTranslations{
+              old_translation
               | to_receive: to_receive - 1,
                 translations: new_translations
             })
 
-          {:noreply, new_state}
+          {:noreply, %{state | translations: new_translations_state}}
         end
     end
   end
 
   def handle_info(
         {:error, %Language{display_name: display_name, code: code}, ref} = retry_params,
-        state
+        %{translations: translations} = state
       ) do
-    case Map.fetch(state, ref) do
+    case Map.fetch(translations, ref) do
       {:ok,
        %LeftToReceiveWithTranslations{
          to_receive: to_receive,
          translations: translations,
          from: from
-       } = old_state} ->
+       } = old_translation} ->
         Logger.error("No translator available for #{display_name} (#{code})")
 
         case to_receive do
           1 ->
             GenServer.reply(from, translations)
-            {:noreply, Map.delete(state, ref)}
+            {:noreply, %{state | translations: Map.delete(translations, ref)}}
 
           _ ->
-            {:noreply, %LeftToReceiveWithTranslations{old_state | to_receive: to_receive - 1}}
+            {:noreply,
+             %{
+               state
+               | translations: %LeftToReceiveWithTranslations{
+                   old_translation
+                   | to_receive: to_receive - 1
+                 }
+             }}
         end
 
       _ ->

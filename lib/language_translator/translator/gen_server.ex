@@ -9,7 +9,7 @@ defmodule LanguageTranslator.Translator.GenServer do
   defstruct [:language]
 
   def start_link(%Language{} = language) do
-    name = String.to_atom(language.code)
+    name = String.to_atom(language.code <> "_translator")
     GenServer.start_link(__MODULE__, %__MODULE__{language: language}, name: name)
   end
 

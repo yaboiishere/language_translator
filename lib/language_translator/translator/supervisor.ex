@@ -28,11 +28,16 @@ defmodule LanguageTranslator.Translator.Supervisor do
         returning: true
       )
 
-    Enum.map(inserted_languages, &create_worker/1)
+    Enum.flat_map(inserted_languages, &create_worker/1)
   end
 
   defp create_worker(%Language{code: code} = language) do
-    id = String.to_atom(code <> "_translator")
-    %{id: id, start: {Translator.GenServer, :start_link, [language]}}
+    translator_id = String.to_atom(code <> "_translator")
+    aggregator_id = String.to_atom(code <> "_aggregator")
+
+    [
+      %{id: translator_id, start: {Translator.GenServer, :start_link, [language]}},
+      %{id: aggregator_id, start: {Translator.Aggregator, :start_link, [language]}}
+    ]
   end
 end

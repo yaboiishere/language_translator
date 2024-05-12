@@ -2,7 +2,6 @@ defmodule LanguageTranslator.GoogleApi.Translate do
   alias LanguageTranslator.Http.Cache
   alias LanguageTranslator.Http.Limitter
   alias LanguageTranslator.Models.Language
-  alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Config
   alias LanguageTranslator.GoogleApi.Auth
   alias LanguageTranslator.Http.Wrapper
