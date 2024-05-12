@@ -76,7 +76,7 @@ defmodule LanguageTranslator.Http.Limitter do
   end
 
   @impl true
-  def handle_info({:DOWN, _ref, :process, _pid, :normal}, state) do
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, state}
   end
 

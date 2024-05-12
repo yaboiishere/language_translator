@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
+  alias LanguageTranslator.Translator.Refresher
   alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   alias LanguageTranslator.ProcessGroups
   use LanguageTranslatorWeb, :live_view
@@ -92,5 +93,16 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
     {:ok, _} = Models.delete_analysis(analysis)
 
     {:noreply, stream_delete(socket, :analysis_collection, analysis)}
+  end
+
+  @impl true
+  def handle_event("retry", %{"id" => id}, socket) do
+    :ok = Refresher.refresh(id)
+
+    socket =
+      socket
+      |> put_flash(:info, "Retrying analysis #{id}.")
+
+    {:noreply, socket}
   end
 end

@@ -40,6 +40,11 @@
     <:col :let={{_id, analysis}} label="Created at"><%= analysis.inserted_at %></:col>
     <:col :let={{_id, analysis}} label="Updated at"><%= analysis.updated_at %></:col>
     <:action :let={{_id, analysis}}>
+      <%= if analysis.status == :failed and @current_user == analysis.user do %>
+        <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>
+      <% end %>
+    </:action>
+    <:action :let={{_id, analysis}}>
       <div class="sr-only">
         <.link navigate={~p"/analysis/#{analysis}"}>Show</.link>
       </div>

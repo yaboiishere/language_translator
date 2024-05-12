@@ -50,7 +50,27 @@ defmodule LanguageTranslator.Models.Analysis do
     Repo.all(query)
   end
 
+  def get(analysis_id, preloads \\ [:source_language, :user]) do
+    from(a in __MODULE__, where: a.id == ^analysis_id, preload: ^preloads) |> Repo.one()
+  end
+
   defp public_analysis_query do
     from a in __MODULE__, or_where: a.is_public == true
+  end
+
+  def update(%__MODULE__{} = analysis, attrs) do
+    analysis
+    |> changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update(analysis_id, attrs, preloads \\ []) when is_integer(analysis_id) do
+    __MODULE__
+    |> Repo.get(analysis_id)
+    |> Repo.preload(preloads)
+    |> case do
+      nil -> {:error, "Analysis not found"}
+      analysis -> __MODULE__.update(analysis, attrs)
+    end
   end
 end

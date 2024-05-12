@@ -10,6 +10,7 @@ defmodule LanguageTranslator.Application do
     children = [
       LanguageTranslator.Config,
       {Task.Supervisor, name: LanguageTranslator.TaskSupervisor},
+      {DynamicSupervisor, name: LanguageTranslator.DynamicSupervisor, strategy: :one_for_one},
       LanguageTranslatorWeb.Telemetry,
       LanguageTranslator.Repo,
       {DNSCluster,
@@ -25,6 +26,10 @@ defmodule LanguageTranslator.Application do
       # LanguageTranslator.Translator.Aggregator,
       # Start the http services
       LanguageTranslator.Http.Supervisor,
+      # Start the analysis monitor
+      LanguageTranslator.Translator.AnalysisMonitor,
+      # Start the analysis refresher
+      {LanguageTranslator.Translator.Refresher, interval: 60_000},
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry

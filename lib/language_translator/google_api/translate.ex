@@ -45,8 +45,8 @@ defmodule LanguageTranslator.GoogleApi.Translate do
             Cache.store(text, source_language, translated_word, target_language)
             {:ok, translated_word}
 
-          {:error, _} ->
-            {:ok, translated_word}
+          {:error, error} ->
+            {:error, error}
         end
 
       word when is_binary(word) ->

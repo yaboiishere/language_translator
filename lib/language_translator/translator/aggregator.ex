@@ -11,16 +11,17 @@ defmodule LanguageTranslator.Translator.Aggregator do
     defstruct to_receive: 0, translations: [], initial_word: "", from: nil
   end
 
-  def start_link(source_language = %Language{code: code}) do
-    name = String.to_atom("#{code}_aggregator")
-    GenServer.start_link(__MODULE__, source_language, name: name)
+  def name(%Language{code: code}) do
+    String.to_atom("#{code}_aggregator")
   end
 
-  def translate(%Language{code: code} = source_language, word) do
-    name = String.to_atom("#{code}_aggregator")
+  def start_link(source_language = %Language{}) do
+    GenServer.start_link(__MODULE__, source_language, name: name(source_language))
+  end
 
+  def translate(%Language{} = source_language, word) do
     try do
-      GenServer.call(name, {:translate, word})
+      GenServer.call(name(source_language), {:translate, word})
     catch
       :exit, {:timeout, _} ->
         Logger.error("Timeout while translating #{word}, retrying...")
@@ -97,9 +98,9 @@ defmodule LanguageTranslator.Translator.Aggregator do
 
   def handle_info(
         {:error, %Language{display_name: display_name, code: code}, ref} = retry_params,
-        %{translations: translations} = state
+        %{translations: translations_state} = state
       ) do
-    case Map.fetch(translations, ref) do
+    case Map.fetch(translations_state, ref) do
       {:ok,
        %LeftToReceiveWithTranslations{
          to_receive: to_receive,
@@ -107,6 +108,7 @@ defmodule LanguageTranslator.Translator.Aggregator do
          from: from
        } = old_translation} ->
         Logger.error("No translator available for #{display_name} (#{code})")
+        IO.inspect(old_translation)
 
         case to_receive do
           1 ->
