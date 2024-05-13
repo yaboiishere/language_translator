@@ -8,6 +8,7 @@ defmodule LanguageTranslator.Models.Analysis do
   alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.AnalysisTranslation
+  alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Accounts.User
 
   @default_preloads ~w(source_language user)a
@@ -84,6 +85,16 @@ defmodule LanguageTranslator.Models.Analysis do
       nil -> {:error, "Analysis not found"}
       analysis -> __MODULE__.update(analysis, attrs)
     end
+  end
+
+  def source_words(analysis_id) do
+    %{source_words: source_words, source_language_code: source_language_code} =
+      Repo.get!(__MODULE__, analysis_id)
+
+    Enum.map(source_words, fn word ->
+      Word.get!(word, source_language_code)
+    end)
+    |> Enum.map(& &1.text)
   end
 
   defp filter_order_by(query, %{order_by: order_by}) do

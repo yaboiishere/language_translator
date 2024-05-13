@@ -5,6 +5,7 @@ defmodule LanguageTranslator.Repo.Migrations.CreateTranslations do
     create table(:translations) do
       add :source_word_id, references(:words)
       add :target_word_id, references(:words)
+      add :similarity, :float, null: false
 
       add :inserted_at, :utc_datetime_usec, default: fragment("NOW()")
       add :updated_at, :utc_datetime_usec, default: fragment("NOW()")

@@ -25,7 +25,12 @@
   </div>
   <div class="mt-4"></div>
 </div>
-<.live_component id={@analysis.id} module={TranslationsTable} analysis_id={@analysis.id} />
+<.live_component
+  id={@analysis.id}
+  module={TranslationsTable}
+  analysis_id={@analysis.id}
+  order_and_filter={@order_and_filter}
+/>
 
 <.modal
   :if={@live_action == :edit}

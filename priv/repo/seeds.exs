@@ -11,9 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LanguageTranslator.Repo
-alias LanguageTranslator.Translator
 alias LanguageTranslator.Accounts.User
-alias LanguageTranslator.Models.Language
 alias LanguageTranslator.Models.Analysis
 alias Ecto.Changeset
 
@@ -97,7 +95,8 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_english
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()
 
 # Language.changeset(%Language{}, %{
 #   display_name: "Spanish",
@@ -127,7 +126,8 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_spanish
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()
 
 # Language.changeset(%Language{}, %{
 #   display_name: "Armenian",
@@ -168,7 +168,8 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_armenian
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()
 
 # Language.changeset(%Language{}, %{
 #   display_name: "Bulgarian",
@@ -203,7 +204,8 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_bulgarian
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()
 
 # Language.changeset(%Language{}, %{
 #   display_name: "Italian",
@@ -233,7 +235,8 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_italian
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()
 
 # Language.changeset(%Language{}, %{
 #   display_name: "Portuguese",
@@ -264,4 +267,5 @@ Analysis.changeset(%Analysis{}, %{
   source_words: colors_in_portugese
 })
 |> Repo.insert!()
-|> Translator.async_translate()
+
+# |> Translator.async_translate()

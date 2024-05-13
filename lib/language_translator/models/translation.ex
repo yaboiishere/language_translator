@@ -9,6 +9,7 @@ defmodule LanguageTranslator.Models.Translation do
   schema "translations" do
     belongs_to :source_word, Word
     belongs_to :target_word, Word
+    field :similarity, :float
 
     many_to_many :analysis, Analysis,
       join_through: AnalysisTranslation,
@@ -20,8 +21,8 @@ defmodule LanguageTranslator.Models.Translation do
   @doc false
   def changeset(translation, attrs) do
     translation
-    |> cast(attrs, [])
-    |> validate_required([])
+    |> cast(attrs, [:similarity])
+    |> validate_required([:similarity])
     |> cast_assoc(:source_word, with: &Word.changeset/2)
     |> cast_assoc(:target_word, with: &Word.changeset/2)
   end

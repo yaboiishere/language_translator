@@ -1,6 +1,7 @@
 defmodule LanguageTranslator.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslator.Repo
@@ -171,7 +172,19 @@ defmodule LanguageTranslator.Accounts.User do
     change(user, is_admin: true)
   end
 
-  def get_all(preloads \\ []) do
-    Repo.all(__MODULE__, preloads)
+  def get_all(%{order_by: order_by}, preloads \\ []) do
+    from(u in __MODULE__, order_by: ^filter_order_by(order_by), preload: ^preloads) |> Repo.all()
   end
+
+  def filter_order_by("email_asc"), do: [asc: :email]
+  def filter_order_by("email_desc"), do: [desc: :email]
+  def filter_order_by("username_asc"), do: [asc: :username]
+  def filter_order_by("username_desc"), do: [desc: :username]
+  def filter_order_by("admin_asc"), do: [asc: :is_admin]
+  def filter_order_by("admin_desc"), do: [desc: :is_admin]
+  def filter_order_by("created_at_asc"), do: [asc: :inserted_at]
+  def filter_order_by("created_at_desc"), do: [desc: :inserted_at]
+  def filter_order_by("updated_at_asc"), do: [asc: :updated_at]
+  def filter_order_by("updated_at_desc"), do: [desc: :updated_at]
+  def filter_order_by(_), do: []
 end

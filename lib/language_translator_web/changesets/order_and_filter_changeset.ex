@@ -27,6 +27,8 @@ defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
     {label, dir}
   end
 
+  def get_order_by(_), do: {nil, nil}
+
   def get_order_label(order_by) when is_binary(order_by) do
     case order_by do
       <<label, "_desc">> -> label

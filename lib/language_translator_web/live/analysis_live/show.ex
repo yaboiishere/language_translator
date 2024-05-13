@@ -2,9 +2,11 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   alias LanguageTranslatorWeb.AnalysisLive.FormComponent
   use LanguageTranslatorWeb, :live_view
 
+  alias Ecto.Changeset
   alias LanguageTranslator.Models
   alias LanguageTranslatorWeb.TranslationsTable
   alias LanguageTranslator.Accounts
+  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
 
   @analysis_preloads [:source_language, :user]
 
@@ -26,11 +28,17 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id} = params, _, socket) do
+    order_and_filter_changeset =
+      OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{}, params)
+
+    order_and_filter = Changeset.apply_changes(order_and_filter_changeset)
+
     analysis = Models.get_analysis!(id, @analysis_preloads)
 
     {:noreply,
      socket
+     |> assign(:order_and_filter, order_and_filter)
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:analysis, analysis)}
   end

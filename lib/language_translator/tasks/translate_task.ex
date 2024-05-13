@@ -70,7 +70,9 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
   defp translate_word(word, %Language{code: code} = language) do
     translations = Aggregator.translate(language, word)
 
-    %Word{language_code: code, text: word}
+    romanized_text = AnyAscii.transliterate(word) |> IO.iodata_to_binary()
+
+    %Word{language_code: code, text: word, romanized_text: romanized_text}
     |> Repo.insert(
       on_conflict: {:replace_all_except, [:id, :inserted_at]},
       conflict_target: [:language_code, :text]
@@ -94,18 +96,33 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
 
   defp persist_translations([], _initial_word), do: []
 
-  defp persist_translation({translated_language, translated_word}, %Word{} = initial_word) do
-    %Word{language_code: translated_language, text: translated_word}
+  defp persist_translation(
+         {translated_language, translated_word},
+         %Word{romanized_text: initial_word_romanized_text} = initial_word
+       ) do
+    translated_word_romanized_text =
+      AnyAscii.transliterate(translated_word) |> IO.iodata_to_binary()
+
+    %Word{
+      language_code: translated_language,
+      text: translated_word,
+      romanized_text: translated_word_romanized_text
+    }
     |> Repo.insert(
       on_conflict: {:replace_all_except, [:id, :inserted_at]},
       conflict_target: [:language_code, :text]
     )
     |> case do
       {:ok, target_word} ->
+        similarity =
+          Akin.Levenshtein.compare(initial_word_romanized_text, target_word.romanized_text) *
+            100.0
+
         Translation.changeset(
           %Translation{
             source_word: initial_word,
-            target_word: target_word
+            target_word: target_word,
+            similarity: similarity
           },
           %{}
         )

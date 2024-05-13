@@ -2,6 +2,8 @@ defmodule LanguageTranslator.Models.Language do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias LanguageTranslator.Repo
+
   @required_fields ~w(display_name code)a
 
   @primary_key {:code, :string, []}
@@ -17,5 +19,9 @@ defmodule LanguageTranslator.Models.Language do
     language
     |> cast(attrs, @required_fields)
     |> validate_required(@required_fields)
+  end
+
+  def get_all() do
+    Repo.all(__MODULE__)
   end
 end

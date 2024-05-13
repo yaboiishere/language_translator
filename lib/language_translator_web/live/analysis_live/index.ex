@@ -1,5 +1,4 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
-  alias ElixirSense.Core.Struct
   use LanguageTranslatorWeb, :live_view
 
   alias Ecto.Changeset
@@ -11,6 +10,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias LanguageTranslator.ProcessGroups
+  alias LanguageTranslatorWeb.Util
 
   @impl true
   def mount(_params, session, socket) do
@@ -138,40 +138,16 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   def handle_event(
         "sort",
         %{"col" => field},
-        %{
-          assigns: %{
-            order_and_filter: %OrderAndFilterChangeset{order_by: order_by} = order_and_filter
-          }
-        } =
-          socket
+        socket
       ) do
-    {old_field, old_direction} = OrderAndFilterChangeset.get_order_by(order_by)
-    field = String.downcase(field)
-
-    new_order_by =
-      if old_field == field do
-        new_direction =
-          case old_direction do
-            "asc" -> "desc"
-            "desc" -> "asc"
-          end
-
-        "#{field}_#{new_direction}"
-      else
-        "#{field}_desc"
-      end
-
-    order_and_filter
-    |> OrderAndFilterChangeset.changeset(%{order_by: new_order_by})
+    socket
+    |> Util.update_order_by(field)
     |> case do
-      %{valid?: true} = changeset ->
-        params =
-          changeset |> Changeset.apply_changes() |> Map.from_struct() |> Map.delete(:__meta__)
-
-        {:noreply, push_patch(socket, to: Routes.analysis_index_path(socket, :index, params))}
-
-      _ ->
+      nil ->
         {:noreply, socket}
+
+      params ->
+        {:noreply, push_patch(socket, to: Routes.analysis_index_path(socket, :index, params))}
     end
   end
 end
