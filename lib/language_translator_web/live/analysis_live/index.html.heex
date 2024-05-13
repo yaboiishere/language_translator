@@ -12,39 +12,40 @@
 
   <.table
     id="analysis"
-    rows={@streams.analysis_collection}
+    rows={@analysis_collection}
+    order_by={@order_and_filter.order_by}
     row_click={
-      fn {_id, analysis} ->
+      fn analysis ->
         if analysis.status == :completed, do: JS.navigate(~p"/analysis/#{analysis}")
       end
     }
   >
-    <:col :let={{_id, analysis}} label="Id"><%= analysis.id %></:col>
-    <:col :let={{_id, analysis}} label="Description"><%= analysis.description %></:col>
-    <:col :let={{_id, analysis}} label="Source Language">
+    <:col :let={analysis} label="Id"><%= analysis.id %></:col>
+    <:col :let={analysis} label="Description"><%= analysis.description %></:col>
+    <:col :let={analysis} label="Source Language">
       <%= analysis.source_language.display_name %>
     </:col>
-    <:col :let={{_id, analysis}} label="Status">
+    <:col :let={analysis} label="Status">
       <%= String.capitalize(to_string(analysis.status)) %>
     </:col>
-    <:col :let={{_id, analysis}} label="Uploaded by">
+    <:col :let={analysis} label="Uploaded by">
       <%= analysis.user.username %>
     </:col>
-    <:col :let={{_id, analysis}} label="Public">
+    <:col :let={analysis} label="Public">
       <%= if analysis.is_public do %>
         Yes
       <% else %>
         No
       <% end %>
     </:col>
-    <:col :let={{_id, analysis}} label="Created at"><%= analysis.inserted_at %></:col>
-    <:col :let={{_id, analysis}} label="Updated at"><%= analysis.updated_at %></:col>
-    <:action :let={{_id, analysis}}>
+    <:col :let={analysis} label="Created at"><%= analysis.inserted_at %></:col>
+    <:col :let={analysis} label="Updated at"><%= analysis.updated_at %></:col>
+    <:action :let={analysis}>
       <%= if analysis.status == :failed and @current_user == analysis.user do %>
         <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>
       <% end %>
     </:action>
-    <:action :let={{_id, analysis}}>
+    <:action :let={analysis}>
       <div class="sr-only">
         <.link navigate={~p"/analysis/#{analysis}"}>Show</.link>
       </div>
@@ -52,10 +53,13 @@
         <.link patch={~p"/analysis/#{analysis}/edit"}>Edit</.link>
       <% end %>
     </:action>
-    <:action :let={{id, analysis}}>
+    <:action :let={analysis}>
       <%= if @current_user == analysis.user do %>
         <.link
-          phx-click={JS.push("delete", value: %{id: analysis.id}) |> hide("##{id}")}
+          phx-click={
+            JS.push("delete", value: %{id: analysis.id})
+            |> hide("#analysis_collection_#{analysis.id}")
+          }
           data-confirm="Are you sure?"
         >
           Delete
@@ -77,7 +81,7 @@
     title={@page_title}
     action={@live_action}
     analysis={@analysis}
-    form_data={@form_data}
+    form_data={%{}}
     patch={~p"/analysis"}
     is_file={@is_file}
     languages={@languages}

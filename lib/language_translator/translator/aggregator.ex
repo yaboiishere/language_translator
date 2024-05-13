@@ -21,7 +21,7 @@ defmodule LanguageTranslator.Translator.Aggregator do
 
   def translate(%Language{} = source_language, word) do
     try do
-      GenServer.call(name(source_language), {:translate, word})
+      GenServer.call(name(source_language), {:translate, word}, 60000)
     catch
       :exit, {:timeout, _} ->
         Logger.error("Timeout while translating #{word}, retrying...")

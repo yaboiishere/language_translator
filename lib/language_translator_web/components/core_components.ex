@@ -16,6 +16,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias Phoenix.LiveView.JS
   import LanguageTranslatorWeb.Gettext
 
@@ -458,6 +459,11 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   """
   attr :id, :string, required: true
   attr :rows, :list, required: true
+
+  attr :order_by, :string,
+    required: true,
+    doc: "the current order by column with direction {column}_{dir}"
+
   attr :row_id, :any, default: nil, doc: "the function for generating the row id"
   attr :row_click, :any, default: nil, doc: "the function for handling phx-click on each row"
 
@@ -467,6 +473,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
 
   slot :col, required: true do
     attr :label, :string
+    attr :dir, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -482,7 +489,14 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       <table class="w-[40rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-secondary-950">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
+            <th
+              :for={col <- @col}
+              class="p-0 pb-4 pr-6 font-normal text-secondary-950 hover:text-zinc-700 cursor-pointer"
+              phx-click="sort"
+              phx-value-col={col[:label] |> String.downcase() |> String.replace(" ", "_")}
+            >
+              <.table_column_label label={col[:label]} order_by={assigns[:order_by]} />
+            </th>
             <th :if={@action != []} class="relative p-0 pb-4">
               <span class="sr-only"><%= gettext("Actions") %></span>
             </th>
@@ -522,6 +536,46 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       </table>
     </div>
     """
+  end
+
+  @doc """
+  Renders a table column label.
+  """
+  attr :label, :string, required: true
+  attr :order_by, :string, required: true
+
+  def table_column_label(assigns) do
+    label = assigns[:label] |> String.downcase() |> String.replace(" ", "_")
+    order_by = assigns[:order_by]
+
+    dir =
+      order_by
+      |> OrderAndFilterChangeset.get_order_by()
+      |> then(fn
+        {^label, dir} -> dir
+        {_, _} -> nil
+      end)
+
+    case dir do
+      nil ->
+        ~H"""
+        <%= @label %>
+        """
+
+      "asc" ->
+        ~H"""
+        <b>
+          <%= @label %> <.icon name="hero-arrow-up-solid" class="h-3 w-3" />
+        </b>
+        """
+
+      "desc" ->
+        ~H"""
+        <b>
+          <%= @label %> <.icon name="hero-arrow-down-solid" class="h-3 w-3" />
+        </b>
+        """
+    end
   end
 
   @doc """

@@ -44,8 +44,12 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
       |> Enum.map(fn translation ->
         %{translation_id: translation.id, analysis_id: analysis.id}
       end)
+      |> Enum.uniq()
       |> then(fn entries ->
-        Repo.insert_all(AnalysisTranslation, entries)
+        Repo.insert_all(AnalysisTranslation, entries,
+          on_conflict: {:replace_all_except, [:id, :inserted_at]},
+          conflict_target: [:translation_id, :analysis_id]
+        )
       end)
 
       {:ok, analysis} = Models.update_analysis(analysis, %{status: :completed})

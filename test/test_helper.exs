@@ -8,3 +8,4 @@ Sandbox.allow(Repo, pid, LanguageTranslator.Translator.Supervisor)
 Sandbox.allow(Repo, pid, LanguageTranslator.Translator.Aggregator)
 
 ExUnit.start()
+Faker.start()

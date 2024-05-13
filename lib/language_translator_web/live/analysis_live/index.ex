@@ -1,15 +1,16 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
-  alias LanguageTranslator.Translator.Refresher
-  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
-  alias LanguageTranslator.ProcessGroups
+  alias ElixirSense.Core.Struct
   use LanguageTranslatorWeb, :live_view
 
+  alias Ecto.Changeset
+  alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts
   alias LanguageTranslator.Models
   alias LanguageTranslator.Models.Analysis
-  alias LanguageTranslator.Repo
-
-  @analysis_preloads [:source_language, :user]
+  alias LanguageTranslator.Translator.Refresher
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
+  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
+  alias LanguageTranslator.ProcessGroups
 
   @impl true
   def mount(_params, session, socket) do
@@ -29,23 +30,28 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> assign(:languages, [])
       |> assign_new(:current_user, fn -> current_user end)
 
-    {:ok,
-     stream(
-       socket,
-       :analysis_collection,
-       Analysis.get_all(current_user, @analysis_preloads)
-     )}
+    {:ok, socket}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, _url, %{assigns: %{current_user: current_user}} = socket) do
+    order_and_filter_changeset =
+      OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{}, params)
+
+    order_and_filter = Changeset.apply_changes(order_and_filter_changeset)
+
+    socket =
+      socket
+      |> assign(:order_and_filter, order_and_filter)
+      |> assign(:analysis_collection, Analysis.get_all(current_user, order_and_filter))
+
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Analysis")
-    |> assign(:analysis, Models.get_analysis!(id, @analysis_preloads))
+    |> assign(:analysis, Analysis.get!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -68,31 +74,53 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def handle_info(
-        {LanguageTranslatorWeb.AnalysisLive.FormComponent, {:saved, analysis}},
-        socket
+        {LanguageTranslatorWeb.AnalysisLive.FormComponent, {:saved, _analysis}},
+        %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} =
+          socket
       ) do
-    analysis =
-      Repo.preload(analysis, @analysis_preloads)
-
-    {:noreply, stream_insert(socket, :analysis_collection, analysis)}
-  end
-
-  @impl true
-  def handle_info({:update_analysis, analysis}, socket) do
     socket =
       socket
-      |> put_flash(:info, "Analysis #{analysis.id} completed with status: #{analysis.status}")
-      |> stream_insert(:analysis_collection, analysis)
+      |> assign(
+        :analysis_collection,
+        Analysis.get_all(current_user, order_and_filter)
+      )
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
+  def handle_info(
+        {:update_analysis, analysis},
+        %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} = socket
+      ) do
+    socket =
+      socket
+      |> put_flash(:info, "Analysis #{analysis.id} completed with status: #{analysis.status}")
+      |> assign(
+        :analysis_collection,
+        Analysis.get_all(current_user, order_and_filter)
+      )
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "delete",
+        %{"id" => id},
+        %{assigns: %{order_and_filter: order_and_filter, current_user: current_user}} = socket
+      ) do
     analysis = Models.get_analysis!(id)
     {:ok, _} = Models.delete_analysis(analysis)
 
-    {:noreply, stream_delete(socket, :analysis_collection, analysis)}
+    socket =
+      socket
+      |> assign(
+        :analysis_collection,
+        Analysis.get_all(current_user, order_and_filter)
+      )
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -104,5 +132,46 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> put_flash(:info, "Retrying analysis #{id}.")
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "sort",
+        %{"col" => field},
+        %{
+          assigns: %{
+            order_and_filter: %OrderAndFilterChangeset{order_by: order_by} = order_and_filter
+          }
+        } =
+          socket
+      ) do
+    {old_field, old_direction} = OrderAndFilterChangeset.get_order_by(order_by)
+    field = String.downcase(field)
+
+    new_order_by =
+      if old_field == field do
+        new_direction =
+          case old_direction do
+            "asc" -> "desc"
+            "desc" -> "asc"
+          end
+
+        "#{field}_#{new_direction}"
+      else
+        "#{field}_desc"
+      end
+
+    order_and_filter
+    |> OrderAndFilterChangeset.changeset(%{order_by: new_order_by})
+    |> case do
+      %{valid?: true} = changeset ->
+        params =
+          changeset |> Changeset.apply_changes() |> Map.from_struct() |> Map.delete(:__meta__)
+
+        {:noreply, push_patch(socket, to: Routes.analysis_index_path(socket, :index, params))}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 end

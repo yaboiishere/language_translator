@@ -60,7 +60,8 @@ defmodule LanguageTranslator.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:any_ascii, "~> 0.3.2"},
-      {:akin, "~> 0.2.0"}
+      {:akin, "~> 0.2.0"},
+      {:faker, "~> 0.18", only: :test}
     ]
   end
 
