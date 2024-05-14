@@ -3,11 +3,16 @@
     Listing Users
   </.header>
 
-  <.table id="users" rows={@users} order_by={@order_and_filter.order_by}>
-    <:col :let={user} label="Id"><%= user.id %></:col>
-    <:col :let={user} label="Email"><%= user.email %></:col>
-    <:col :let={user} label="Username"><%= user.username %></:col>
-    <:col :let={user} label="Admin">
+  <.table
+    id="users"
+    rows={@users}
+    order_by={@order_and_filter.order_by}
+    show_cols={@order_and_filter.show_cols}
+  >
+    <:col :let={user} id="id" label="Id"><%= user.id %></:col>
+    <:col :let={user} id="email" label="Email"><%= user.email %></:col>
+    <:col :let={user} id="username" label="Username"><%= user.username %></:col>
+    <:col :let={user} id="admin" label="Admin">
       <label class="items-center cursor-pointer">
         <% is_disabled = user.id == @current_user.id %>
         <input
@@ -19,7 +24,7 @@
         <.toggle />
       </label>
     </:col>
-    <:col :let={user} label="Created at"><%= user.inserted_at %></:col>
-    <:col :let={user} label="Updated at"><%= user.updated_at %></:col>
+    <:col :let={user} id="created_at" label="Created at"><%= user.inserted_at %></:col>
+    <:col :let={user} id="updated_at" label="Updated at"><%= user.updated_at %></:col>
   </.table>
 </div>

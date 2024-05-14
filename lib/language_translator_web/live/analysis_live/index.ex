@@ -35,10 +35,25 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def handle_params(params, _url, %{assigns: %{current_user: current_user}} = socket) do
+    show_cols = [
+      "id",
+      "description",
+      "source_language",
+      "status",
+      "uploaded_by",
+      "public",
+      "created_at",
+      "updated_at"
+    ]
+
+    IO.inspect(params, label: "params")
+
     order_and_filter_changeset =
-      OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{}, params)
+      OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{show_cols: show_cols}, params)
 
     order_and_filter = Changeset.apply_changes(order_and_filter_changeset)
+
+    IO.inspect(order_and_filter, label: "order_and_filter")
 
     socket =
       socket
@@ -149,5 +164,15 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       params ->
         {:noreply, push_patch(socket, to: Routes.analysis_index_path(socket, :index, params))}
     end
+  end
+
+  @impl true
+  def handle_event("show_cols", checked_cols, socket) do
+    checked_cols = Util.format_show_cols(checked_cols)
+
+    {:noreply,
+     push_patch(socket,
+       to: Routes.analysis_index_path(socket, :index, %{"show_cols" => checked_cols})
+     )}
   end
 end

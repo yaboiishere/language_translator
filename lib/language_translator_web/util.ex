@@ -42,4 +42,10 @@ defmodule LanguageTranslatorWeb.Util do
         nil
     end
   end
+
+  def format_show_cols(checked_cols) do
+    checked_cols
+    |> Enum.filter(fn {_, value} -> value == "true" end)
+    |> Enum.into([], fn {key, _} -> key end)
+  end
 end

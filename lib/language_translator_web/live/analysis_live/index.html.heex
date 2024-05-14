@@ -14,32 +14,33 @@
     id="analysis"
     rows={@analysis_collection}
     order_by={@order_and_filter.order_by}
+    show_cols={@order_and_filter.show_cols}
     row_click={
       fn analysis ->
         if analysis.status == :completed, do: JS.navigate(~p"/analysis/#{analysis}")
       end
     }
   >
-    <:col :let={analysis} label="Id"><%= analysis.id %></:col>
-    <:col :let={analysis} label="Description"><%= analysis.description %></:col>
-    <:col :let={analysis} label="Source Language">
+    <:col :let={analysis} id="id" label="Id"><%= analysis.id %></:col>
+    <:col :let={analysis} id="description" label="Description"><%= analysis.description %></:col>
+    <:col :let={analysis} id="source_language" label="Source Language">
       <%= analysis.source_language.display_name %>
     </:col>
-    <:col :let={analysis} label="Status">
+    <:col :let={analysis} id="status" label="Status">
       <%= String.capitalize(to_string(analysis.status)) %>
     </:col>
-    <:col :let={analysis} label="Uploaded by">
+    <:col :let={analysis} id="uploaded_by" label="Uploaded by">
       <%= analysis.user.username %>
     </:col>
-    <:col :let={analysis} label="Public">
+    <:col :let={analysis} id="public" label="Public">
       <%= if analysis.is_public do %>
         Yes
       <% else %>
         No
       <% end %>
     </:col>
-    <:col :let={analysis} label="Created at"><%= analysis.inserted_at %></:col>
-    <:col :let={analysis} label="Updated at"><%= analysis.updated_at %></:col>
+    <:col :let={analysis} id="created_at" label="Created at"><%= analysis.inserted_at %></:col>
+    <:col :let={analysis} id="updated_at" label="Updated at"><%= analysis.updated_at %></:col>
     <:action :let={analysis}>
       <%= if analysis.status == :failed and @current_user == analysis.user do %>
         <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>

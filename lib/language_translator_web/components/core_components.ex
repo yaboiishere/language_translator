@@ -471,9 +471,13 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     default: &Function.identity/1,
     doc: "the function for mapping each row before calling the :col and :action slots"
 
+  attr :show_cols, :list,
+    default: [],
+    doc: "the list of columns to show, if empty, all columns are shown"
+
   slot :col, required: true do
     attr :label, :string
-    attr :dir, :string
+    attr :id, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -486,17 +490,28 @@ defmodule LanguageTranslatorWeb.CoreComponents do
 
     ~H"""
     <div class="overflow-y-auto px-4 lg:overflow-visible sm:px-0">
+      <form phx-change="show_cols">
+        <%= for col <- @col do %>
+          <input name={col[:id]} type="hidden" value="false" />
+          <input type="checkbox" name={col[:id]} value="true" checked={col[:id] in @show_cols} /><%= col[
+            :label
+          ] %>
+        <% end %>
+      </form>
       <table class="w-[40rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-secondary-950">
           <tr>
-            <th
-              :for={col <- @col}
-              class="p-0 pb-4 pr-6 font-normal text-secondary-950 hover:text-zinc-700 cursor-pointer"
-              phx-click="sort"
-              phx-value-col={col[:label] |> String.downcase() |> String.replace(" ", "_")}
-            >
-              <.table_column_label label={col[:label]} order_by={assigns[:order_by]} />
-            </th>
+            <%= for col <- @col do %>
+              <%= if (col[:id] in @show_cols) do %>
+                <th
+                  class="p-0 pb-4 pr-6 font-normal text-secondary-950 hover:text-zinc-700 cursor-pointer"
+                  phx-click="sort"
+                  phx-value-col={col[:label] |> String.downcase() |> String.replace(" ", "_")}
+                >
+                  <.table_column_label label={col[:label]} order_by={assigns[:order_by]} />
+                </th>
+              <% end %>
+            <% end %>
             <th :if={@action != []} class="relative p-0 pb-4">
               <span class="sr-only"><%= gettext("Actions") %></span>
             </th>
@@ -507,31 +522,36 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
           class="relative divide-y divide-secondary-200 border-t border-secondary-200 text-sm leading-6 text-zinc-700"
         >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
-            <td
-              :for={{col, i} <- Enum.with_index(@col)}
-              phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
-            >
-              <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-primary-200 sm:rounded-l-xl" />
-                <span class={["relative", i == 0 && "font-semibold text-secondary-950"]}>
-                  <%= render_slot(col, @row_item.(row)) %>
-                </span>
-              </div>
-            </td>
-            <td :if={@action != []} class="relative w-14 p-0">
-              <div class="flex text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-primary-200 sm:rounded-r-xl" />
-                <span
-                  :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-secondary-950 hover:text-zinc-700"
-                >
-                  <%= render_slot(action, @row_item.(row)) %>
-                </span>
-              </div>
-            </td>
-          </tr>
+          <%= for row <- @rows do %>
+            <tr id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
+              <%= for {col, i} <- Enum.with_index(@col) do %>
+                <%= if (col[:id] in @show_cols) do %>
+                  <td
+                    phx-click={@row_click && @row_click.(row)}
+                    class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+                  >
+                    <div class="block py-4 pr-6">
+                      <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-primary-200 sm:rounded-l-xl" />
+                      <span class={["relative", i == 0 && "font-semibold text-secondary-950"]}>
+                        <%= render_slot(col, @row_item.(row)) %>
+                      </span>
+                    </div>
+                  </td>
+                <% end %>
+              <% end %>
+              <td :if={@action != []} class="relative w-14 p-0">
+                <div class="flex text-right text-sm font-medium">
+                  <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-primary-200 sm:rounded-r-xl" />
+                  <span
+                    :for={action <- @action}
+                    class="relative ml-4 font-semibold leading-6 text-secondary-950 hover:text-zinc-700"
+                  >
+                    <%= render_slot(action, @row_item.(row)) %>
+                  </span>
+                </div>
+              </td>
+            </tr>
+          <% end %>
         </tbody>
       </table>
     </div>
@@ -836,5 +856,20 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     c3.839,16.391,5.827,33.337,5.827,50.592C460.001,286.733,445.515,331.231,418.692,368.396z" />
     </svg>
     """
+  end
+
+  def checked?(value) do
+    case value do
+      true -> "checked"
+      false -> ""
+    end
+  end
+
+  def checked?(id, cols) do
+    if id in cols do
+      "checked"
+    else
+      ""
+    end
   end
 end
