@@ -1,4 +1,4 @@
-<div class="2xl:mx-40 bg-white rounded-xl p-5 max-h-screen text-secondary-950">
+<div class="2xl:mx-40 bg-white rounded-xl p-5 max-h-screen h-screen text-secondary-950">
   <.header>
     Listing Analysis
     <:actions>
@@ -9,7 +9,6 @@
       <% end %>
     </:actions>
   </.header>
-
   <.table
     id="analysis"
     rows={@analysis_collection}
@@ -22,7 +21,9 @@
     }
   >
     <:col :let={analysis} id="id" label="Id"><%= analysis.id %></:col>
-    <:col :let={analysis} id="description" label="Description"><%= analysis.description %></:col>
+    <:col :let={analysis} id="description" label="Description">
+      <%= analysis.description %>
+    </:col>
     <:col :let={analysis} id="source_language" label="Source Language">
       <%= analysis.source_language.display_name %>
     </:col>

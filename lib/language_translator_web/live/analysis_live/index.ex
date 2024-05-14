@@ -46,14 +46,10 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       "updated_at"
     ]
 
-    IO.inspect(params, label: "params")
-
     order_and_filter_changeset =
       OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{show_cols: show_cols}, params)
 
     order_and_filter = Changeset.apply_changes(order_and_filter_changeset)
-
-    IO.inspect(order_and_filter, label: "order_and_filter")
 
     socket =
       socket

@@ -100,8 +100,8 @@ defmodule LanguageTranslator.Http.Cache do
   end
 
   defp cleanup(words, size) do
-    if MapSet.size(words) > size do
-      MapSet.new(Enum.take(MapSet.to_list(words), size))
+    if map_size(words) > size do
+      Map.new(Enum.take(MapSet.to_list(words), size))
     else
       words
     end

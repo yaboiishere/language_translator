@@ -93,6 +93,9 @@ defmodule LanguageTranslator.Translator.Aggregator do
 
           {:noreply, %{state | translations: new_translations_state}}
         end
+
+      :error ->
+        Logger.debug("No translations left")
     end
   end
 
@@ -108,7 +111,6 @@ defmodule LanguageTranslator.Translator.Aggregator do
          from: from
        } = old_translation} ->
         Logger.error("No translator available for #{display_name} (#{code})")
-        IO.inspect(old_translation)
 
         case to_receive do
           1 ->

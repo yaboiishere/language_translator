@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Models.Analysis do
   import Ecto.Query
   require Logger
 
+  alias LanguageTranslator.Translator
   alias LanguageTranslator.Repo
   alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Translation
@@ -40,6 +41,21 @@ defmodule LanguageTranslator.Models.Analysis do
     analysis
     |> cast(attrs, @available_fields)
     |> validate_required(@required_fields)
+  end
+
+  def create_auto_analysis(word, user) do
+    %__MODULE__{}
+    |> changeset(%{
+      source_language_code: word.language_code,
+      source_words: [word.text],
+      user_id: user.id,
+      is_public: false,
+      description: "Auto-generated analysis for #{word.text}",
+      status: :pending
+    })
+    |> Repo.insert!()
+    |> Repo.preload(@default_preloads)
+    |> Translator.async_translate()
   end
 
   def get_all(_user_or_nil, _params, _preloads \\ @default_preloads)

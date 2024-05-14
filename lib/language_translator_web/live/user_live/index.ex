@@ -1,5 +1,6 @@
 defmodule LanguageTranslatorWeb.UserLive.Index do
   use LanguageTranslatorWeb, :live_view
+
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts.User
   alias LanguageTranslator.Accounts

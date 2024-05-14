@@ -1,0 +1,101 @@
+<div class="w-full max-w-2xl gap-4 px-4 py-4 leading-10 mx-auto" style="height: 850px">
+  <div class="p-4 w-full bg-white rounded-t-xl h-1/5">
+    <div class="text-center">
+      <div class="flex gap-4 justify-center text-2xl text-gray">
+        <div>Word:</div>
+        <div class="text-2xl font-semibold text-gray-900">
+          <%= @word.text %>
+        </div>
+      </div>
+      <div class="flex gap-4 justify-center text-2xl text-gray">
+        <div>Romanization:</div>
+        <div class="text-2xl font-semibold text-gray-900">
+          <%= @word.romanized_text %>
+        </div>
+      </div>
+      <div class="flex gap-4 justify-center text-2xl text-gray">
+        <div>Language:</div>
+        <div class="text-2xl font-semibold text-gray-900">
+          <%= @word.language.display_name %>
+        </div>
+      </div>
+      <div class="flex gap-4 justify-center text-2xl text-gray">
+        <div>Language code:</div>
+        <div class="text-2xl font-semibold text-gray-900">
+          <%= @word.language_code %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="w-full bg-white shadow-md overflow-y-auto h-4/5 rounded-b-xl">
+    <div class="divide-gray-200 dark:divide-gray-700 rounded-xl text-center">
+      <div class="sticky top-0 bg-white p-2 border-b">
+        <div class="flex rtl:space-x-reverse">
+          <div class="text-center" style="width: 33%">
+            Language
+          </div>
+          <div class="min-w-0 text-center" style="width: 33%">
+            <div class="text-sm font-medium text-gray-900">
+              Word / Phrase
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              Romanized
+            </div>
+          </div>
+          <div class="text-base font-semibold text-gray-900 text-center" style="width: 33%">
+            Similarity
+          </div>
+        </div>
+      </div>
+
+      <%= if length(@translations) == 0 do %>
+        <div class="text-center p-4 text-gray-500 dark:text-gray-400">
+          <div>
+            No translations found.
+          </div>
+          <%= if @current_user do %>
+            <div>
+              <.button class="text-secondary-800" phx-click="fetch_translations">
+                Fetch translations
+              </.button>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%= for translation <- @translations do %>
+          <div
+            class="group bg-white border-b hover:bg-primary-100 hover:text-secondary-800 cursor-pointer"
+            phx-click="show_word"
+            phx-value-word_id={translation.target_word.id}
+          >
+            <div class="flex">
+              <div class="w-1/3 text-center" style="width: 33%">
+                <%= translation.target_word.language.display_name %>
+              </div>
+              <div
+                class="w-1/3 text-center bg-primary-100 group-hover:bg-primary-200 group-hover:text-secondary-800"
+                style="width: 33%"
+              >
+                <div class="text-sm font-medium text-gray-900 group-hover:text-secondary-800">
+                  <%= translation.target_word.text %>
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <%= translation.target_word.romanized_text %>
+                </div>
+              </div>
+              <div
+                class="w-[33%] text-base font-semibold text-gray-900 group-hover:text-secondary-800 text-center"
+                style="width: 33%"
+              >
+                <%= translation.similarity
+                |> Float.round(2)
+                |> Float.to_string()
+                |> then(fn x -> "#{x}%" end) %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

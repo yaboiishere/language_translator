@@ -1,0 +1,27 @@
+<div class="2xl:mx-40 bg-white rounded-xl p-5 max-h-screen text-secondary-950">
+  <.header>
+    Listing Words
+  </.header>
+
+  <.table
+    id="users"
+    rows={@words}
+    order_by={@order_and_filter.order_by}
+    show_cols={@order_and_filter.show_cols}
+    row_click={
+      fn word ->
+        JS.navigate(~p"/words/#{word.id}")
+      end
+    }
+  >
+    <:col :let={word} id="id" label="Id"><%= word.id %></:col>
+    <:col :let={word} id="text" label="Text"><%= word.text %></:col>
+    <:col :let={word} id="romanization" label="Romanization"><%= word.romanized_text %></:col>
+    <:col :let={word} id="language" label="Language">
+      <%= word.language.display_name %>
+    </:col>
+    <:col :let={word} id="language_code" label="Language code"><%= word.language_code %></:col>
+    <:col :let={word} id="created_at" label="Created at"><%= word.inserted_at %></:col>
+    <:col :let={word} id="updated_at" label="Updated at"><%= word.updated_at %></:col>
+  </.table>
+</div>

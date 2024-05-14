@@ -70,7 +70,7 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
   defp translate_word(word, %Language{code: code} = language) do
     translations = Aggregator.translate(language, word)
 
-    romanized_text = AnyAscii.transliterate(word) |> IO.iodata_to_binary()
+    romanized_text = romanize(word)
 
     %Word{language_code: code, text: word, romanized_text: romanized_text}
     |> Repo.insert(
@@ -100,8 +100,7 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
          {translated_language, translated_word},
          %Word{romanized_text: initial_word_romanized_text} = initial_word
        ) do
-    translated_word_romanized_text =
-      AnyAscii.transliterate(translated_word) |> IO.iodata_to_binary()
+    translated_word_romanized_text = romanize(translated_word)
 
     %Word{
       language_code: translated_language,
@@ -140,5 +139,9 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
             changeset
         end
     end
+  end
+
+  defp romanize(word) do
+    AnyAscii.transliterate(word) |> IO.iodata_to_binary() |> String.downcase()
   end
 end

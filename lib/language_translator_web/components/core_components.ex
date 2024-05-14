@@ -489,7 +489,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 lg:overflow-visible sm:px-0">
+    <div class="px-4 sm:px-0">
       <form phx-change="show_cols">
         <%= for col <- @col do %>
           <input name={col[:id]} type="hidden" value="false" />
@@ -498,7 +498,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           ] %>
         <% end %>
       </form>
-      <table class="w-[40rem] mt-11 sm:w-full">
+      <table class="w-[40rem] h-[30rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-secondary-950">
           <tr>
             <%= for col <- @col do %>
@@ -520,10 +520,10 @@ defmodule LanguageTranslatorWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-secondary-200 border-t border-secondary-200 text-sm leading-6 text-zinc-700"
+          class="divide-y divide-secondary-200 border-t border-secondary-200 text-sm leading-6 text-zinc-700 overflow-auto"
         >
           <%= for row <- @rows do %>
-            <tr id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
+            <tr id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50 h-10">
               <%= for {col, i} <- Enum.with_index(@col) do %>
                 <%= if (col[:id] in @show_cols) do %>
                   <td
