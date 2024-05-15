@@ -1,4 +1,4 @@
-<div class="2xl:mx-40 bg-white rounded-xl p-5 max-h-screen h-screen text-secondary-950">
+<div class="2xl:mx-40 bg-white rounded-xl p-5 h-min text-secondary-950">
   <.header>
     Listing Analysis
     <:actions>
@@ -9,6 +9,7 @@
       <% end %>
     </:actions>
   </.header>
+  <.analysis_filters_form filter_by={@order_and_filter.filter_by} />
   <.table
     id="analysis"
     rows={@analysis_collection}
@@ -45,6 +46,8 @@
     <:action :let={analysis}>
       <%= if analysis.status == :failed and @current_user == analysis.user do %>
         <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>
+      <% else %>
+        <div class="hidden" />
       <% end %>
     </:action>
     <:action :let={analysis}>

@@ -1,5 +1,6 @@
 defmodule LanguageTranslatorWeb.UserLive.Index do
   use LanguageTranslatorWeb, :live_view
+  import LanguageTranslatorWeb.Filters
 
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts.User
@@ -73,5 +74,15 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
      push_patch(socket,
        to: Routes.user_index_path(socket, :index, %{"show_cols" => checked_cols})
      )}
+  end
+
+  def handle_event("filter", params, socket) do
+    clean_params =
+      params
+      |> Map.drop(["_target"])
+      |> Enum.filter(fn {_k, v} -> v != "" end)
+
+    {:noreply,
+     push_patch(socket, to: Routes.user_index_path(socket, :index, filter_by: clean_params))}
   end
 end

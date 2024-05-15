@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
+  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,11 +7,12 @@ defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
   schema "order_and_filter" do
     field :order_by, :string
     field :show_cols, {:array, :string}
+    field :filter_by, :map
   end
 
   def changeset(order_and_filter, attrs \\ %{}) do
     order_and_filter
-    |> cast(attrs, [:order_by, :show_cols])
+    |> cast(attrs, [:order_by, :show_cols, :filter_by])
   end
 
   def get_order_by(%{order_by: order_by}) do
@@ -35,5 +37,11 @@ defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
       <<label, "_desc">> -> label
       <<label, "_asc">> -> label
     end
+  end
+
+  def to_map(%OrderAndFilterChangeset{} = order_and_filter) do
+    order_and_filter
+    |> Map.from_struct()
+    |> Map.drop([:__meta__, :__struct__])
   end
 end

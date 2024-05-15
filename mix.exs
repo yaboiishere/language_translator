@@ -61,7 +61,8 @@ defmodule LanguageTranslator.MixProject do
       {:bandit, "~> 1.2"},
       {:any_ascii, "~> 0.3.2"},
       {:akin, "~> 0.2.0"},
-      {:faker, "~> 0.18", only: :test}
+      {:faker, "~> 0.18", only: :test},
+      {:live_select, "~> 1.0"}
     ]
   end
 

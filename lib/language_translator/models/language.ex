@@ -24,4 +24,10 @@ defmodule LanguageTranslator.Models.Language do
   def get_all() do
     Repo.all(__MODULE__)
   end
+
+  def languages_for_select() do
+    __MODULE__
+    |> Repo.all()
+    |> Enum.map(&{&1.display_name, &1.code})
+  end
 end

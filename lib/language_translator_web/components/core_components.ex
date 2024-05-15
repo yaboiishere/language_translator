@@ -290,6 +290,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :class, :string, default: nil
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
@@ -339,8 +340,13 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900"
+        class={[
+          "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900",
+          @class
+        ]}
         multiple={@multiple}
+        data-choices="data-choices"
+        data-options='{"removeItemButton": true}'
         {@rest}
       >
         <option :if={@prompt} value=""><%= @prompt %></option>
@@ -383,9 +389,10 @@ defmodule LanguageTranslatorWeb.CoreComponents do
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
           "mt-2 block w-full rounded-lg text-primary-950 focus:ring-0 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
+          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 h-[22px]",
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          @errors != [] && "border-rose-400 focus:border-rose-400",
+          @class
         ]}
         {@rest}
       />
@@ -489,7 +496,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="px-4 sm:px-0">
+    <div class="">
       <form phx-change="show_cols">
         <%= for col <- @col do %>
           <input name={col[:id]} type="hidden" value="false" />
@@ -498,56 +505,65 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           ] %>
         <% end %>
       </form>
-      <table class="w-[40rem] h-[30rem] mt-11 sm:w-full">
-        <thead class="text-sm text-left leading-6 text-secondary-950">
-          <tr>
+      <table class="mt-11 text-center max-h-full w-full">
+        <thead class="text-sm  text-secondary-950 text-center w-full">
+          <tr class="w-full">
             <%= for col <- @col do %>
               <%= if (col[:id] in @show_cols) do %>
                 <th
-                  class="p-0 pb-4 pr-6 font-normal text-secondary-950 hover:text-zinc-700 cursor-pointer"
+                  class="p-0 pb-4 px-3 text-secondary-950 hover:text-zinc-700 cursor-pointer"
                   phx-click="sort"
                   phx-value-col={col[:label] |> String.downcase() |> String.replace(" ", "_")}
                 >
-                  <.table_column_label label={col[:label]} order_by={assigns[:order_by]} />
+                  <div class={["", col[:id] == "id" && "max-w-20"]}>
+                    <.table_column_label label={col[:label]} order_by={assigns[:order_by]} />
+                  </div>
                 </th>
               <% end %>
             <% end %>
             <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only"><%= gettext("Actions") %></span>
+              <span class=""><%= gettext("Actions") %></span>
             </th>
           </tr>
         </thead>
         <tbody
           id={@id}
-          phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="divide-y divide-secondary-200 border-t border-secondary-200 text-sm leading-6 text-zinc-700 overflow-auto"
+          class="divide-y divide-secondary-200 border-t border-secondary-200 text-md text-zinc-700 overflow-y-scroll w-full"
         >
           <%= for row <- @rows do %>
-            <tr id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50 h-10">
+            <tr
+              id={@row_id && @row_id.(row)}
+              class="hover:bg-primary-200 rounded-lg h-14 overflow-y-auto w-full"
+            >
               <%= for {col, i} <- Enum.with_index(@col) do %>
                 <%= if (col[:id] in @show_cols) do %>
                   <td
                     phx-click={@row_click && @row_click.(row)}
-                    class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+                    class={[
+                      "p-0 max-h-20 divide-secondary-200",
+                      @row_click && "hover:cursor-pointer",
+                      i == 0 && "rounded-l-lg",
+                      col[:id] == "id" && "max-w-20"
+                    ]}
                   >
-                    <div class="block py-4 pr-6">
-                      <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-primary-200 sm:rounded-l-xl" />
-                      <span class={["relative", i == 0 && "font-semibold text-secondary-950"]}>
-                        <%= render_slot(col, @row_item.(row)) %>
-                      </span>
-                    </div>
+                    <span class={["", i == 0 && "font-semibold text-secondary-950"]}>
+                      <%= render_slot(col, @row_item.(row)) %>
+                    </span>
                   </td>
                 <% end %>
               <% end %>
-              <td :if={@action != []} class="relative w-14 p-0">
-                <div class="flex text-right text-sm font-medium">
-                  <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-primary-200 sm:rounded-r-xl" />
-                  <span
-                    :for={action <- @action}
-                    class="relative ml-4 font-semibold leading-6 text-secondary-950 hover:text-zinc-700"
-                  >
-                    <%= render_slot(action, @row_item.(row)) %>
-                  </span>
+              <td :if={@action != []} class="relative w-14 p-0 rounded-r-md">
+                <div class="flex justify-center text-center text-sm font-medium rounded-r-lg">
+                  <%= for {action, i} <- Enum.with_index(@action) do %>
+                    <div class={[
+                      "relative font-semibold text-secondary-950 hover:text-zinc-700 mr-2",
+                      i + 1 == length(@action) && "rounded-r-lg"
+                    ]}>
+                      <div class="ml-2">
+                        <%= render_slot(action, @row_item.(row)) %>
+                      </div>
+                    </div>
+                  <% end %>
                 </div>
               </td>
             </tr>

@@ -43,6 +43,15 @@ defmodule LanguageTranslator.Models.Analysis do
     |> validate_required(@required_fields)
   end
 
+  def statuses_for_select() do
+    [
+      {"Pending", :pending},
+      {"Processing", :processing},
+      {"Completed", :completed},
+      {"Failed", :failed}
+    ]
+  end
+
   def create_auto_analysis(word, user) do
     %__MODULE__{}
     |> changeset(%{
@@ -113,28 +122,72 @@ defmodule LanguageTranslator.Models.Analysis do
     |> Enum.map(& &1.text)
   end
 
-  defp filter_order_by(query, %{order_by: order_by}) do
-    order_by(query, ^filter_order_by(order_by))
+  defp filter_order_by(query, %{order_by: order_by, filter_by: filter_by}) do
+    query
+    |> filter_by(filter_by)
+    |> order_by(^resolve_order_by(order_by))
   end
 
-  defp filter_order_by("id_asc"), do: [asc: :id]
-  defp filter_order_by("id_desc"), do: [desc: :id]
-  defp filter_order_by("status_asc"), do: [asc: :status]
-  defp filter_order_by("status_desc"), do: [desc: :status]
-  defp filter_order_by("created_at_asc"), do: [asc: :inserted_at]
-  defp filter_order_by("created_at_desc"), do: [desc: :inserted_at]
-  defp filter_order_by("updated_at_asc"), do: [asc: :updated_at]
-  defp filter_order_by("updated_at_desc"), do: [desc: :updated_at]
-  defp filter_order_by("source_language_asc"), do: [asc: :source_language_code]
-  defp filter_order_by("source_language_desc"), do: [desc: :source_language_code]
-  defp filter_order_by("uploaded_by_asc"), do: [asc: :user_id]
-  defp filter_order_by("uploaded_by_desc"), do: [desc: :user_id]
-  defp filter_order_by("public_asc"), do: [asc: :is_public]
-  defp filter_order_by("public_desc"), do: [desc: :is_public]
-  defp filter_order_by("description_asc"), do: [asc: :description]
-  defp filter_order_by("description_desc"), do: [desc: :description]
+  defp filter_by(query, nil) do
+    query
+  end
 
-  defp filter_order_by(sorting) do
+  defp filter_by(query, %{} = filters) when map_size(filters) == 0 do
+    query
+  end
+
+  defp filter_by(query, %{} = filters) do
+    Enum.reduce(filters, query, fn {key, value}, acc ->
+      filter_by(acc, {key, value})
+    end)
+  end
+
+  defp filter_by(query, {"id", id}) do
+    where(query, [a], a.id == ^id)
+  end
+
+  defp filter_by(query, {"description", description}) do
+    where(query, [a], ilike(a.description, ^"%#{description}%"))
+  end
+
+  defp filter_by(query, {"source_language", source_language}) do
+    where(query, [a], a.source_language_code in ^source_language)
+  end
+
+  defp filter_by(query, {"status", status}) do
+    where(query, [a], a.status in ^status)
+  end
+
+  defp filter_by(query, {"uploaded_by", uploaded_by}) do
+    where(query, [a], a.user_id in ^uploaded_by)
+  end
+
+  defp filter_by(query, {"public", nil}) do
+    query
+  end
+
+  defp filter_by(query, {"public", public}) do
+    where(query, is_public: ^public)
+  end
+
+  defp resolve_order_by("id_asc"), do: [asc: :id]
+  defp resolve_order_by("id_desc"), do: [desc: :id]
+  defp resolve_order_by("status_asc"), do: [asc: :status]
+  defp resolve_order_by("status_desc"), do: [desc: :status]
+  defp resolve_order_by("created_at_asc"), do: [asc: :inserted_at]
+  defp resolve_order_by("created_at_desc"), do: [desc: :inserted_at]
+  defp resolve_order_by("updated_at_asc"), do: [asc: :updated_at]
+  defp resolve_order_by("updated_at_desc"), do: [desc: :updated_at]
+  defp resolve_order_by("source_language_asc"), do: [asc: :source_language_code]
+  defp resolve_order_by("source_language_desc"), do: [desc: :source_language_code]
+  defp resolve_order_by("uploaded_by_asc"), do: [asc: :user_id]
+  defp resolve_order_by("uploaded_by_desc"), do: [desc: :user_id]
+  defp resolve_order_by("public_asc"), do: [asc: :is_public]
+  defp resolve_order_by("public_desc"), do: [desc: :is_public]
+  defp resolve_order_by("description_asc"), do: [asc: :description]
+  defp resolve_order_by("description_desc"), do: [desc: :description]
+
+  defp resolve_order_by(sorting) do
     Logger.warning("Invalid order_by value: #{sorting}, defaulting to id_desc")
     [desc: :id]
   end

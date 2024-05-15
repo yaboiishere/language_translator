@@ -9,7 +9,8 @@ module.exports = {
   content: [
     "./js/**/*.js",
     "../lib/language_translator_web.ex",
-    "../lib/language_translator_web/**/*.*ex"
+    "../lib/language_translator_web/**/*.*ex",
+    '../deps/live_select/lib/live_select/component.*ex'
   ],
   theme: {
     extend: {

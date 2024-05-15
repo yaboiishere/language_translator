@@ -1,6 +1,8 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   use LanguageTranslatorWeb, :live_view
 
+  import LanguageTranslatorWeb.Filters
+
   alias Ecto.Changeset
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts
@@ -55,6 +57,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       socket
       |> assign(:order_and_filter, order_and_filter)
       |> assign(:analysis_collection, Analysis.get_all(current_user, order_and_filter))
+      |> assign(:columns, show_cols)
 
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
@@ -67,8 +70,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   defp apply_action(socket, :new, _params) do
     languages =
-      Models.list_languages()
-      |> Enum.map(&{&1.display_name, &1.code})
+      Language.languages_for_select()
 
     socket
     |> assign(:page_title, "New Analysis")
@@ -170,5 +172,40 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
      push_patch(socket,
        to: Routes.analysis_index_path(socket, :index, %{"show_cols" => checked_cols})
      )}
+  end
+
+  @impl true
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    cities = City.search(text)
+    # cities = [ 
+    # {"New York City", [-74.00597,40.71427]}, 
+    # {"New Kingston", [-76.78319,18.00747]}, 
+    # ... 
+    # ]
+
+    send_update(LiveSelect.Component, id: live_select_id, options: cities)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "change",
+        %{"my_form" => %{"city_search_text_input" => city_name, "city_search" => city_coords}},
+        socket
+      ) do
+    IO.puts("You selected city #{city_name} located at: #{city_coords}")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("filter", params, socket) do
+    clean_params =
+      params
+      |> Map.drop(["_target"])
+      |> Enum.filter(fn {_k, v} -> v != "" end)
+
+    {:noreply,
+     push_patch(socket, to: Routes.analysis_index_path(socket, :index, filter_by: clean_params))}
   end
 end

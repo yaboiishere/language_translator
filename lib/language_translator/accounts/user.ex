@@ -172,19 +172,63 @@ defmodule LanguageTranslator.Accounts.User do
     change(user, is_admin: true)
   end
 
-  def get_all(%{order_by: order_by}, preloads \\ []) do
-    from(u in __MODULE__, order_by: ^filter_order_by(order_by), preload: ^preloads) |> Repo.all()
+  def get_all(%{order_by: order_by, filter_by: filter_by}, preloads \\ []) do
+    from(u in __MODULE__)
+    |> filter_by(filter_by)
+    |> order_by(^resolve_order_by(order_by))
+    |> Repo.preload(preloads)
+    |> Repo.all()
   end
 
-  def filter_order_by("email_asc"), do: [asc: :email]
-  def filter_order_by("email_desc"), do: [desc: :email]
-  def filter_order_by("username_asc"), do: [asc: :username]
-  def filter_order_by("username_desc"), do: [desc: :username]
-  def filter_order_by("admin_asc"), do: [asc: :is_admin]
-  def filter_order_by("admin_desc"), do: [desc: :is_admin]
-  def filter_order_by("created_at_asc"), do: [asc: :inserted_at]
-  def filter_order_by("created_at_desc"), do: [desc: :inserted_at]
-  def filter_order_by("updated_at_asc"), do: [asc: :updated_at]
-  def filter_order_by("updated_at_desc"), do: [desc: :updated_at]
-  def filter_order_by(_), do: []
+  def users_for_select() do
+    __MODULE__
+    |> Repo.all()
+    |> Enum.map(&{&1.username, &1.id})
+  end
+
+  defp filter_by(query, nil) do
+    query
+  end
+
+  defp filter_by(query, %{} = filters) when map_size(filters) == 0 do
+    query
+  end
+
+  defp filter_by(query, %{} = filters) do
+    Enum.reduce(filters, query, fn {key, value}, acc ->
+      filter_by(acc, {key, value})
+    end)
+  end
+
+  defp filter_by(query, {"id", id}) do
+    where(query, [a], a.id == ^id)
+  end
+
+  defp filter_by(query, {"email", email}) do
+    where(query, [a], ilike(a.email, ^"%#{email}%"))
+  end
+
+  defp filter_by(query, {"username", username}) do
+    where(query, [a], ilike(a.username, ^"%#{username}%"))
+  end
+
+  defp filter_by(query, {"admin", nil}) do
+    query
+  end
+
+  defp filter_by(query, {"admin", admin}) do
+    where(query, [a], a.is_admin == ^admin)
+  end
+
+  def resolve_order_by("email_asc"), do: [asc: :email]
+  def resolve_order_by("email_desc"), do: [desc: :email]
+  def resolve_order_by("username_asc"), do: [asc: :username]
+  def resolve_order_by("username_desc"), do: [desc: :username]
+  def resolve_order_by("admin_asc"), do: [asc: :is_admin]
+  def resolve_order_by("admin_desc"), do: [desc: :is_admin]
+  def resolve_order_by("created_at_asc"), do: [asc: :inserted_at]
+  def resolve_order_by("created_at_desc"), do: [desc: :inserted_at]
+  def resolve_order_by("updated_at_asc"), do: [asc: :updated_at]
+  def resolve_order_by("updated_at_desc"), do: [desc: :updated_at]
+  def resolve_order_by(_), do: []
 end

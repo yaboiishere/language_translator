@@ -174,8 +174,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         %{"analysis_create_changeset" => analysis_params} = params,
         %{assigns: %{form_data: form_data}} = socket
       ) do
-    # words = params["words"]
-    # separator = params["separator"]
     is_public = params["is_public"]
 
     changeset =
@@ -186,9 +184,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
     socket =
       socket
       |> assign_form(changeset)
-
-      # |> assign(:words, words)
-      # |> assign(:separator, separator)
       |> assign(:is_public, is_public)
 
     {:noreply, socket}
