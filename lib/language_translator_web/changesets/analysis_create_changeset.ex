@@ -19,6 +19,7 @@ defmodule LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset do
     |> validate_separator()
     |> validate_required(@required_fields)
     |> validate_format(:source_language_code, ~r/^[a-z]{2}$/)
+    |> validate_length(:description, max: 160)
   end
 
   defp validate_separator(changeset) do

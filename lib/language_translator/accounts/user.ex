@@ -180,10 +180,18 @@ defmodule LanguageTranslator.Accounts.User do
     |> Repo.all()
   end
 
+  def search_username(search) do
+    from(u in __MODULE__, where: ilike(u.username, ^search)) |> Repo.all() |> to_select_option()
+  end
+
   def users_for_select() do
     __MODULE__
     |> Repo.all()
-    |> Enum.map(&{&1.username, &1.id})
+    |> to_select_option()
+  end
+
+  defp to_select_option(users) do
+    Enum.map(users, & &1.username)
   end
 
   defp filter_by(query, nil) do
@@ -219,6 +227,8 @@ defmodule LanguageTranslator.Accounts.User do
   defp filter_by(query, {"admin", admin}) do
     where(query, [a], a.is_admin == ^admin)
   end
+
+  defp filter_by(query, _), do: query
 
   def resolve_order_by("email_asc"), do: [asc: :email]
   def resolve_order_by("email_desc"), do: [desc: :email]

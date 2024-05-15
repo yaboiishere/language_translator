@@ -389,7 +389,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
           "mt-2 block w-full rounded-lg text-primary-950 focus:ring-0 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 h-[22px]",
+          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400",
           @class
@@ -540,7 +540,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
                   <td
                     phx-click={@row_click && @row_click.(row)}
                     class={[
-                      "p-0 max-h-20 divide-secondary-200",
+                      "p-0 max-h-20 divide-secondary-200 max-w-40",
                       @row_click && "hover:cursor-pointer",
                       i == 0 && "rounded-l-lg",
                       col[:id] == "id" && "max-w-20"

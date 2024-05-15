@@ -1,6 +1,7 @@
 defmodule LanguageTranslator.Models.Language do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   alias LanguageTranslator.Repo
 
@@ -28,6 +29,16 @@ defmodule LanguageTranslator.Models.Language do
   def languages_for_select() do
     __MODULE__
     |> Repo.all()
-    |> Enum.map(&{&1.display_name, &1.code})
+    |> to_select_option()
+  end
+
+  def search_display_name(search) do
+    from(l in __MODULE__, where: ilike(l.display_name, ^"%#{search}%"))
+    |> Repo.all()
+    |> to_select_option()
+  end
+
+  defp to_select_option(languages) do
+    Enum.map(languages, &{&1.display_name, &1.code})
   end
 end

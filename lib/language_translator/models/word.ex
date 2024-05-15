@@ -42,12 +42,12 @@ defmodule LanguageTranslator.Models.Word do
     |> Repo.preload(preloads)
   end
 
-  def get_all!(params, preloads \\ []) do
+  def get_all!(%{order_by: order_by}, preloads \\ []) do
     from(w in Word,
       join: l in assoc(w, :language),
-      preload: [language: l],
-      order_by: ^filter_order_by(params.order_by)
+      preload: [language: l]
     )
+    |> resolve_order_by(order_by)
     |> Repo.all()
     |> Repo.preload(preloads)
   end
@@ -83,23 +83,63 @@ defmodule LanguageTranslator.Models.Word do
     |> Enum.group_by(& &1.source_word)
   end
 
-  defp filter_order_by("id_asc"), do: [asc: :id]
-  defp filter_order_by("id_desc"), do: [desc: :id]
-  defp filter_order_by("language_code_asc"), do: [asc: :language_code]
-  defp filter_order_by("language_code_desc"), do: [desc: :language_code]
-  defp filter_order_by("language_asc"), do: [asc: [language: :display_name]]
-  defp filter_order_by("language_desc"), do: [desc: [language: :display_name]]
-  defp filter_order_by("text_asc"), do: [asc: :text]
-  defp filter_order_by("text_desc"), do: [desc: :text]
-  defp filter_order_by("romanization_asc"), do: [asc: :romanized_text]
-  defp filter_order_by("romanization_desc"), do: [desc: :romanized_text]
-  defp filter_order_by("inserted_at_asc"), do: [asc: :inserted_at]
-  defp filter_order_by("inserted_at_desc"), do: [desc: :inserted_at]
-  defp filter_order_by("updated_at_asc"), do: [asc: :updated_at]
-  defp filter_order_by("updated_at_desc"), do: [desc: :updated_at]
+  defp resolve_order_by(query, nil) do
+    query
+  end
 
-  defp filter_order_by(order_by) do
-    Logger.warning(" Invalid order_by value: #{order_by}, defaulting to id_desc")
-    [desc: :id]
+  defp resolve_order_by(query, "id_asc") do
+    order_by(query, [w], w.id)
+  end
+
+  defp resolve_order_by(query, "id_desc") do
+    order_by(query, [w], desc: w.id)
+  end
+
+  defp resolve_order_by(query, "language_code_asc") do
+    order_by(query, [w], w.language_code)
+  end
+
+  defp resolve_order_by(query, "language_code_desc") do
+    order_by(query, [w], desc: w.language_code)
+  end
+
+  defp resolve_order_by(query, "language_asc") do
+    from(w in query, join: l in assoc(w, :language), order_by: l.display_name)
+  end
+
+  defp resolve_order_by(query, "language_desc") do
+    from(w in query, join: l in assoc(w, :language), order_by: [desc: l.display_name])
+  end
+
+  defp resolve_order_by(query, "text_asc") do
+    order_by(query, [w], w.text)
+  end
+
+  defp resolve_order_by(query, "text_desc") do
+    order_by(query, [w], desc: w.text)
+  end
+
+  defp resolve_order_by(query, "romanization_asc") do
+    order_by(query, [w], w.romanized_text)
+  end
+
+  defp resolve_order_by(query, "romanization_desc") do
+    order_by(query, [w], desc: w.romanized_text)
+  end
+
+  defp resolve_order_by(query, "inserted_at_asc") do
+    order_by(query, [w], w.inserted_at)
+  end
+
+  defp resolve_order_by(query, "inserted_at_desc") do
+    order_by(query, [w], desc: w.inserted_at)
+  end
+
+  defp resolve_order_by(query, "updated_at_asc") do
+    order_by(query, [w], w.updated_at)
+  end
+
+  defp resolve_order_by(query, "updated_at_desc") do
+    order_by(query, [w], desc: w.updated_at)
   end
 end

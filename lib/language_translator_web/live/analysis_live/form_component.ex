@@ -144,7 +144,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   @impl true
   def update(%{form_data: form_data} = assigns, socket) do
-    changeset = AnalysisCreateChangeset.changeset(form_data, %{})
+    changeset = AnalysisCreateChangeset.changeset(%AnalysisCreateChangeset{}, form_data)
 
     {:ok,
      socket
@@ -172,12 +172,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   def handle_event(
         "validate",
         %{"analysis_create_changeset" => analysis_params} = params,
-        %{assigns: %{form_data: form_data}} = socket
+        socket
       ) do
     is_public = params["is_public"]
 
     changeset =
-      form_data
+      %AnalysisCreateChangeset{}
       |> AnalysisCreateChangeset.changeset(analysis_params)
       |> Map.put(:action, :validate)
 

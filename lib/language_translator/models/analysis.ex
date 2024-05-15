@@ -45,10 +45,10 @@ defmodule LanguageTranslator.Models.Analysis do
 
   def statuses_for_select() do
     [
-      {"Pending", :pending},
-      {"Processing", :processing},
-      {"Completed", :completed},
-      {"Failed", :failed}
+      {"Pending", "pending"},
+      {"Processing", "processing"},
+      {"Completed", "completed"},
+      {"Failed", "failed"}
     ]
   end
 
@@ -125,7 +125,7 @@ defmodule LanguageTranslator.Models.Analysis do
   defp filter_order_by(query, %{order_by: order_by, filter_by: filter_by}) do
     query
     |> filter_by(filter_by)
-    |> order_by(^resolve_order_by(order_by))
+    |> resolve_order_by(order_by)
   end
 
   defp filter_by(query, nil) do
@@ -159,7 +159,7 @@ defmodule LanguageTranslator.Models.Analysis do
   end
 
   defp filter_by(query, {"uploaded_by", uploaded_by}) do
-    where(query, [a], a.user_id in ^uploaded_by)
+    from(a in query, join: u in assoc(a, :user), where: u.username in ^uploaded_by)
   end
 
   defp filter_by(query, {"public", nil}) do
@@ -170,25 +170,93 @@ defmodule LanguageTranslator.Models.Analysis do
     where(query, is_public: ^public)
   end
 
-  defp resolve_order_by("id_asc"), do: [asc: :id]
-  defp resolve_order_by("id_desc"), do: [desc: :id]
-  defp resolve_order_by("status_asc"), do: [asc: :status]
-  defp resolve_order_by("status_desc"), do: [desc: :status]
-  defp resolve_order_by("created_at_asc"), do: [asc: :inserted_at]
-  defp resolve_order_by("created_at_desc"), do: [desc: :inserted_at]
-  defp resolve_order_by("updated_at_asc"), do: [asc: :updated_at]
-  defp resolve_order_by("updated_at_desc"), do: [desc: :updated_at]
-  defp resolve_order_by("source_language_asc"), do: [asc: :source_language_code]
-  defp resolve_order_by("source_language_desc"), do: [desc: :source_language_code]
-  defp resolve_order_by("uploaded_by_asc"), do: [asc: :user_id]
-  defp resolve_order_by("uploaded_by_desc"), do: [desc: :user_id]
-  defp resolve_order_by("public_asc"), do: [asc: :is_public]
-  defp resolve_order_by("public_desc"), do: [desc: :is_public]
-  defp resolve_order_by("description_asc"), do: [asc: :description]
-  defp resolve_order_by("description_desc"), do: [desc: :description]
+  # defp resolve_order_by("id_asc"), do: [asc: :id]
+  # defp resolve_order_by("id_desc"), do: [desc: :id]
+  # defp resolve_order_by("status_asc"), do: [asc: :status]
+  # defp resolve_order_by("status_desc"), do: [desc: :status]
+  # defp resolve_order_by("created_at_asc"), do: [asc: :inserted_at]
+  # defp resolve_order_by("created_at_desc"), do: [desc: :inserted_at]
+  # defp resolve_order_by("updated_at_asc"), do: [asc: :updated_at]
+  # defp resolve_order_by("updated_at_desc"), do: [desc: :updated_at]
+  # defp resolve_order_by("source_language_asc"), do: [asc: :source_language_code]
+  # defp resolve_order_by("source_language_desc"), do: [desc: :source_language_code]
+  # defp resolve_order_by("uploaded_by_asc"), do: [asc: :user_id]
+  # defp resolve_order_by("uploaded_by_desc"), do: [desc: :user_id]
+  # defp resolve_order_by("public_asc"), do: [asc: :is_public]
+  # defp resolve_order_by("public_desc"), do: [desc: :is_public]
+  # defp resolve_order_by("description_asc"), do: [asc: :description]
+  # defp resolve_order_by("description_desc"), do: [desc: :description]
 
-  defp resolve_order_by(sorting) do
-    Logger.warning("Invalid order_by value: #{sorting}, defaulting to id_desc")
-    [desc: :id]
+  # defp resolve_order_by(sorting) do
+  #   Logger.warning("Invalid order_by value: #{sorting}, defaulting to id_desc")
+  #   [desc: :id]
+  # end
+
+  defp resolve_order_by(query, nil) do
+    query
+  end
+
+  defp resolve_order_by(query, "id_asc") do
+    order_by(query, [a], a.id)
+  end
+
+  defp resolve_order_by(query, "id_desc") do
+    order_by(query, [a], desc: a.id)
+  end
+
+  defp resolve_order_by(query, "status_asc") do
+    order_by(query, [a], a.status)
+  end
+
+  defp resolve_order_by(query, "status_desc") do
+    order_by(query, [a], desc: a.status)
+  end
+
+  defp resolve_order_by(query, "created_at_asc") do
+    order_by(query, [a], a.inserted_at)
+  end
+
+  defp resolve_order_by(query, "created_at_desc") do
+    order_by(query, [a], desc: a.inserted_at)
+  end
+
+  defp resolve_order_by(query, "updated_at_asc") do
+    order_by(query, [a], a.updated_at)
+  end
+
+  defp resolve_order_by(query, "updated_at_desc") do
+    order_by(query, [a], desc: a.updated_at)
+  end
+
+  defp resolve_order_by(query, "source_language_asc") do
+    from(a in query, join: l in assoc(a, :source_language), order_by: l.display_name)
+  end
+
+  defp resolve_order_by(query, "source_language_desc") do
+    from(a in query, join: l in assoc(a, :source_language), order_by: [desc: l.display_name])
+  end
+
+  defp resolve_order_by(query, "uploaded_by_asc") do
+    from(a in query, join: u in assoc(a, :user), order_by: u.username)
+  end
+
+  defp resolve_order_by(query, "uploaded_by_desc") do
+    from(a in query, join: u in assoc(a, :user), order_by: [desc: u.username])
+  end
+
+  defp resolve_order_by(query, "public_asc") do
+    order_by(query, [a], a.is_public)
+  end
+
+  defp resolve_order_by(query, "public_desc") do
+    order_by(query, [a], desc: a.is_public)
+  end
+
+  defp resolve_order_by(query, "description_asc") do
+    order_by(query, [a], a.description)
+  end
+
+  defp resolve_order_by(query, "description_desc") do
+    order_by(query, [a], desc: a.description)
   end
 end

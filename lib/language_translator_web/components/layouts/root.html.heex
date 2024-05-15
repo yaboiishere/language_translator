@@ -11,7 +11,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="bg-primary-100 antialiased h-screen mb-2">
+  <body class="bg-primary-100 antialiased h-screen">
     <header class="px-4 sm:px-6 lg:px-8 bg-primary-300 h-18">
       <div class="flex items-center justify-between border-secondary-950 py-3 text-md">
         <div class="flex items-center gap-4">
@@ -24,14 +24,6 @@
               Language Translator
             </h1>
           </.link>
-          <%= if @current_user && @current_user.is_admin do %>
-            <.link
-              href={~p"/users"}
-              class="text-md leading-6 text-zinc-900 font-medium hover:text-zinc-700"
-            >
-              Users
-            </.link>
-          <% end %>
           <.link
             href={~p"/analysis"}
             class="text-md leading-6 text-zinc-900 font-medium hover:text-zinc-700"
@@ -44,6 +36,14 @@
           >
             Words
           </.link>
+          <%= if @current_user && @current_user.is_admin do %>
+            <.link
+              href={~p"/users"}
+              class="text-md leading-6 text-zinc-900 font-medium hover:text-zinc-700"
+            >
+              Users
+            </.link>
+          <% end %>
         </div>
         <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
           <%= if @current_user do %>

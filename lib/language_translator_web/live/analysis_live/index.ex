@@ -8,6 +8,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   alias LanguageTranslator.Accounts
   alias LanguageTranslator.Models
   alias LanguageTranslator.Models.Analysis
+  alias LanguageTranslator.Models.Language
+  alias LanguageTranslator.Accounts.User
   alias LanguageTranslator.Translator.Refresher
   alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
@@ -155,6 +157,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       ) do
     socket
     |> Util.update_order_by(field)
+    |> tap(&IO.inspect/1)
     |> case do
       nil ->
         {:noreply, socket}
@@ -175,15 +178,19 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   @impl true
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    cities = City.search(text)
-    # cities = [ 
-    # {"New York City", [-74.00597,40.71427]}, 
-    # {"New Kingston", [-76.78319,18.00747]}, 
-    # ... 
-    # ]
+  def handle_event("live_select_change", %{"id" => "status_filter"}, socket) do
+    {:noreply, socket}
+  end
 
-    send_update(LiveSelect.Component, id: live_select_id, options: cities)
+  @impl true
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    options =
+      case live_select_id do
+        "source_language_filter" -> Language.search_display_name(text)
+        "uploaded_by_filter" -> User.search_username(text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
 
     {:noreply, socket}
   end
@@ -202,7 +209,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   def handle_event("filter", params, socket) do
     clean_params =
       params
-      |> Map.drop(["_target"])
+      |> Map.drop([
+        "_target",
+        "source_language_text_input",
+        "status_text_input",
+        "uploaded_by_text_input"
+      ])
       |> Enum.filter(fn {_k, v} -> v != "" end)
 
     {:noreply,

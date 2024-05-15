@@ -15,7 +15,8 @@ defmodule LanguageTranslatorWeb.Filters do
     <div>
       <.form :let={f} for={@filter_by} phx-change="filter">
         <div class="grid grid-rows-1 space-x-4 align-top">
-          <div class="grid grid-cols-12 gap-4">
+          <div class="grid grid-cols-11 gap-4">
+            <div class="col-span-1"></div>
             <.render_id_filter filter_by={@filter_by} form={f} />
             <div class="col-span-2">
               <.render_description_filter filter_by={@filter_by} form={f} />
@@ -41,7 +42,8 @@ defmodule LanguageTranslatorWeb.Filters do
     <div>
       <.form :let={f} for={@filter_by} phx-change="filter">
         <div class="grid grid-rows-1 space-x-4 align-top">
-          <div class="grid grid-cols-12 gap-4">
+          <div class="grid grid-cols-11 gap-4">
+            <div class="col-span-2"></div>
             <.render_id_filter filter_by={@filter_by} form={f} />
             <div class="col-span-2">
               <.render_email_filter filter_by={@filter_by} form={f} />
@@ -65,7 +67,14 @@ defmodule LanguageTranslatorWeb.Filters do
     ~H"""
     <div>
       <div class="flex flex-col text-sm justify-center">
-        <.input name="id" value={@value} field={@form[:id]} type="text" label="ID" class="pr-0 py-0" />
+        <.input
+          name="id"
+          value={@value}
+          field={@form[:id]}
+          type="text"
+          label="ID"
+          class="pr-0 py-0 h-[22px]"
+        />
       </div>
     </div>
     """
@@ -138,7 +147,7 @@ defmodule LanguageTranslatorWeb.Filters do
           field={@form[:description]}
           type="text"
           label="Description"
-          class="pr-0 py-0"
+          class="pr-0 py-0 h-[22px]"
         />
       </div>
     </div>
@@ -154,18 +163,7 @@ defmodule LanguageTranslatorWeb.Filters do
     ~H"""
     <div class="flex flex-col text-sm justify-center max-w-60">
       <.label for={@id}>Source Language</.label>
-      <.live_select
-        id={@id}
-        field={@form[:source_language]}
-        options={@languages}
-        mode={:tags}
-        container_extra_class="flex flex-col"
-        dropdown_extra_class="max-h-60 overflow-y-auto"
-        text_input_class={text_input_class()}
-        text_input_selected_class={text_input_class()}
-        tags_container_extra_class="order-last"
-        tag_class={tag_class()}
-      />
+      <.custom_live_select field={@form[:source_language]} options={@languages} id={@id} />
     </div>
     """
   end
@@ -179,18 +177,7 @@ defmodule LanguageTranslatorWeb.Filters do
     ~H"""
     <div class="flex flex-col text-sm justify-center max-w-60">
       <.label for={@id}>Status</.label>
-      <.live_select
-        id={@id}
-        field={@form[:status]}
-        options={@statuses}
-        mode={:tags}
-        container_extra_class="flex flex-col"
-        dropdown_extra_class="max-h-60 overflow-y-auto"
-        text_input_class={text_input_class()}
-        text_input_selected_class={text_input_class()}
-        tags_container_extra_class="order-last"
-        tag_class={tag_class()}
-      />
+      <.custom_live_select field={@form[:status]} options={@statuses} id={@id} />
     </div>
     """
   end
@@ -205,18 +192,7 @@ defmodule LanguageTranslatorWeb.Filters do
     <div>
       <div class="flex flex-col text-sm justify-center">
         <.label for={@id}>Uploaded By</.label>
-        <.live_select
-          id={@id}
-          field={@form[:uploaded_by]}
-          options={@users}
-          mode={:tags}
-          container_extra_class="flex flex-col"
-          dropdown_extra_class="max-h-60 overflow-y-auto"
-          text_input_class={text_input_class()}
-          text_input_selected_class={text_input_class()}
-          tags_container_extra_class="order-last"
-          tag_class={tag_class()}
-        />
+        <.custom_live_select field={@form[:uploaded_by]} options={@users} id={@id} />
       </div>
     </div>
     """
@@ -249,7 +225,7 @@ defmodule LanguageTranslatorWeb.Filters do
 
   def clear_button(assigns) do
     ~H"""
-    <div class="mt-auto">
+    <div class="mt-3">
       <.button type="clear" class="bg-red-600 hover:bg-red-400 max-h-10 p-0">
         Clear
       </.button>
@@ -263,5 +239,26 @@ defmodule LanguageTranslatorWeb.Filters do
 
   defp tag_class() do
     "bg-primary-200 flex p-1 rounded-lg text-sm"
+  end
+
+  attr :id, :string, required: true
+  attr :field, :map, required: true
+  attr :options, :list, required: true
+
+  defp custom_live_select(assigns) do
+    ~H"""
+    <.live_select
+      id={@id}
+      field={@field}
+      options={@options}
+      mode={:tags}
+      container_extra_class="flex flex-col"
+      dropdown_extra_class="max-h-60 overflow-y-auto"
+      text_input_class={text_input_class()}
+      text_input_selected_class={text_input_class()}
+      tags_container_extra_class="order-last"
+      tag_class={tag_class()}
+    />
+    """
   end
 end
