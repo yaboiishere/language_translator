@@ -11,5 +11,20 @@ defmodule LanguageTranslator.Repo.Migrations.CreateLanguages do
     end
 
     create index(:languages, [:code], unique: true)
+
+    execute "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+    execute "SET pg_trgm.similarity_threshold = 0.0;"
+
+    execute """
+    CREATE INDEX languages_searchable_display_name_index
+      ON languages
+      USING GIN(display_name gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX languages_searchable_code_index
+      ON languages
+      USING GIN(code gin_trgm_ops);
+    """
   end
 end

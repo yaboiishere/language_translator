@@ -12,5 +12,35 @@ defmodule LanguageTranslator.Repo.Migrations.CreateWords do
     end
 
     create index(:words, [:language_code, :text], unique: true)
+
+    execute """
+    ALTER TABLE words
+    ADD COLUMN text_id text 
+      GENERATED ALWAYS AS (id::text) STORED;
+    """
+
+    execute """
+    CREATE INDEX words_searchable_text_id_index
+      ON words
+      USING GIN(text_id gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX words_searchable_text_index
+      ON words
+      USING GIN(text gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX words_searchable_romanized_text_index
+      ON words
+      USING GIN(romanized_text gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX words_searchable_language_code_index
+      ON words
+      USING GIN(language_code gin_trgm_ops);
+    """
   end
 end

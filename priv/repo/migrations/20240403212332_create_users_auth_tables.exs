@@ -25,5 +25,29 @@ defmodule LanguageTranslator.Repo.Migrations.CreateUsersAuthTables do
 
     create index(:users_tokens, [:user_id])
     create unique_index(:users_tokens, [:context, :token])
+
+    execute """
+    ALTER TABLE users
+      ADD COLUMN id_text text
+      GENERATED ALWAYS AS (id::text) STORED;
+    """
+
+    execute """
+    CREATE INDEX users_searchable_id_text_index
+      ON users
+      USING GIN(id_text gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX users_searchable_email_index
+      ON users
+      USING GIN(email gin_trgm_ops);
+    """
+
+    execute """
+    CREATE INDEX users_searchable_username_index
+      ON users
+      USING GIN(username gin_trgm_ops);
+    """
   end
 end
