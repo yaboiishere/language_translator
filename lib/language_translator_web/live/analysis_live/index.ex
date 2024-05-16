@@ -1,7 +1,9 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
+  alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   use LanguageTranslatorWeb, :live_view
 
   import LanguageTranslatorWeb.Filters
+  import LanguageTranslatorWeb.PaginationComponent
 
   alias Ecto.Changeset
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
@@ -33,12 +35,17 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> assign(:is_file, true)
       |> assign(:languages, [])
       |> assign_new(:current_user, fn -> current_user end)
+      |> assign(page_size: 10)
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_params(params, _url, %{assigns: %{current_user: current_user}} = socket) do
+  def handle_params(
+        params,
+        _url,
+        %{assigns: %{current_user: current_user, page_size: page_size}} = socket
+      ) do
     show_cols = [
       "id",
       "description",
@@ -50,16 +57,46 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       "updated_at"
     ]
 
+    pagination =
+      %PaginationChangeset{page: 1, page_size: page_size}
+      |> PaginationChangeset.changeset(params)
+      |> Changeset.apply_changes()
+
     order_and_filter_changeset =
-      OrderAndFilterChangeset.changeset(%OrderAndFilterChangeset{show_cols: show_cols}, params)
+      OrderAndFilterChangeset.changeset(
+        %OrderAndFilterChangeset{show_cols: show_cols},
+        params
+      )
 
     order_and_filter = Changeset.apply_changes(order_and_filter_changeset)
+
+    %{
+      entries: analyses,
+      page_number: page_number,
+      page_size: page_size,
+      total_entries: total_entries,
+      total_pages: total_pages
+    } =
+      Analysis.paginate_all(current_user, order_and_filter, pagination)
+
+    pagination =
+      pagination
+      |> PaginationChangeset.changeset(%{
+        page: page_number,
+        page_size: page_size,
+        total_entries: total_entries,
+        total_pages: total_pages
+      })
+      |> Changeset.apply_changes()
+
+    IO.inspect(pagination)
 
     socket =
       socket
       |> assign(:order_and_filter, order_and_filter)
-      |> assign(:analysis_collection, Analysis.get_all(current_user, order_and_filter))
+      |> assign(:analysis_collection, analyses)
       |> assign(:columns, show_cols)
+      |> assign(:pagination, pagination)
 
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
@@ -157,7 +194,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       ) do
     socket
     |> Util.update_order_by(field)
-    |> tap(&IO.inspect/1)
+    |> tap(&IO.inspect(&1, label: "update_order_by"))
     |> case do
       nil ->
         {:noreply, socket}
@@ -168,12 +205,28 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   @impl true
-  def handle_event("show_cols", checked_cols, socket) do
+  def handle_event(
+        "show_cols",
+        checked_cols,
+        %{
+          assigns: %{
+            order_and_filter: %{order_by: order_by, filter_by: filter_by},
+            pagination: %{page: page, page_size: page_size}
+          }
+        } = socket
+      ) do
     checked_cols = Util.format_show_cols(checked_cols)
 
     {:noreply,
      push_patch(socket,
-       to: Routes.analysis_index_path(socket, :index, %{"show_cols" => checked_cols})
+       to:
+         Routes.analysis_index_path(socket, :index,
+           show_cols: checked_cols,
+           order_by: order_by,
+           filter_by: filter_by,
+           page: page,
+           page_size: page_size
+         )
      )}
   end
 
@@ -197,16 +250,16 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
   @impl true
   def handle_event(
-        "change",
-        %{"my_form" => %{"city_search_text_input" => city_name, "city_search" => city_coords}},
-        socket
+        "filter",
+        params,
+        %{
+          assigns: %{
+            order_and_filter: %{order_by: order_by, show_cols: show_cols},
+            pagination: %{page_size: page_size}
+          }
+        } =
+          socket
       ) do
-    IO.puts("You selected city #{city_name} located at: #{city_coords}")
-
-    {:noreply, socket}
-  end
-
-  def handle_event("filter", params, socket) do
     clean_params =
       params
       |> Map.drop([
@@ -218,6 +271,38 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> Enum.filter(fn {_k, v} -> v != "" end)
 
     {:noreply,
-     push_patch(socket, to: Routes.analysis_index_path(socket, :index, filter_by: clean_params))}
+     push_patch(socket,
+       to:
+         Routes.analysis_index_path(socket, :index,
+           filter_by: clean_params,
+           order_by: order_by,
+           show_cols: show_cols,
+           page_size: page_size
+         )
+     )}
+  end
+
+  @impl true
+  def handle_event(
+        "nav",
+        %{"page" => page},
+        %{
+          assigns: %{
+            order_and_filter: %{show_cols: show_cols, filter_by: filter_by, order_by: order_by},
+            pagination: %{page_size: page_size}
+          }
+        } = socket
+      ) do
+    {:noreply,
+     push_patch(socket,
+       to:
+         Routes.analysis_index_path(socket, :index,
+           page: page,
+           page_size: page_size,
+           show_cols: show_cols,
+           filter_by: filter_by,
+           order_by: order_by
+         )
+     )}
   end
 end

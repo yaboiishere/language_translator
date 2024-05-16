@@ -1,5 +1,4 @@
 defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
-  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -39,7 +38,7 @@ defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
     end
   end
 
-  def to_map(%OrderAndFilterChangeset{} = order_and_filter) do
+  def to_map(%__MODULE__{} = order_and_filter) do
     order_and_filter
     |> Map.from_struct()
     |> Map.drop([:__meta__, :__struct__])

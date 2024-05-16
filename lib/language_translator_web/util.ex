@@ -1,6 +1,8 @@
 defmodule LanguageTranslatorWeb.Util do
-  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
+  import Ecto.Query
   alias Ecto.Changeset
+  alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
+  alias LanguageTranslator.Repo
 
   def create_order_by(params) do
     %OrderAndFilterChangeset{}
@@ -47,5 +49,27 @@ defmodule LanguageTranslatorWeb.Util do
     checked_cols
     |> Enum.filter(fn {_, value} -> value == "true" end)
     |> Enum.into([], fn {key, _} -> key end)
+  end
+
+  def paginate(query, %{
+        page: page_number,
+        page_size: page_size
+      }) do
+    entries = from(q in query, limit: ^page_size, offset: ^((page_number - 1) * page_size))
+    IO.inspect(query)
+
+    total_entries =
+      from(q in query) |> Repo.aggregate(:count, :id)
+
+    IO.inspect(div(total_entries, page_size), label: "total_entries")
+    IO.inspect(rem(total_entries, page_size), label: "total_entries2")
+
+    %{
+      entries: entries,
+      total_entries: total_entries,
+      page_number: page_number,
+      page_size: page_size,
+      total_pages: ceil(total_entries / page_size)
+    }
   end
 end

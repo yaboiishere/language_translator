@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Models.Analysis do
   import Ecto.Query
   require Logger
 
+  alias LanguageTranslatorWeb.Util
   alias LanguageTranslator.Translator
   alias LanguageTranslator.Repo
   alias LanguageTranslator.Models.Language
@@ -70,18 +71,43 @@ defmodule LanguageTranslator.Models.Analysis do
   def get_all(_user_or_nil, _params, _preloads \\ @default_preloads)
 
   def get_all(nil, params, preloads) do
-    query = public_analysis_query() |> filter_order_by(params) |> preload(^preloads)
-    Repo.all(query)
+    nil
+    |> all_query(params)
+    |> Repo.all()
+    |> Repo.preload(preloads)
   end
 
-  def get_all(%User{id: user_id}, params, preloads) do
-    query =
-      public_analysis_query()
-      |> or_where([a], a.user_id == ^user_id)
-      |> filter_order_by(params)
-      |> preload(^preloads)
+  def get_all(%User{} = user, params, preloads) do
+    user
+    |> all_query(params)
+    |> Repo.all()
+    |> Repo.preload(preloads)
+  end
 
-    Repo.all(query)
+  def paginate_all(user_or_nil, params, pagination, preloads \\ @default_preloads) do
+    %{entries: query} =
+      paginated_query =
+      user_or_nil
+      |> all_query(params)
+      |> Util.paginate(pagination)
+
+    entries =
+      query
+      |> Repo.all()
+      |> Repo.preload(preloads)
+
+    %{paginated_query | entries: entries}
+  end
+
+  defp all_query(user_or_nil, order_and_filter) do
+    query =
+      case user_or_nil do
+        nil -> public_analysis_query()
+        user -> public_analysis_query() |> or_where([a], a.user_id == ^user.id)
+      end
+
+    query
+    |> filter_order_by(order_and_filter)
   end
 
   def get(analysis_id, preloads \\ [:source_language, :user]) do
@@ -170,30 +196,8 @@ defmodule LanguageTranslator.Models.Analysis do
     where(query, is_public: ^public)
   end
 
-  # defp resolve_order_by("id_asc"), do: [asc: :id]
-  # defp resolve_order_by("id_desc"), do: [desc: :id]
-  # defp resolve_order_by("status_asc"), do: [asc: :status]
-  # defp resolve_order_by("status_desc"), do: [desc: :status]
-  # defp resolve_order_by("created_at_asc"), do: [asc: :inserted_at]
-  # defp resolve_order_by("created_at_desc"), do: [desc: :inserted_at]
-  # defp resolve_order_by("updated_at_asc"), do: [asc: :updated_at]
-  # defp resolve_order_by("updated_at_desc"), do: [desc: :updated_at]
-  # defp resolve_order_by("source_language_asc"), do: [asc: :source_language_code]
-  # defp resolve_order_by("source_language_desc"), do: [desc: :source_language_code]
-  # defp resolve_order_by("uploaded_by_asc"), do: [asc: :user_id]
-  # defp resolve_order_by("uploaded_by_desc"), do: [desc: :user_id]
-  # defp resolve_order_by("public_asc"), do: [asc: :is_public]
-  # defp resolve_order_by("public_desc"), do: [desc: :is_public]
-  # defp resolve_order_by("description_asc"), do: [asc: :description]
-  # defp resolve_order_by("description_desc"), do: [desc: :description]
-
-  # defp resolve_order_by(sorting) do
-  #   Logger.warning("Invalid order_by value: #{sorting}, defaulting to id_desc")
-  #   [desc: :id]
-  # end
-
   defp resolve_order_by(query, nil) do
-    query
+    resolve_order_by(query, "id_desc")
   end
 
   defp resolve_order_by(query, "id_asc") do
