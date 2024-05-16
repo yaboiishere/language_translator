@@ -16,6 +16,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  alias LanguageTranslatorWeb.PageSizeComponent
   alias LanguageTranslatorWeb.ShowColumnsComponent
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias Phoenix.LiveView.JS
@@ -500,14 +501,17 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="mt-2">
+    <div id="table" class="mt-2">
       <div class="flex items-start justify-between align-bottom gap-4">
-        <.live_component
-          id="show_cols"
-          module={ShowColumnsComponent}
-          show_cols={@show_cols}
-          columns={@col}
-        />
+        <div class="flex gap-4">
+          <.live_component id="page_size" module={PageSizeComponent} pagination={@pagination} />
+          <.live_component
+            id="show_cols"
+            module={ShowColumnsComponent}
+            show_cols={@show_cols}
+            columns={@col}
+          />
+        </div>
         <.pagination pagination={@pagination} />
       </div>
       <table class="mt-11 text-center max-h-full w-full">

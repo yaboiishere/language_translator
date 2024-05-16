@@ -80,7 +80,7 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
         </nav>
         <div class="flex justify-end border-t border-gray-200 bg-white pr-0 py-0">
           <div class="text-sm text-gray-700">
-            Showing <span class="font-medium"><%= @page_size * (@page - 1) %></span>
+            Showing <span class="font-medium"><%= @page_size * (@page - 1) + 1 %></span>
             to <span class="font-medium"><%= clamp(@page_size * @page, 0, @total_entries) %></span>
             of <span class="font-medium"><%= @total_entries %></span>
             results
@@ -100,7 +100,7 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
     <a
       href="#"
       aria-current="page"
-      class="block items-center bg-primary-200 px-4 py-2 text-sm font-semibold text-secondary-900 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-900"
+      class="block items-center bg-primary-300 px-4 py-2 text-sm font-semibold text-secondary-950 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-900"
       phx-click="nav"
       phx-value-page={@idx}
     >
@@ -189,6 +189,6 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
   end
 
   defp button_classes() do
-    "block px-auto text-center py-1 px-2 text-secondary-900 ring-1 ring-inset ring-secondary-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 h-full"
+    "block px-auto text-center py-1 px-2 text-secondary-950 ring-1 ring-inset ring-secondary-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 h-full"
   end
 end

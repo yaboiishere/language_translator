@@ -325,4 +325,24 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
          )
      )}
   end
+
+  @impl true
+  def handle_event(
+        "page_size",
+        %{"page_size" => page_size},
+        %{assigns: %{order_and_filter: order_and_filter}} = socket
+      ) do
+    params =
+      order_and_filter |> OrderAndFilterChangeset.to_map() |> Map.put(:page_size, page_size)
+
+    {:noreply,
+     push_patch(socket,
+       to:
+         Routes.analysis_index_path(
+           socket,
+           :index,
+           params
+         )
+     )}
+  end
 end

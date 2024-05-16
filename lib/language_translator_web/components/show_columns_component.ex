@@ -24,7 +24,7 @@ defmodule LanguageTranslatorWeb.ShowColumnsComponent do
         phx-click={if @expanded, do: "close", else: "toggle"}
         phx-target={@myself}
         class="align-center flex rounded-lg hover:bg-primary-200 bg-primary-300 py-2 px-3
-         text-sm font-semibold leading-6 text-text-light hover:text-text-medium"
+         text-sm font-semibold leading-6 text-text-light hover:text-text-medium text-secondary-950"
       >
         Hide columns
         <svg
@@ -46,7 +46,7 @@ defmodule LanguageTranslatorWeb.ShowColumnsComponent do
       <!-- Dropdown menu -->
       <%= if @expanded do %>
         <div
-          class="z-50 absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-72 border border-secondary-500 max-h-60 overflow-y-auto mt-2"
+          class="z-50 absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-42 border border-secondary-500 max-h-60 overflow-y-auto mt-2"
           phx-click-away="close"
           phx-target={@myself}
         >
