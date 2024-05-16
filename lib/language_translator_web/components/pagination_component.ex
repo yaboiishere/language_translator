@@ -14,19 +14,16 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
 
     pages_ahead =
       cond do
-        page == 1 -> 4
-        page == 2 -> 3
-        page == 3 -> 2
-        page == total_pages - 1 -> 2
-        true -> 2
+        page == 1 -> 8
+        page == 2 -> 7
+        true -> 6
       end
 
     pages_behind =
       cond do
-        page == total_pages -> 4
-        page == total_pages - 1 -> 3
-        page == total_pages - 2 -> 2
-        true -> 2
+        page == total_pages -> 8
+        page == total_pages - 1 -> 7
+        true -> 6
       end
 
     assigns =
@@ -84,7 +81,7 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
         <div class="flex justify-end border-t border-gray-200 bg-white pr-0 py-0">
           <div class="text-sm text-gray-700">
             Showing <span class="font-medium"><%= @page_size * (@page - 1) %></span>
-            to <span class="font-medium"><%= @page_size * @page %></span>
+            to <span class="font-medium"><%= clamp(@page_size * @page, 0, @total_entries) %></span>
             of <span class="font-medium"><%= @total_entries %></span>
             results
           </div>
