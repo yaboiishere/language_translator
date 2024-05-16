@@ -6,16 +6,32 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
   def mount(socket) do
     socket =
       socket
-      |> assign(rows: [], columns: [])
+      |> assign(rows: [], columns: [], expanded: false)
 
     {:ok, socket}
   end
 
-  def update(%{entries: entries, columns: columns, order_and_filter: order_and_filter}, socket) do
+  def update(
+        %{
+          entries: entries,
+          columns: columns,
+          order_and_filter: order_and_filter
+        },
+        socket
+      ) do
     socket =
-      assign(socket, entries: entries, columns: columns, order_and_filter: order_and_filter)
+      assign(socket,
+        entries: entries,
+        columns: columns,
+        order_and_filter: order_and_filter
+      )
 
     {:ok, socket}
+  end
+
+  def handle_event("toggle", _, %{assigns: %{expanded: expanded}} = socket) do
+    socket = assign(socket, expanded: !expanded)
+    {:noreply, socket}
   end
 
   def render(assigns) do
@@ -27,37 +43,21 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
         </div>
       <% else %>
         <div class="relative overflow-x-auto shadow-md rounded-lg max-h-screen">
-          <form phx-change="show_cols">
-            <%= for column <- @columns do %>
-              <input name={column} type="hidden" value="false" />
-              <input
-                type="checkbox"
-                name={column}
-                value="true"
-                checked={column in @order_and_filter.show_cols}
-              /><%= column %>
-            <% end %>
-          </form>
           <table class="auto w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950">
             <thead class="text-sm">
               <tr class="sticky top-0 z-40 border-b">
-                <th
-                  scope="col"
-                  phx-click="sort"
-                  phx-value-sort_by="language"
-                  class="relative px-6 py-3 text-secondary-950 uppercase bg-white"
-                >
+                <th scope="col" class="relative px-6 py-3 text-secondary-950 uppercase bg-white">
                   Source
                 </th>
                 <%= for {column, i} <- Enum.with_index(@columns) do %>
-                  <%= if column in @order_and_filter.show_cols do %>
+                  <%= if column[:id] in @order_and_filter.show_cols do %>
                     <%= if rem(i, 2) == 1 do %>
                       <th scope="col" class="px-6 py-3 text-secondary-950 uppercase bg-white">
-                        <%= column %>
+                        <%= "#{column[:label]} - #{column[:id]}" %>
                       </th>
                     <% else %>
                       <th scope="col" class="px-6 py-3 text-secondary-950 uppercase bg-primary-100">
-                        <%= column %>
+                        <%= "#{column[:label]} - #{column[:id]}" %>
                       </th>
                     <% end %>
                   <% end %>
@@ -76,7 +76,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
                     <%= "#{source.text} - #{source.romanized_text}" %>
                   </td>
                   <%= for {column, i} <- Enum.with_index(@columns) do %>
-                    <%= if column in @order_and_filter.show_cols do %>
+                    <%= if column[:id] in @order_and_filter.show_cols do %>
                       <% %Table{
                         text: text,
                         romanized_text: romanized_text,
@@ -114,5 +114,18 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
       <% end %>
     </div>
     """
+  end
+
+  defp format_cols(columns) do
+    Enum.map(columns, fn column ->
+      [label | id_parts] =
+        column
+        |> String.split("-")
+        |> Enum.map(&String.trim/1)
+
+      id = Enum.join(id_parts, "-")
+
+      %{label: label, id: id}
+    end)
   end
 end

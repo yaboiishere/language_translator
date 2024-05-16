@@ -39,13 +39,13 @@ defmodule LanguageTranslator.Models.Language do
   end
 
   def search_display_name(search) do
-    from(l in __MODULE__, where: ilike(l.display_name, ^"#{search}%"))
+    from(l in __MODULE__, where: fragment("? <% ?", ^search, l.display_name))
     |> Repo.all()
     |> to_select_option()
   end
 
   def search_code(search) do
-    from(l in __MODULE__, where: ilike(l.code, ^"#{search}%"))
+    from(l in __MODULE__, where: fragment("? <% ?", ^search, l.code))
     |> Repo.all()
     |> Enum.map(& &1.code)
   end

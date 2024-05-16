@@ -3,13 +3,16 @@
     Listing Users
   </.header>
 
-  <.user_filters_form filter_by={@order_and_filter.filter_by} />
-  <.pagination pagination={@pagination} />
+  <.user_filters_form
+    filter_by={@order_and_filter.filter_by}
+    show_cols={@order_and_filter.show_cols}
+  />
   <.table
     id="users"
     rows={@users}
     order_by={@order_and_filter.order_by}
     show_cols={@order_and_filter.show_cols}
+    pagination={@pagination}
   >
     <:col :let={user} id="id" label="Id"><%= user.id %></:col>
     <:col :let={user} id="email" label="Email"><%= user.email %></:col>

@@ -200,8 +200,12 @@ defmodule LanguageTranslator.Accounts.User do
     |> filter_by(filter_by)
   end
 
+  def search_username("") do
+    __MODULE__ |> Repo.all() |> to_select_option()
+  end
+
   def search_username(search) do
-    from(u in __MODULE__, where: ilike(u.username, ^"#{search}%"))
+    from(u in __MODULE__, where: fragment("? <% ?", ^search, u.username))
     |> Repo.all()
     |> to_select_option()
   end
@@ -218,7 +222,7 @@ defmodule LanguageTranslator.Accounts.User do
 
   def search_id(search) do
     from(u in __MODULE__,
-      where: ilike(fragment("?::text", u.id), ^"#{search}%"),
+      where: fragment("? <% id_text", ^search),
       select: u.id,
       order_by: u.id
     )
@@ -244,11 +248,11 @@ defmodule LanguageTranslator.Accounts.User do
   end
 
   defp filter_by(query, {"email", email}) do
-    where(query, [a], ilike(a.email, ^"#{email}%"))
+    where(query, [a], fragment("? <% ?", ^email, a.email))
   end
 
   defp filter_by(query, {"username", username}) do
-    where(query, [a], ilike(a.username, ^"#{username}%"))
+    where(query, [a], a.username in ^username)
   end
 
   defp filter_by(query, {"admin", nil}) do

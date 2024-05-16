@@ -35,8 +35,6 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
 
-    IO.inspect(order_and_filter)
-
     pagination =
       %PaginationChangeset{page: 1, page_size: page_size}
       |> PaginationChangeset.changeset(params)
@@ -136,19 +134,34 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
 
   @impl true
   def handle_event(
+        "live_select_blur",
+        %{"id" => live_select_id},
+        socket
+      ) do
+    options =
+      case live_select_id do
+        "source_language_filter" -> Language.languages_for_select()
+        "language_code_filter" -> Language.language_codes_for_select()
+        "id_filter" -> []
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
         "filter",
         params,
         %{assigns: %{pagination: %{page_size: page_size}}} = socket
       ) do
     clean_params =
-      params
-      |> Map.drop([
+      Util.clean_filter_params(params, [
         "_target",
         "source_language_text_input",
         "source_language_code_text_input"
       ])
-      |> Enum.filter(fn {_k, v} -> v != "" end)
-      |> Enum.into(%{})
 
     socket
     |> Util.update_filter_by(clean_params)

@@ -193,20 +193,14 @@ defmodule LanguageTranslatorWeb.FilterComponents do
   def render_admin_filter(assigns) do
     id = "admin_filter"
     value = get_in(assigns, [:filter_by, "admin"])
-    assigns = assigns |> assign(value: value, id: id)
+    options = [{"All", nil}, {"Admin", "true"}, {"User", "false"}]
+    assigns = assigns |> assign(value: value, id: id, options: options)
 
     ~H"""
     <div>
       <div class="flex flex-col text-sm justify-center">
         <.label for={@id}>User Type</.label>
-        <.input
-          id={@id}
-          value={@value}
-          field={@form[:is_admin]}
-          type="select"
-          options={[{"All", nil}, {"Admin", "true"}, {"User", "false"}]}
-          class="pr-0 py-0"
-        />
+        <.single_live_select field={@form[:admin]} options={@options} id={@id} placeholder="All" />
       </div>
     </div>
     """
@@ -336,6 +330,31 @@ defmodule LanguageTranslatorWeb.FilterComponents do
       text_input_selected_class={text_input_class()}
       tags_container_extra_class="order-last"
       tag_class={tag_class()}
+      phx-blur="live_select_blur"
+    />
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :field, :map, required: true
+  attr :options, :list, required: true
+  attr :placeholder, :string
+
+  defp single_live_select(assigns) do
+    ~H"""
+    <.live_select
+      id={@id}
+      field={@field}
+      options={@options}
+      mode={:single}
+      container_extra_class="flex flex-col"
+      dropdown_extra_class="max-h-60 overflow-y-auto"
+      text_input_class={text_input_class()}
+      text_input_selected_class={text_input_class()}
+      tags_container_extra_class="order-last"
+      tag_class={tag_class()}
+      phx-blur="live_select_blur"
+      placeholder={@placeholder}
     />
     """
   end

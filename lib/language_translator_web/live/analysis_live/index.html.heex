@@ -10,10 +10,10 @@
     </:actions>
   </.header>
   <.analysis_filters_form filter_by={@order_and_filter.filter_by} />
-  <.pagination pagination={@pagination} />
   <.table
     id="analysis"
     rows={@analysis_collection}
+    pagination={@pagination}
     order_by={@order_and_filter.order_by}
     show_cols={@order_and_filter.show_cols}
     row_click={

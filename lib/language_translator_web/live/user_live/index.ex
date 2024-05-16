@@ -46,7 +46,10 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       |> Changeset.apply_changes()
 
     order_and_filter =
-      %OrderAndFilterChangeset{show_cols: default_show_cols, order_by: "id_desc"}
+      %OrderAndFilterChangeset{
+        show_cols: default_show_cols,
+        order_by: "id_desc"
+      }
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
 
@@ -131,12 +134,31 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("live_select_blur", %{"id" => "admin_filter"}, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "live_select_blur",
+        %{"id" => live_select_id},
+        socket
+      ) do
+    options =
+      case live_select_id do
+        "id_filter" -> []
+        "username_filter" -> User.users_for_select()
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
   def handle_event("filter", params, %{assigns: %{pagination: %{page_size: page_size}}} = socket) do
     clean_params =
-      params
-      |> Map.drop(["_target", "id_text_input", "username_text_input"])
-      |> Enum.filter(fn {_k, v} -> v != "" end)
-      |> Enum.into(%{})
+      Util.clean_filter_params(params, ["_target", "id_text_input", "username_text_input"])
 
     socket
     |> Util.update_filter_by(clean_params)

@@ -19,14 +19,14 @@ defmodule LanguageTranslator.Repo.Migrations.CreateAnalysis do
 
     execute """
     ALTER TABLE analysis
-      ADD COLUMN text_id text 
+      ADD COLUMN id_text text 
       GENERATED ALWAYS AS (id::text) STORED;
     """
 
     execute """
-    CREATE INDEX analysis_searchable_text_id_index
+    CREATE INDEX analysis_searchable_id_text_index
       ON analysis
-      USING GIN(text_id gin_trgm_ops);
+      USING GIN(id_text gin_trgm_ops);
     """
 
     execute """

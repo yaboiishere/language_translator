@@ -15,14 +15,14 @@ defmodule LanguageTranslator.Repo.Migrations.CreateWords do
 
     execute """
     ALTER TABLE words
-    ADD COLUMN text_id text 
+    ADD COLUMN id_text text 
       GENERATED ALWAYS AS (id::text) STORED;
     """
 
     execute """
-    CREATE INDEX words_searchable_text_id_index
+    CREATE INDEX words_searchable_id_text_index
       ON words
-      USING GIN(text_id gin_trgm_ops);
+      USING GIN(id_text gin_trgm_ops);
     """
 
     execute """

@@ -78,12 +78,21 @@ defmodule LanguageTranslatorWeb.Util do
     |> Enum.into([], fn {key, _} -> key end)
   end
 
+  def clean_filter_params(params, to_drop) do
+    params
+    |> Map.drop(to_drop)
+    |> Enum.filter(fn
+      {_k, v} when is_binary(v) -> String.length(v) > 1
+      {_k, v} -> v != []
+    end)
+    |> Enum.into(%{})
+  end
+
   def paginate(query, %{
         page: page_number,
         page_size: page_size
       }) do
     entries = from(q in query, limit: ^page_size, offset: ^((page_number - 1) * page_size))
-    IO.inspect(query)
 
     total_entries =
       from(q in query) |> Repo.aggregate(:count, :id)

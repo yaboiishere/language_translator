@@ -16,9 +16,11 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  alias LanguageTranslatorWeb.ShowColumnsComponent
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias Phoenix.LiveView.JS
   import LanguageTranslatorWeb.Gettext
+  import LanguageTranslatorWeb.PaginationComponent
 
   @doc """
   Renders a modal.
@@ -487,6 +489,8 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     attr :id, :string
   end
 
+  slot :pagination, required: true
+
   slot :action, doc: "the slot for showing user actions in the last table column"
 
   def table(assigns) do
@@ -496,15 +500,16 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="">
-      <form phx-change="show_cols">
-        <%= for col <- @col do %>
-          <input name={col[:id]} type="hidden" value="false" />
-          <input type="checkbox" name={col[:id]} value="true" checked={col[:id] in @show_cols} /><%= col[
-            :label
-          ] %>
-        <% end %>
-      </form>
+    <div class="mt-2">
+      <div class="flex items-start justify-between align-bottom gap-4">
+        <.live_component
+          id="show_cols"
+          module={ShowColumnsComponent}
+          show_cols={@show_cols}
+          columns={@col}
+        />
+        <.pagination pagination={@pagination} />
+      </div>
       <table class="mt-11 text-center max-h-full w-full">
         <thead class="text-sm  text-secondary-950 text-center w-full">
           <tr class="w-full">

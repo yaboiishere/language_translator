@@ -150,11 +150,20 @@ defmodule LanguageTranslator.Models.Analysis do
 
   def search_id(search) do
     from(a in __MODULE__,
-      where: ilike(fragment("?::text", a.id), ^"#{search}%"),
+      where: fragment("? <% id_text", ^search),
       select: a.id,
       order_by: a.id
     )
     |> Repo.all()
+  end
+
+  def search_status(search) do
+    statuses_for_select()
+    |> Enum.filter(fn {_, value} ->
+      value
+      |> String.downcase()
+      |> String.contains?(String.downcase(search))
+    end)
   end
 
   defp filter_order_by(query, %{order_by: order_by, filter_by: filter_by}) do
@@ -182,7 +191,7 @@ defmodule LanguageTranslator.Models.Analysis do
   end
 
   defp filter_by(query, {"description", description}) do
-    where(query, [a], ilike(a.description, ^"%#{description}%"))
+    where(query, [a], fragment("? <% ?", ^description, a.description))
   end
 
   defp filter_by(query, {"source_language", source_language}) do

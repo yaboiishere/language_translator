@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Index do
+  alias LanguageTranslator.ProcessGroups.Analysis
   alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   use LanguageTranslatorWeb, :live_view
 
@@ -88,8 +89,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         total_pages: total_pages
       })
       |> Changeset.apply_changes()
-
-    IO.inspect(pagination)
 
     socket =
       socket
@@ -194,7 +193,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       ) do
     socket
     |> Util.update_order_by(field)
-    |> tap(&IO.inspect(&1, label: "update_order_by"))
     |> case do
       nil ->
         {:noreply, socket}
@@ -236,17 +234,32 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   @impl true
-  def handle_event("live_select_change", %{"id" => "status_filter"}, socket) do
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     options =
       case live_select_id do
         "source_language_filter" -> Language.search_display_name(text)
         "uploaded_by_filter" -> User.search_username(text)
         "id_filter" -> Analysis.search_id(text)
+        "status_filter" -> Analysis.search_status(text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "live_select_blur",
+        %{"id" => live_select_id},
+        socket
+      ) do
+    options =
+      case live_select_id do
+        "source_language_filter" -> Language.languages_for_select()
+        "uploaded_by_filter" -> User.users_for_select()
+        "status_filter" -> Analysis.statuses_for_select()
+        "id_filter" -> []
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -261,16 +274,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         %{assigns: %{pagination: %{page_size: page_size}}} = socket
       ) do
     clean_params =
-      params
-      |> Map.drop([
+      Util.clean_filter_params(params, [
         "_target",
         "source_language_text_input",
         "status_text_input",
         "uploaded_by_text_input",
         "id_text_input"
       ])
-      |> Enum.filter(fn {_k, v} -> v != "" end)
-      |> Enum.into(%{})
 
     socket
     |> Util.update_filter_by(clean_params)
@@ -312,7 +322,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
              page: page,
              page_size: page_size
            })
-           |> tap(&IO.inspect(&1, label: "nav"))
          )
      )}
   end

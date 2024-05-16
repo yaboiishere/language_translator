@@ -81,7 +81,7 @@ defmodule LanguageTranslator.Models.Word do
 
   def search_id(search) do
     from(w in __MODULE__,
-      where: ilike(fragment("?::text", w.id), ^"#{search}%"),
+      where: fragment("? <% id_text", ^search),
       select: w.id,
       order_by: w.id
     )
@@ -138,11 +138,11 @@ defmodule LanguageTranslator.Models.Word do
   end
 
   defp filter_by(query, {"text", text}) do
-    where(query, [a], ilike(a.text, ^"#{text}%"))
+    where(query, [a], fragment("? <% ?", ^text, a.text))
   end
 
   defp filter_by(query, {"romanized_text", romanized_text}) do
-    where(query, [a], ilike(a.romanized_text, ^"#{romanized_text}%"))
+    where(query, [a], fragment("? <% ?", ^romanized_text, a.romanized_text))
   end
 
   defp filter_by(query, {"language_code", language_code}) do

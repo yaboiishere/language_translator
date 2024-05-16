@@ -9,6 +9,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   alias LanguageTranslator.Accounts
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
+  alias LanguageTranslatorWeb.ShowColumnsComponent
   alias LanguageTranslatorWeb.Util
   alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Models.Translation
@@ -84,11 +85,11 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
                        language_display_name: language_display_name,
                        language_code: language_code
                      } ->
-        "#{language_display_name} - #{language_code}"
+        %{label: language_display_name, id: language_code}
       end)
 
     order_and_filter =
-      %OrderAndFilterChangeset{show_cols: columns}
+      %OrderAndFilterChangeset{show_cols: columns |> Enum.map(&Map.get(&1, :id))}
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
 

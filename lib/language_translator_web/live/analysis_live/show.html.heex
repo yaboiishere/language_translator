@@ -12,6 +12,12 @@
       </.link>
     </:actions>
   </.header>
+  <.live_component
+    id="show_cols"
+    module={ShowColumnsComponent}
+    show_cols={@order_and_filter.show_cols}
+    columns={@columns}
+  />
 
   <div class="mt-4 ">
     <.list>

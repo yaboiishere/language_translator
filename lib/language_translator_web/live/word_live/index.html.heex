@@ -4,12 +4,12 @@
   </.header>
 
   <.word_filters_form filter_by={@order_and_filter.filter_by} />
-  <.pagination pagination={@pagination} />
   <.table
     id="users"
     rows={@words}
     order_by={@order_and_filter.order_by}
     show_cols={@order_and_filter.show_cols}
+    pagination={@pagination}
     row_click={
       fn word ->
         JS.navigate(~p"/words/#{word.id}")
