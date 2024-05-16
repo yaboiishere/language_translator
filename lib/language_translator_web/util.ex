@@ -45,6 +45,33 @@ defmodule LanguageTranslatorWeb.Util do
     end
   end
 
+  def update_show_cols(%{assigns: %{order_and_filter: order_and_filter}}, new_show_cols) do
+    order_and_filter
+    |> OrderAndFilterChangeset.changeset(%{"show_cols" => new_show_cols})
+    |> case do
+      %{valid?: true} = changeset ->
+        changeset |> Changeset.apply_changes() |> OrderAndFilterChangeset.to_map()
+
+      error ->
+        require Logger
+        Logger.error("Error updating show cols: #{inspect(error)}")
+
+        nil
+    end
+  end
+
+  def update_filter_by(%{assigns: %{order_and_filter: order_and_filter}}, filters) do
+    order_and_filter
+    |> OrderAndFilterChangeset.changeset(%{filter_by: filters})
+    |> case do
+      %{valid?: true} = changeset ->
+        changeset |> Changeset.apply_changes() |> OrderAndFilterChangeset.to_map()
+
+      _ ->
+        nil
+    end
+  end
+
   def format_show_cols(checked_cols) do
     checked_cols
     |> Enum.filter(fn {_, value} -> value == "true" end)
@@ -60,9 +87,6 @@ defmodule LanguageTranslatorWeb.Util do
 
     total_entries =
       from(q in query) |> Repo.aggregate(:count, :id)
-
-    IO.inspect(div(total_entries, page_size), label: "total_entries")
-    IO.inspect(rem(total_entries, page_size), label: "total_entries2")
 
     %{
       entries: entries,

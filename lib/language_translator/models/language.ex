@@ -32,10 +32,22 @@ defmodule LanguageTranslator.Models.Language do
     |> to_select_option()
   end
 
+  def language_codes_for_select() do
+    __MODULE__
+    |> Repo.all()
+    |> Enum.map(& &1.code)
+  end
+
   def search_display_name(search) do
-    from(l in __MODULE__, where: ilike(l.display_name, ^"%#{search}%"))
+    from(l in __MODULE__, where: ilike(l.display_name, ^"#{search}%"))
     |> Repo.all()
     |> to_select_option()
+  end
+
+  def search_code(search) do
+    from(l in __MODULE__, where: ilike(l.code, ^"#{search}%"))
+    |> Repo.all()
+    |> Enum.map(& &1.code)
   end
 
   defp to_select_option(languages) do

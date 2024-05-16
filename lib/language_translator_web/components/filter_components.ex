@@ -1,4 +1,4 @@
-defmodule LanguageTranslatorWeb.Filters do
+defmodule LanguageTranslatorWeb.FilterComponents do
   use Phoenix.Component
 
   import LanguageTranslatorWeb.CoreComponents
@@ -37,7 +37,9 @@ defmodule LanguageTranslatorWeb.Filters do
     """
   end
 
-  def users_filters_form(assigns) do
+  attr :filter_by, :map, required: true
+
+  def user_filters_form(assigns) do
     ~H"""
     <div>
       <.form :let={f} for={@filter_by} phx-change="filter">
@@ -60,22 +62,95 @@ defmodule LanguageTranslatorWeb.Filters do
     """
   end
 
+  attr :filter_by, :map, required: true
+
+  def word_filters_form(assigns) do
+    ~H"""
+    <div>
+      <.form :let={f} for={@filter_by} phx-change="filter">
+        <div class="grid grid-rows-1 space-x-4 align-top">
+          <div class="grid grid-cols-11 gap-4">
+            <div class="col-span-2"></div>
+            <.render_id_filter filter_by={@filter_by} form={f} />
+            <div class="col-span-2">
+              <.render_source_language_filter filter_by={@filter_by} form={f} />
+            </div>
+            <.render_text_filter filter_by={@filter_by} form={f} />
+            <.render_romanized_text_filter filter_by={@filter_by} form={f} />
+            <.render_language_code_filter filter_by={@filter_by} form={f} />
+            <.clear_button />
+          </div>
+        </div>
+      </.form>
+    </div>
+    """
+  end
+
   def render_id_filter(assigns) do
     value = get_in(assigns, [:filter_by, "id"])
+    id = "id_filter"
+    assigns = assigns |> assign(value: value, id: id)
+
+    ~H"""
+    <div>
+      <div class="flex flex-col text-sm justify-center">
+        <.label for={@id}>ID</.label>
+        <.custom_live_select field={@form[:id]} options={[]} id={@id} />
+      </div>
+    </div>
+    """
+  end
+
+  def render_text_filter(assigns) do
+    value = get_in(assigns, [:filter_by, "text"])
     assigns = assigns |> assign(value: value)
 
     ~H"""
     <div>
       <div class="flex flex-col text-sm justify-center">
         <.input
-          name="id"
+          name="text"
           value={@value}
-          field={@form[:id]}
+          field={@form[:text]}
           type="text"
-          label="ID"
+          label="Text"
           class="pr-0 py-0 h-[22px]"
         />
       </div>
+    </div>
+    """
+  end
+
+  def render_romanized_text_filter(assigns) do
+    value = get_in(assigns, [:filter_by, "romanized_text"])
+    assigns = assigns |> assign(value: value)
+
+    ~H"""
+    <div>
+      <div class="flex flex-col text-sm justify-center">
+        <.input
+          name="romanized_text"
+          value={@value}
+          field={@form[:romanized_text]}
+          type="text"
+          label="Romanized Text"
+          class="pr-0 py-0 h-[22px]"
+        />
+      </div>
+    </div>
+    """
+  end
+
+  def render_language_code_filter(assigns) do
+    value = get_in(assigns, [:filter_by, "language_code"])
+    languages = Language.language_codes_for_select()
+    id = "language_code_filter"
+    assigns = assigns |> assign(value: value, languages: languages, id: id)
+
+    ~H"""
+    <div class="flex flex-col text-sm justify-center max-w-60">
+      <.label for={@id}>Language Code</.label>
+      <.custom_live_select field={@form[:language_code]} options={@languages} id={@id} />
     </div>
     """
   end
@@ -87,7 +162,13 @@ defmodule LanguageTranslatorWeb.Filters do
     ~H"""
     <div>
       <div class="flex flex-col text-sm justify-center">
-        <.input value={@value} field={@form[:email]} type="text" label="Email" class="pr-0 py-0" />
+        <.input
+          value={@value}
+          field={@form[:email]}
+          type="text"
+          label="Email"
+          class="pr-0 py-0 h-[22px]"
+        />
       </div>
     </div>
     """
@@ -95,18 +176,15 @@ defmodule LanguageTranslatorWeb.Filters do
 
   def render_username_filter(assigns) do
     value = get_in(assigns, [:filter_by, "username"])
-    assigns = assigns |> assign(value: value)
+    id = "username_filter"
+    users = User.users_for_select()
+    assigns = assigns |> assign(value: value, users: users, id: id)
 
     ~H"""
     <div>
       <div class="flex flex-col text-sm justify-center">
-        <.input
-          value={@value}
-          field={@form[:username]}
-          type="text"
-          label="Username"
-          class="pr-0 py-0"
-        />
+        <.label for={@id}>Username</.label>
+        <.custom_live_select field={@form[:username]} options={@users} id={@id} />
       </div>
     </div>
     """

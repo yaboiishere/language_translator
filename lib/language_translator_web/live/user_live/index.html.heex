@@ -3,7 +3,8 @@
     Listing Users
   </.header>
 
-  <.users_filters_form filter_by={@order_and_filter.filter_by} />
+  <.user_filters_form filter_by={@order_and_filter.filter_by} />
+  <.pagination pagination={@pagination} />
   <.table
     id="users"
     rows={@users}

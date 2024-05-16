@@ -2,7 +2,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   use LanguageTranslatorWeb, :live_view
 
-  import LanguageTranslatorWeb.Filters
+  import LanguageTranslatorWeb.FilterComponents
   import LanguageTranslatorWeb.PaginationComponent
 
   alias Ecto.Changeset
@@ -64,7 +64,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
     order_and_filter_changeset =
       OrderAndFilterChangeset.changeset(
-        %OrderAndFilterChangeset{show_cols: show_cols},
+        %OrderAndFilterChangeset{show_cols: show_cols, order_by: "id_desc"},
         params
       )
 
@@ -210,24 +210,29 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         checked_cols,
         %{
           assigns: %{
-            order_and_filter: %{order_by: order_by, filter_by: filter_by},
             pagination: %{page: page, page_size: page_size}
           }
         } = socket
       ) do
     checked_cols = Util.format_show_cols(checked_cols)
 
-    {:noreply,
-     push_patch(socket,
-       to:
-         Routes.analysis_index_path(socket, :index,
-           show_cols: checked_cols,
-           order_by: order_by,
-           filter_by: filter_by,
-           page: page,
-           page_size: page_size
-         )
-     )}
+    socket
+    |> Util.update_show_cols(checked_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.analysis_index_path(
+               socket,
+               :index,
+               Map.merge(params, %{page: page, page_size: page_size})
+             )
+         )}
+    end
   end
 
   @impl true
@@ -241,6 +246,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       case live_select_id do
         "source_language_filter" -> Language.search_display_name(text)
         "uploaded_by_filter" -> User.search_username(text)
+        "id_filter" -> Analysis.search_id(text)
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -252,13 +258,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   def handle_event(
         "filter",
         params,
-        %{
-          assigns: %{
-            order_and_filter: %{order_by: order_by, show_cols: show_cols},
-            pagination: %{page_size: page_size}
-          }
-        } =
-          socket
+        %{assigns: %{pagination: %{page_size: page_size}}} = socket
       ) do
     clean_params =
       params
@@ -266,20 +266,29 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         "_target",
         "source_language_text_input",
         "status_text_input",
-        "uploaded_by_text_input"
+        "uploaded_by_text_input",
+        "id_text_input"
       ])
       |> Enum.filter(fn {_k, v} -> v != "" end)
+      |> Enum.into(%{})
 
-    {:noreply,
-     push_patch(socket,
-       to:
-         Routes.analysis_index_path(socket, :index,
-           filter_by: clean_params,
-           order_by: order_by,
-           show_cols: show_cols,
-           page_size: page_size
-         )
-     )}
+    socket
+    |> Util.update_filter_by(clean_params)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      new_params ->
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.analysis_index_path(
+               socket,
+               :index,
+               Map.put(new_params, :page_size, page_size)
+             )
+         )}
+    end
   end
 
   @impl true
@@ -288,7 +297,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         %{"page" => page},
         %{
           assigns: %{
-            order_and_filter: %{show_cols: show_cols, filter_by: filter_by, order_by: order_by},
+            order_and_filter: order_and_filter,
             pagination: %{page_size: page_size}
           }
         } = socket
@@ -296,12 +305,14 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
     {:noreply,
      push_patch(socket,
        to:
-         Routes.analysis_index_path(socket, :index,
-           page: page,
-           page_size: page_size,
-           show_cols: show_cols,
-           filter_by: filter_by,
-           order_by: order_by
+         Routes.analysis_index_path(
+           socket,
+           :index,
+           Map.merge(OrderAndFilterChangeset.to_map(order_and_filter), %{
+             page: page,
+             page_size: page_size
+           })
+           |> tap(&IO.inspect(&1, label: "nav"))
          )
      )}
   end

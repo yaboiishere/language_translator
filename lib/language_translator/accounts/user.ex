@@ -5,6 +5,7 @@ defmodule LanguageTranslator.Accounts.User do
 
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslator.Repo
+  alias LanguageTranslatorWeb.Util
 
   schema "users" do
     field :email, :string
@@ -172,16 +173,37 @@ defmodule LanguageTranslator.Accounts.User do
     change(user, is_admin: true)
   end
 
-  def get_all(%{order_by: order_by, filter_by: filter_by}, preloads \\ []) do
-    from(u in __MODULE__)
-    |> filter_by(filter_by)
-    |> order_by(^resolve_order_by(order_by))
+  def get_all(params, preloads \\ []) do
+    all_query(params)
     |> Repo.preload(preloads)
     |> Repo.all()
   end
 
+  def paginate_all(params, pagination, preloads \\ []) do
+    %{entries: entries} =
+      paginated_query =
+      params
+      |> all_query()
+      |> Util.paginate(pagination)
+
+    entries = entries |> Repo.all() |> Repo.preload(preloads)
+
+    %{paginated_query | entries: entries}
+  end
+
+  def all_query(%{order_by: order_by, filter_by: filter_by}) do
+    query =
+      from(u in __MODULE__)
+
+    query
+    |> order_by(^resolve_order_by(order_by))
+    |> filter_by(filter_by)
+  end
+
   def search_username(search) do
-    from(u in __MODULE__, where: ilike(u.username, ^search)) |> Repo.all() |> to_select_option()
+    from(u in __MODULE__, where: ilike(u.username, ^"#{search}%"))
+    |> Repo.all()
+    |> to_select_option()
   end
 
   def users_for_select() do
@@ -192,6 +214,15 @@ defmodule LanguageTranslator.Accounts.User do
 
   defp to_select_option(users) do
     Enum.map(users, & &1.username)
+  end
+
+  def search_id(search) do
+    from(u in __MODULE__,
+      where: ilike(fragment("?::text", u.id), ^"#{search}%"),
+      select: u.id,
+      order_by: u.id
+    )
+    |> Repo.all()
   end
 
   defp filter_by(query, nil) do
@@ -209,15 +240,15 @@ defmodule LanguageTranslator.Accounts.User do
   end
 
   defp filter_by(query, {"id", id}) do
-    where(query, [a], a.id == ^id)
+    where(query, [a], a.id in ^id)
   end
 
   defp filter_by(query, {"email", email}) do
-    where(query, [a], ilike(a.email, ^"%#{email}%"))
+    where(query, [a], ilike(a.email, ^"#{email}%"))
   end
 
   defp filter_by(query, {"username", username}) do
-    where(query, [a], ilike(a.username, ^"%#{username}%"))
+    where(query, [a], ilike(a.username, ^"#{username}%"))
   end
 
   defp filter_by(query, {"admin", nil}) do
@@ -230,6 +261,8 @@ defmodule LanguageTranslator.Accounts.User do
 
   defp filter_by(query, _), do: query
 
+  def resolve_order_by("id_asc"), do: [asc: :id]
+  def resolve_order_by("id_desc"), do: [desc: :id]
   def resolve_order_by("email_asc"), do: [asc: :email]
   def resolve_order_by("email_desc"), do: [desc: :email]
   def resolve_order_by("username_asc"), do: [asc: :username]

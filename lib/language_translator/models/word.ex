@@ -10,6 +10,7 @@ defmodule LanguageTranslator.Models.Word do
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Word
+  alias LanguageTranslatorWeb.Util
 
   schema "words" do
     field :text, :string
@@ -52,6 +53,41 @@ defmodule LanguageTranslator.Models.Word do
     |> Repo.preload(preloads)
   end
 
+  def paginate_all(params, pagination) do
+    %{entries: query} =
+      paginated_query =
+      params
+      |> all_query()
+      |> Util.paginate(pagination)
+
+    entries =
+      query
+      |> Repo.all()
+
+    %{paginated_query | entries: entries}
+  end
+
+  def all_query(%{order_by: order_by, filter_by: filter_by}) do
+    query =
+      from(w in Word,
+        join: l in assoc(w, :language),
+        preload: [language: l]
+      )
+
+    query
+    |> resolve_order_by(order_by)
+    |> filter_by(filter_by)
+  end
+
+  def search_id(search) do
+    from(w in __MODULE__,
+      where: ilike(fragment("?::text", w.id), ^"#{search}%"),
+      select: w.id,
+      order_by: w.id
+    )
+    |> Repo.all()
+  end
+
   def get_translations(%__MODULE__{id: id}) do
     from(t in Translation,
       where: t.source_word_id == ^id,
@@ -83,8 +119,47 @@ defmodule LanguageTranslator.Models.Word do
     |> Enum.group_by(& &1.source_word)
   end
 
-  defp resolve_order_by(query, nil) do
+  defp filter_by(query, nil) do
     query
+  end
+
+  defp filter_by(query, %{} = filters) when map_size(filters) == 0 do
+    query
+  end
+
+  defp filter_by(query, %{} = filters) do
+    Enum.reduce(filters, query, fn {key, value}, acc ->
+      filter_by(acc, {key, value})
+    end)
+  end
+
+  defp filter_by(query, {"id", id}) do
+    where(query, [a], a.id in ^id)
+  end
+
+  defp filter_by(query, {"text", text}) do
+    where(query, [a], ilike(a.text, ^"#{text}%"))
+  end
+
+  defp filter_by(query, {"romanized_text", romanized_text}) do
+    where(query, [a], ilike(a.romanized_text, ^"#{romanized_text}%"))
+  end
+
+  defp filter_by(query, {"language_code", language_code}) do
+    where(query, [a], a.language_code in ^language_code)
+  end
+
+  defp filter_by(query, {"source_language", language}) do
+    from(a in query, where: a.language_code in ^language)
+  end
+
+  defp filter_by(query, search) do
+    Logger.error("Unknown filter: #{inspect(search)}")
+    query
+  end
+
+  defp resolve_order_by(query, nil) do
+    resolve_order_by(query, "id_desc")
   end
 
   defp resolve_order_by(query, "id_asc") do

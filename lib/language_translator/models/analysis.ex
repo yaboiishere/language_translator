@@ -148,6 +148,15 @@ defmodule LanguageTranslator.Models.Analysis do
     |> Enum.map(& &1.text)
   end
 
+  def search_id(search) do
+    from(a in __MODULE__,
+      where: ilike(fragment("?::text", a.id), ^"#{search}%"),
+      select: a.id,
+      order_by: a.id
+    )
+    |> Repo.all()
+  end
+
   defp filter_order_by(query, %{order_by: order_by, filter_by: filter_by}) do
     query
     |> filter_by(filter_by)
@@ -168,8 +177,8 @@ defmodule LanguageTranslator.Models.Analysis do
     end)
   end
 
-  defp filter_by(query, {"id", id}) do
-    where(query, [a], a.id == ^id)
+  defp filter_by(query, {"id", ids}) do
+    where(query, [a], a.id in ^ids)
   end
 
   defp filter_by(query, {"description", description}) do

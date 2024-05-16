@@ -3,6 +3,8 @@
     Listing Words
   </.header>
 
+  <.word_filters_form filter_by={@order_and_filter.filter_by} />
+  <.pagination pagination={@pagination} />
   <.table
     id="users"
     rows={@words}
@@ -15,11 +17,11 @@
     }
   >
     <:col :let={word} id="id" label="Id"><%= word.id %></:col>
-    <:col :let={word} id="text" label="Text"><%= word.text %></:col>
-    <:col :let={word} id="romanization" label="Romanization"><%= word.romanized_text %></:col>
     <:col :let={word} id="language" label="Language">
       <%= word.language.display_name %>
     </:col>
+    <:col :let={word} id="text" label="Text"><%= word.text %></:col>
+    <:col :let={word} id="romanization" label="Romanization"><%= word.romanized_text %></:col>
     <:col :let={word} id="language_code" label="Language code"><%= word.language_code %></:col>
     <:col :let={word} id="created_at" label="Created at"><%= word.inserted_at %></:col>
     <:col :let={word} id="updated_at" label="Updated at"><%= word.updated_at %></:col>

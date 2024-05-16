@@ -1,12 +1,14 @@
 defmodule LanguageTranslatorWeb.UserLive.Index do
   use LanguageTranslatorWeb, :live_view
-  import LanguageTranslatorWeb.Filters
+  import LanguageTranslatorWeb.FilterComponents
+  import LanguageTranslatorWeb.PaginationComponent
 
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts.User
   alias LanguageTranslator.Accounts
   alias LanguageTranslatorWeb.Util
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
+  alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   alias Ecto.Changeset
 
   @impl true
@@ -22,12 +24,13 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
     socket =
       socket
       |> assign_new(:current_user, fn -> current_user end)
+      |> assign(page_size: 1)
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, _url, %{assigns: %{page_size: page_size}} = socket) do
     default_show_cols = [
       "id",
       "email",
@@ -37,15 +40,34 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       "updated_at"
     ]
 
+    pagination =
+      %PaginationChangeset{page: 1, page_size: page_size}
+      |> PaginationChangeset.changeset(params)
+      |> Changeset.apply_changes()
+
     order_and_filter =
-      %OrderAndFilterChangeset{show_cols: default_show_cols}
+      %OrderAndFilterChangeset{show_cols: default_show_cols, order_by: "id_desc"}
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
+
+    pagination_params =
+      %{
+        entries: users
+      } =
+      User.paginate_all(order_and_filter, pagination)
+
+    pagination =
+      pagination
+      |> PaginationChangeset.changeset(pagination_params)
+      |> Changeset.apply_changes()
+
+    # Analysis.paginate_all(current_user, order_and_filter, pagination)
 
     socket =
       socket
       |> assign(:order_and_filter, order_and_filter)
-      |> assign(:users, User.get_all(order_and_filter))
+      |> assign(:users, users)
+      |> assign(:pagination, pagination)
 
     {:noreply, socket}
   end
@@ -54,7 +76,8 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
   def handle_event(
         "sort",
         %{"col" => field},
-        socket
+        %{assigns: %{pagination: %{page_size: page_size}}} =
+          socket
       ) do
     Util.update_order_by(socket, field)
     |> case do
@@ -62,27 +85,95 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
         {:noreply, socket}
 
       params ->
-        {:noreply, push_patch(socket, to: Routes.user_index_path(socket, :index, params))}
+        {:noreply,
+         push_patch(socket,
+           to: Routes.user_index_path(socket, :index, Map.put(params, :page_size, page_size))
+         )}
     end
   end
 
   @impl true
-  def handle_event("show_cols", checked_cols, socket) do
+  def handle_event(
+        "show_cols",
+        checked_cols,
+        %{assigns: %{pagination: %{page: page, page_size: page_size}}} = socket
+      ) do
     checked_cols = Util.format_show_cols(checked_cols)
 
-    {:noreply,
-     push_patch(socket,
-       to: Routes.user_index_path(socket, :index, %{"show_cols" => checked_cols})
-     )}
+    socket
+    |> Util.update_show_cols(checked_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.user_index_path(
+               socket,
+               :index,
+               Map.merge(params, %{page: page, page_size: page_size})
+             )
+         )}
+    end
   end
 
-  def handle_event("filter", params, socket) do
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    options =
+      case live_select_id do
+        "id_filter" -> User.search_id(text)
+        "username_filter" -> User.search_username(text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("filter", params, %{assigns: %{pagination: %{page_size: page_size}}} = socket) do
     clean_params =
       params
-      |> Map.drop(["_target"])
+      |> Map.drop(["_target", "id_text_input", "username_text_input"])
       |> Enum.filter(fn {_k, v} -> v != "" end)
+      |> Enum.into(%{})
 
+    socket
+    |> Util.update_filter_by(clean_params)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.user_index_path(socket, :index, Map.merge(params, %{page_size: page_size}))
+         )}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "nav",
+        %{"page" => page},
+        %{
+          assigns: %{
+            order_and_filter: order_and_filter,
+            pagination: %{page_size: page_size}
+          }
+        } = socket
+      ) do
     {:noreply,
-     push_patch(socket, to: Routes.user_index_path(socket, :index, filter_by: clean_params))}
+     push_patch(socket,
+       to:
+         Routes.user_index_path(
+           socket,
+           :index,
+           Map.merge(OrderAndFilterChangeset.to_map(order_and_filter), %{
+             page: page,
+             page_size: page_size
+           })
+         )
+     )}
   end
 end
