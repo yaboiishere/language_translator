@@ -1,7 +1,6 @@
 defmodule LanguageTranslatorWeb.WordLive.Index do
   use LanguageTranslatorWeb, :live_view
 
-  import LanguageTranslatorWeb.PaginationComponent
   import LanguageTranslatorWeb.FilterComponents
 
   alias LanguageTranslator.Models.Word

@@ -4,7 +4,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   use LanguageTranslatorWeb, :live_view
 
   import LanguageTranslatorWeb.FilterComponents
-  import LanguageTranslatorWeb.PaginationComponent
 
   alias Ecto.Changeset
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
@@ -144,9 +143,16 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         {:update_analysis, analysis},
         %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} = socket
       ) do
+    {flash_type, flash_message} =
+      case analysis.status do
+        :completed -> {:info, "Analysis #{analysis.id} completed successfully."}
+        :failed -> {:error, "Analysis #{analysis.id} failed."}
+        _ -> {:info, "Analysis #{analysis.id} updated with status: #{analysis.status}"}
+      end
+
     socket =
       socket
-      |> put_flash(:info, "Analysis #{analysis.id} completed with status: #{analysis.status}")
+      |> put_flash(flash_type, flash_message)
       |> assign(
         :analysis_collection,
         Analysis.get_all(current_user, order_and_filter)

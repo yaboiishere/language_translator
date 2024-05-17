@@ -1,7 +1,6 @@
 defmodule LanguageTranslatorWeb.UserLive.Index do
   use LanguageTranslatorWeb, :live_view
   import LanguageTranslatorWeb.FilterComponents
-  import LanguageTranslatorWeb.PaginationComponent
 
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslator.Accounts.User

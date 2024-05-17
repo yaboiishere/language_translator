@@ -15,7 +15,8 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
         %{
           entries: entries,
           columns: columns,
-          order_and_filter: order_and_filter
+          order_and_filter: order_and_filter,
+          source_language: source_language
         },
         socket
       ) do
@@ -23,7 +24,8 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
       assign(socket,
         entries: entries,
         columns: columns,
-        order_and_filter: order_and_filter
+        order_and_filter: order_and_filter,
+        source_language: source_language
       )
 
     {:ok, socket}
@@ -43,11 +45,16 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
         </div>
       <% else %>
         <div class="relative overflow-x-auto shadow-md rounded-lg max-h-screen">
-          <table class="auto w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950">
-            <thead class="text-sm">
+          <table class="w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950 border border-2">
+            <thead class="text-sm w-full">
               <tr class="sticky top-0 z-40 border-b">
-                <th scope="col" class="relative px-6 py-3 text-secondary-950 uppercase bg-white">
-                  Source
+                <th
+                  scope="col"
+                  class="relative sticky top-0 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300"
+                >
+                  <div class="mx-auto">
+                    <%= "#{@source_language.display_name} - #{@source_language.code}" %>
+                  </div>
                 </th>
                 <%= for {column, i} <- Enum.with_index(@columns) do %>
                   <%= if column[:id] in @order_and_filter.show_cols do %>
@@ -68,42 +75,24 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
               <%= for {source, translations} <- @entries do %>
                 <tr class="group bg-white border-b hover:bg-primary-100 hover:text-secondary-800 overflow-y-auto">
                   <td
-                    class="sticky left-0 px-6 py-4 font-medium whitespace-nowrap bg-white group-hover:bg-primary-100 max-w-80"
+                    class="sticky -left-1 px-6 py-4 font-medium whitespace-nowrap bg-primary-300  max-w-80"
                     phx-click="show_word"
                     phx-value-text={source.text}
                     phx-value-language_code={source.language_code}
                   >
-                    <%= "#{source.text} - #{source.romanized_text}" %>
+                    <div class="mx-auto">
+                      <div>
+                        <%= source.text %>
+                      </div>
+                      <div class="text-gray-500">
+                        <%= source.romanized_text %>
+                      </div>
+                    </div>
                   </td>
                   <%= for {column, i} <- Enum.with_index(@columns) do %>
                     <%= if column[:id] in @order_and_filter.show_cols do %>
-                      <% %Table{
-                        text: text,
-                        romanized_text: romanized_text,
-                        lavenshtein: lavenshtein,
-                        language_code: language_code
-                      } =
-                        Enum.at(translations, i) %>
-
-                      <%= if rem(i, 2) == 1 do %>
-                        <td
-                          class="px-10 py-4 font-medium cursor-pointer"
-                          phx-click="show_word"
-                          phx-value-text={text}
-                          phx-value-language_code={language_code}
-                        >
-                          <%= "#{text} (#{romanized_text}) - #{lavenshtein}" %>
-                        </td>
-                      <% else %>
-                        <td
-                          class="px-10 py-4 font-medium bg-primary-100 group-hover:bg-primary-200 cursor-pointer"
-                          phx-click="show_word"
-                          phx-value-text={text}
-                          phx-value-language_code={language_code}
-                        >
-                          <%= "#{text} (#{romanized_text}) - #{lavenshtein}" %>
-                        </td>
-                      <% end %>
+                      <% word = Enum.at(translations, i) %>
+                      <.word word={word} index={i} />
                     <% end %>
                   <% end %>
                 </tr>
@@ -116,16 +105,52 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
     """
   end
 
-  defp format_cols(columns) do
-    Enum.map(columns, fn column ->
-      [label | id_parts] =
-        column
-        |> String.split("-")
-        |> Enum.map(&String.trim/1)
+  defp word(
+         assigns = %{
+           word: %Table{
+             text: text,
+             romanized_text: romanized_text,
+             lavenshtein: lavenshtein,
+             language_code: language_code
+           },
+           index: index
+         }
+       ) do
+    extra_classes =
+      if rem(index, 2) == 0,
+        do: "bg-primary-100 group-hover:bg-primary-200",
+        else: "bg-white  group-hover:bg-primary-100"
 
-      id = Enum.join(id_parts, "-")
+    assigns =
+      assign(assigns,
+        extra_classes: extra_classes,
+        text: text,
+        romanized_text: romanized_text,
+        lavenshtein: lavenshtein,
+        language_code: language_code
+      )
 
-      %{label: label, id: id}
-    end)
+    ~H"""
+    <td
+      class={["min-w-52 px-5 font-medium cursor-pointer", @extra_classes]}
+      phx-click="show_word"
+      phx-value-text={@text}
+      phx-value-language_code={@language_code}
+    >
+      <div class="flex justify-between gap-4 w-full ">
+        <div class="text-center">
+          <div class="font-medium ">
+            <%= @text %>
+          </div>
+          <div class="text-gray-500">
+            <%= @romanized_text %>
+          </div>
+        </div>
+        <div class="my-auto font-semibold text-gray-900 group-hover:text-secondary-800 text-center">
+          <%= "#{@lavenshtein}" %>
+        </div>
+      </div>
+    </td>
+    """
   end
 end
