@@ -42,8 +42,12 @@
         No
       <% end %>
     </:col>
-    <:col :let={analysis} id="created_at" label="Created at"><%= analysis.inserted_at %></:col>
-    <:col :let={analysis} id="updated_at" label="Updated at"><%= analysis.updated_at %></:col>
+    <:col :let={analysis} id="created_at" label="Created at">
+      <.date_time date_time_utc={analysis.inserted_at} />
+    </:col>
+    <:col :let={analysis} id="updated_at" label="Updated at">
+      <.date_time date_time_utc={analysis.updated_at} />
+    </:col>
     <:action :let={analysis}>
       <%= if analysis.status == :failed and @current_user == analysis.user do %>
         <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>

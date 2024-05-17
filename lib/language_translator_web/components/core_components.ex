@@ -897,4 +897,25 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       ""
     end
   end
+
+  attr :date_time_utc, :map, required: true
+
+  def date_time(%{date_time_utc: date_time} = assigns) do
+    %DateTime{year: year, day: day, month: month, hour: hour, minute: minute, second: second} =
+      date_time
+
+    date = "#{year}/#{month}/#{day}"
+    time = "#{hour}:#{minute}:#{second}"
+
+    assigns = assign(assigns, date: date, time: time)
+
+    ~H"""
+    <div>
+      <%= @date %>
+      <div>
+        <%= @time %>
+      </div>
+    </div>
+    """
+  end
 end

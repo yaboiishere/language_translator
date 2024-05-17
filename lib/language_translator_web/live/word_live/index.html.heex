@@ -23,7 +23,11 @@
     <:col :let={word} id="text" label="Text"><%= word.text %></:col>
     <:col :let={word} id="romanization" label="Romanization"><%= word.romanized_text %></:col>
     <:col :let={word} id="language_code" label="Language code"><%= word.language_code %></:col>
-    <:col :let={word} id="created_at" label="Created at"><%= word.inserted_at %></:col>
-    <:col :let={word} id="updated_at" label="Updated at"><%= word.updated_at %></:col>
+    <:col :let={word} id="created_at" label="Created at">
+      <.date_time date_time_utc={word.inserted_at} />
+    </:col>
+    <:col :let={word} id="updated_at" label="Updated at">
+      <.date_time date_time_utc={word.updated_at} />
+    </:col>
   </.table>
 </div>

@@ -29,7 +29,11 @@
         <.toggle />
       </label>
     </:col>
-    <:col :let={user} id="created_at" label="Created at"><%= user.inserted_at %></:col>
-    <:col :let={user} id="updated_at" label="Updated at"><%= user.updated_at %></:col>
+    <:col :let={user} id="created_at" label="Created at">
+      <.date_time date_time_utc={user.inserted_at} />
+    </:col>
+    <:col :let={user} id="updated_at" label="Updated at">
+      <.date_time date_time_utc={user.updated_at} />
+    </:col>
   </.table>
 </div>
