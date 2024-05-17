@@ -61,7 +61,10 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
     else
       ~H"""
       <div class="">
-        <nav class="flex max-w-full" aria-label="Pagination">
+        <nav
+          class={["flex max-w-full", if(@total_pages == 1, do: "invisible", else: "")]}
+          aria-label="Pagination"
+        >
           <div class="col-span-1"><.first page={@page} /></div>
           <div class="col-span-1"><.prev page={@page} total_pages={@total_pages} /></div>
           <%= for idx <- ( @page - @pages_behind)..(@page + @pages_ahead) do %>
@@ -78,7 +81,7 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
           <div class="col-span-1"><.next page={@page} total_pages={@total_pages} /></div>
           <div class="col-span-1"><.last page={@page} total_pages={@total_pages} /></div>
         </nav>
-        <div class="flex justify-end border-t border-gray-200 bg-white pr-0 py-0">
+        <div class="flex justify-end bg-white pr-0 py-0">
           <div class="text-sm text-gray-700">
             Showing <span class="font-medium"><%= @page_size * (@page - 1) + 1 %></span>
             to <span class="font-medium"><%= clamp(@page_size * @page, 0, @total_entries) %></span>

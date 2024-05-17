@@ -124,6 +124,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
         "source_language_filter" -> Language.search_display_name(text)
         "language_code_filter" -> Language.search_code(text)
         "id_filter" -> Word.search_id(text)
+        "_page_size_live_select_component" -> Util.page_size_options()
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -141,6 +142,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
       case live_select_id do
         "source_language_filter" -> Language.languages_for_select()
         "language_code_filter" -> Language.language_codes_for_select()
+        "_page_size_live_select_component" -> Util.page_size_options()
         "id_filter" -> []
       end
 
@@ -159,7 +161,8 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
       Util.clean_filter_params(params, [
         "_target",
         "source_language_text_input",
-        "source_language_code_text_input"
+        "source_language_code_text_input",
+        "_page_size_live_select_component"
       ])
 
     socket

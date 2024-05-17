@@ -80,10 +80,8 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
                     phx-value-text={source.text}
                     phx-value-language_code={source.language_code}
                   >
-                    <div class="mx-auto">
-                      <div>
-                        <%= source.text %>
-                      </div>
+                    <div class="text-center">
+                      <%= source.text %>
                       <div class="text-gray-500">
                         <%= source.romanized_text %>
                       </div>

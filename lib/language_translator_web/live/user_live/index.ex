@@ -23,7 +23,7 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
     socket =
       socket
       |> assign_new(:current_user, fn -> current_user end)
-      |> assign(page_size: 1)
+      |> assign(page_size: 10)
 
     {:ok, socket}
   end
@@ -126,6 +126,7 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       case live_select_id do
         "id_filter" -> User.search_id(text)
         "username_filter" -> User.search_username(text)
+        "_page_size_live_select_component" -> Util.page_size_options()
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -148,6 +149,7 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       case live_select_id do
         "id_filter" -> []
         "username_filter" -> User.users_for_select()
+        "_page_size_live_select_component" -> Util.page_size_options()
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -157,7 +159,12 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
 
   def handle_event("filter", params, %{assigns: %{pagination: %{page_size: page_size}}} = socket) do
     clean_params =
-      Util.clean_filter_params(params, ["_target", "id_text_input", "username_text_input"])
+      Util.clean_filter_params(params, [
+        "_target",
+        "id_text_input",
+        "username_text_input",
+        "_page_size_live_select_component"
+      ])
 
     socket
     |> Util.update_filter_by(clean_params)

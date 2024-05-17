@@ -247,6 +247,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         "uploaded_by_filter" -> User.search_username(text)
         "id_filter" -> Analysis.search_id(text)
         "status_filter" -> Analysis.search_status(text)
+        "_page_size_live_select_component" -> Util.page_size_options()
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -266,6 +267,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         "uploaded_by_filter" -> User.users_for_select()
         "status_filter" -> Analysis.statuses_for_select()
         "id_filter" -> []
+        "_page_size_live_select_component" -> Util.page_size_options()
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
@@ -285,7 +287,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         "source_language_text_input",
         "status_text_input",
         "uploaded_by_text_input",
-        "id_text_input"
+        "id_text_input",
+        "_page_size_live_select_component"
       ])
 
     socket

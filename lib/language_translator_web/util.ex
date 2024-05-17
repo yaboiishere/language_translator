@@ -105,4 +105,8 @@ defmodule LanguageTranslatorWeb.Util do
       total_pages: ceil(total_entries / page_size)
     }
   end
+
+  def page_size_options() do
+    [10, 25, 50, 100]
+  end
 end

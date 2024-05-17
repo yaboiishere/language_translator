@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.PageSizeComponent do
+  alias LanguageTranslatorWeb.Util
   use Phoenix.LiveComponent
 
   import LiveSelect
@@ -7,7 +8,7 @@ defmodule LanguageTranslatorWeb.PageSizeComponent do
     assigns =
       assigns
       |> assign(expanded: false)
-      |> assign(options: [10, 20, 50, 100])
+      |> assign(options: Util.page_size_options())
 
     {:ok, assigns}
   end
@@ -51,41 +52,5 @@ defmodule LanguageTranslatorWeb.PageSizeComponent do
       </.form>
     </div>
     """
-
-    # ~H"""
-    # <div class="relative">
-    #   <button
-    #     phx-click={if @expanded, do: "close", else: "toggle"}
-    #     phx-target={@myself}
-    #     class="align-center flex rounded-lg hover:bg-primary-200 bg-primary-300 py-2 px-3
-    #      text-sm font-semibold leading-6 text-text-light hover:text-text-medium"
-    #   >
-    #     <span><%= "Page size: #{@pagination.page_size}" %></span>
-    #     <svg
-    #       class="w-2.5 h-2.5 ms-3 my-auto"
-    #       aria-hidden="true"
-    #       xmlns="http://www.w3.org/2000/svg"
-    #       fill="none"
-    #       viewBox="0 0 10 6"
-    #     >
-    #       <path
-    #         stroke="currentColor"
-    #         stroke-linecap="round"
-    #         stroke-linejoin="round"
-    #         stroke-width="2"
-    #         d="m1 1 4 4 4-4"
-    #       />
-    #     </svg>
-    #   </button>
-    #   <!-- Dropdown menu -->
-    #   <%= if @expanded do %>
-    #     <div class="z-50 absolute right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-10 border border-secondary-500 max-h-60 overflow-y-auto mt-2">
-    #       <form phx-change="page_size">
-    #         <ul class="m-2text-sm text-gray-700"></ul>
-    #       </form>
-    #     </div>
-    #   <% end %>
-    # </div>
-    # """
   end
 end
