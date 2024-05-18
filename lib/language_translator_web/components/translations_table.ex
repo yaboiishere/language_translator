@@ -50,7 +50,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
               <tr class="sticky top-0 z-40 border-b">
                 <th
                   scope="col"
-                  class="relative sticky top-0 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300"
+                  class="relative sticky top-0 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300 max-w-60 flex shrink-0"
                 >
                   <div class="mx-auto">
                     <%= "#{@source_language.display_name} - #{@source_language.code}" %>
@@ -75,12 +75,12 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
               <%= for {source, translations} <- @entries do %>
                 <tr class="group bg-white border-b hover:bg-primary-100 hover:text-secondary-800 overflow-y-auto">
                   <td
-                    class="sticky -left-1 px-6 py-4 font-medium whitespace-nowrap bg-primary-300  max-w-80"
+                    class="sticky -left-1 px-6 py-4 font-medium whitespace-nowrap bg-primary-300 max-w-60 flex shrink-0 cursor-pointer"
                     phx-click="show_word"
                     phx-value-text={source.text}
                     phx-value-language_code={source.language_code}
                   >
-                    <div class="text-center">
+                    <div class="text-center mx-auto">
                       <%= source.text %>
                       <div class="text-gray-500">
                         <%= source.romanized_text %>

@@ -18,7 +18,7 @@
     <:col :let={user} id="email" label="Email"><%= user.email %></:col>
     <:col :let={user} id="username" label="Username"><%= user.username %></:col>
     <:col :let={user} id="admin" label="Admin">
-      <label class="items-center cursor-pointer">
+      <label class="flex justify-center cursor-pointer">
         <% is_disabled = user.id == @current_user.id %>
         <input
           type="checkbox"

@@ -129,6 +129,24 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
      )}
   end
 
+  def handle_event(
+        "show_all",
+        _params,
+        %{assigns: %{analysis: %{id: id}, columns: columns}} = socket
+      ) do
+    checked_cols = columns |> Enum.map(&Map.get(&1, :id))
+
+    {:noreply,
+     push_patch(socket,
+       to: Routes.analysis_show_path(socket, :show, id, show_cols: checked_cols)
+     )}
+  end
+
+  def handle_event("hide_all", _params, %{assigns: %{analysis: %{id: id}}} = socket) do
+    {:noreply,
+     push_patch(socket, to: Routes.analysis_show_path(socket, :show, id, show_cols: ["none"]))}
+  end
+
   defp page_title(:show), do: "Show Analysis"
   defp page_title(:edit), do: "Edit Analysis"
 end

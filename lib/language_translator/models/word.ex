@@ -202,11 +202,11 @@ defmodule LanguageTranslator.Models.Word do
     order_by(query, [w], desc: w.romanized_text)
   end
 
-  defp resolve_order_by(query, "inserted_at_asc") do
+  defp resolve_order_by(query, "created_at_asc") do
     order_by(query, [w], w.inserted_at)
   end
 
-  defp resolve_order_by(query, "inserted_at_desc") do
+  defp resolve_order_by(query, "created_at_desc") do
     order_by(query, [w], desc: w.inserted_at)
   end
 

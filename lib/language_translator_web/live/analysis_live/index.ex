@@ -40,23 +40,23 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
     {:ok, socket}
   end
 
+  @default_show_cols [
+    "id",
+    "description",
+    "source_language",
+    "status",
+    "uploaded_by",
+    "public",
+    "created_at",
+    "updated_at"
+  ]
+
   @impl true
   def handle_params(
         params,
         _url,
         %{assigns: %{current_user: current_user, page_size: page_size}} = socket
       ) do
-    show_cols = [
-      "id",
-      "description",
-      "source_language",
-      "status",
-      "uploaded_by",
-      "public",
-      "created_at",
-      "updated_at"
-    ]
-
     pagination =
       %PaginationChangeset{page: 1, page_size: page_size}
       |> PaginationChangeset.changeset(params)
@@ -64,7 +64,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
     order_and_filter_changeset =
       OrderAndFilterChangeset.changeset(
-        %OrderAndFilterChangeset{show_cols: show_cols, order_by: "id_desc"},
+        %OrderAndFilterChangeset{show_cols: @default_show_cols, order_by: "id_desc"},
         params
       )
 
@@ -93,7 +93,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       socket
       |> assign(:order_and_filter, order_and_filter)
       |> assign(:analysis_collection, analyses)
-      |> assign(:columns, show_cols)
       |> assign(:pagination, pagination)
 
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
@@ -141,7 +140,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   @impl true
   def handle_info(
         {:update_analysis, analysis},
-        %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} = socket
+        %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} =
+          socket
       ) do
     {flash_type, flash_message} =
       case analysis.status do
@@ -156,6 +156,27 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> assign(
         :analysis_collection,
         Analysis.get_all(current_user, order_and_filter)
+      )
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(
+        {:edit_analysis, _analysis},
+        %{
+          assigns: %{
+            order_and_filter: order_and_filter,
+            current_user: current_user,
+            pagination: pagination
+          }
+        } = socket
+      ) do
+    socket =
+      socket
+      |> assign(
+        :analysis_collection,
+        Analysis.paginate_all(current_user, order_and_filter, pagination)
       )
 
     {:noreply, socket}
@@ -234,6 +255,62 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
                socket,
                :index,
                Map.merge(params, %{page: page, page_size: page_size})
+             )
+         )}
+    end
+  end
+
+  def handle_event(
+        "show_all",
+        _params,
+        %{assigns: %{pagination: %{page: page, page_size: page_size}}} = socket
+      ) do
+    socket
+    |> Util.update_show_cols(@default_show_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.analysis_index_path(
+               socket,
+               :index,
+               params
+             )
+         )}
+    end
+  end
+
+  def handle_event(
+        "hide_all",
+        _params,
+        %{
+          assigns: %{
+            pagination: %{page: page, page_size: page_size}
+          }
+        } = socket
+      ) do
+    socket
+    |> Util.update_show_cols(["none"])
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.analysis_index_path(
+               socket,
+               :index,
+               params
              )
          )}
     end

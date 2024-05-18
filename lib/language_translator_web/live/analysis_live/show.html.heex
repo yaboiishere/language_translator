@@ -25,8 +25,12 @@
       <:item title="Language"><%= @analysis.source_language.display_name %></:item>
       <:item title="Status"><%= @analysis.status %></:item>
       <:item title="Public"><%= if @analysis.is_public, do: "Yes", else: "No" %></:item>
-      <:item title="Created at"><%= @analysis.inserted_at %></:item>
-      <:item title="Updated at"><%= @analysis.updated_at %></:item>
+      <:item title="Created at">
+        <.date_time date_time_utc={@analysis.inserted_at} same_line={true} />
+      </:item>
+      <:item title="Updated at">
+        <.date_time date_time_utc={@analysis.updated_at} same_line={true} />
+      </:item>
     </.list>
   </div>
   <div class="mt-4"></div>
@@ -54,5 +58,6 @@
     analysis={@analysis}
     current_user={@current_user}
     patch={~p"/analysis/#{@analysis}"}
+    form_data={%{description: @analysis.description, is_public: @analysis.is_public}}
   />
 </.modal>

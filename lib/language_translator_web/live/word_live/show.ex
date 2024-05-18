@@ -71,4 +71,9 @@ defmodule LanguageTranslatorWeb.WordLive.Show do
   def handle_info({:update_analysis, _analysis}, socket) do
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_info({:edit_analysis, _analysis}, socket) do
+    {:noreply, socket}
+  end
 end

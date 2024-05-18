@@ -76,6 +76,10 @@ defmodule LanguageTranslatorWeb.Util do
     checked_cols
     |> Enum.filter(fn {_, value} -> value == "true" end)
     |> Enum.into([], fn {key, _} -> key end)
+    |> case do
+      [] -> ["none"]
+      cols -> cols
+    end
   end
 
   def clean_filter_params(params, to_drop) do

@@ -10,6 +10,15 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
   alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   alias Ecto.Changeset
 
+  @default_show_cols [
+    "id",
+    "email",
+    "username",
+    "admin",
+    "created_at",
+    "updated_at"
+  ]
+
   @impl true
   def mount(_params, session, socket) do
     current_user =
@@ -30,15 +39,6 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
 
   @impl true
   def handle_params(params, _url, %{assigns: %{page_size: page_size}} = socket) do
-    default_show_cols = [
-      "id",
-      "email",
-      "username",
-      "admin",
-      "created_at",
-      "updated_at"
-    ]
-
     pagination =
       %PaginationChangeset{page: 1, page_size: page_size}
       |> PaginationChangeset.changeset(params)
@@ -46,7 +46,7 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
 
     order_and_filter =
       %OrderAndFilterChangeset{
-        show_cols: default_show_cols,
+        show_cols: @default_show_cols,
         order_by: "id_desc"
       }
       |> OrderAndFilterChangeset.changeset(params)
@@ -63,8 +63,6 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       |> PaginationChangeset.changeset(pagination_params)
       |> Changeset.apply_changes()
 
-    # Analysis.paginate_all(current_user, order_and_filter, pagination)
-
     socket =
       socket
       |> assign(:order_and_filter, order_and_filter)
@@ -72,6 +70,62 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
       |> assign(:pagination, pagination)
 
     {:noreply, socket}
+  end
+
+  def handle_event(
+        "show_all",
+        _params,
+        %{assigns: %{pagination: %{page: page, page_size: page_size}}} = socket
+      ) do
+    socket
+    |> Util.update_show_cols(@default_show_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.user_index_path(
+               socket,
+               :index,
+               params
+             )
+         )}
+    end
+  end
+
+  def handle_event(
+        "hide_all",
+        _params,
+        %{
+          assigns: %{
+            pagination: %{page: page, page_size: page_size}
+          }
+        } = socket
+      ) do
+    socket
+    |> Util.update_show_cols(["none"])
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.user_index_path(
+               socket,
+               :index,
+               params
+             )
+         )}
+    end
   end
 
   @impl true

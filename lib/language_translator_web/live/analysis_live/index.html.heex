@@ -91,7 +91,7 @@
     title={@page_title}
     action={@live_action}
     analysis={@analysis}
-    form_data={%{}}
+    form_data={%{is_public: @analysis.is_public, description: @analysis.description}}
     patch={~p"/analysis"}
     is_file={@is_file}
     languages={@languages}

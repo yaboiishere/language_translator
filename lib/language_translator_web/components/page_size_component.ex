@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.PageSizeComponent do
+  alias LanguageTranslatorWeb.Changesets.PaginationChangeset
   alias LanguageTranslatorWeb.Util
   use Phoenix.LiveComponent
 
@@ -13,6 +14,17 @@ defmodule LanguageTranslatorWeb.PageSizeComponent do
     {:ok, assigns}
   end
 
+  def update(%{pagination: pagination} = assigns, socket) do
+    pagination = PaginationChangeset.to_string_map(pagination)
+
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(pagination: pagination)
+
+    {:ok, socket}
+  end
+
   def handle_event("toggle", _params, %{assigns: %{expanded: expanded}} = socket) do
     {:noreply, assign(socket, expanded: !expanded)}
   end
@@ -24,14 +36,13 @@ defmodule LanguageTranslatorWeb.PageSizeComponent do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <.form :let={f} for={%{}} phx-change="page_size">
+      <.form :let={f} for={@pagination} phx-change="page_size">
         <.live_select
           field={f[:page_size]}
           options={@options}
           mode={:single}
           text_input_class="text-secondary-950 align-center flex rounded-lg hover:bg-primary-200 bg-primary-300 py-2 px-3 
           text-sm font-semibold leading-6 hover:text-text-medium w-20 border-none cursor-pointer"
-          value={@pagination.page_size}
         >
         </.live_select>
         <svg

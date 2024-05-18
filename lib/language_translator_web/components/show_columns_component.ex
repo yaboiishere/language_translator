@@ -1,12 +1,30 @@
 defmodule LanguageTranslatorWeb.ShowColumnsComponent do
+  alias LanguageTranslatorWeb.CoreComponents
   use Phoenix.LiveComponent
+  import CoreComponents
 
-  def mount(assigns) do
-    assigns =
-      assigns
+  def mount(socket) do
+    socket =
+      socket
       |> assign(expanded: false)
+      |> assign(search_form: %{"query" => ""})
 
-    {:ok, assigns}
+    {:ok, socket}
+  end
+
+  def update(
+        %{columns: columns} = assigns,
+        %{assigns: %{search_form: %{"query" => query}}} = socket
+      ) do
+    filtered_columns = filter_columns(columns, query)
+
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(columns: columns)
+      |> assign(filtered_columns: filtered_columns)
+
+    {:ok, socket}
   end
 
   def handle_event("toggle", _params, %{assigns: %{expanded: expanded}} = socket) do
@@ -15,6 +33,25 @@ defmodule LanguageTranslatorWeb.ShowColumnsComponent do
 
   def handle_event("close", _params, socket) do
     {:noreply, assign(socket, expanded: false)}
+  end
+
+  def handle_event("search", %{"query" => query}, %{assigns: %{columns: columns}} = socket) do
+    filtered_columns = filter_columns(columns, query)
+
+    socket = assign(socket, search_form: %{"query" => query}, filtered_columns: filtered_columns)
+    {:noreply, socket}
+  end
+
+  defp filter_columns([], _query), do: []
+  defp filter_columns(columns, ""), do: columns
+
+  defp filter_columns(columns, query) do
+    lower_query = String.downcase(query)
+
+    Enum.filter(columns, fn col ->
+      lower_label = String.downcase(col[:label])
+      String.contains?(lower_label, lower_query)
+    end)
   end
 
   def render(assigns) do
@@ -46,13 +83,27 @@ defmodule LanguageTranslatorWeb.ShowColumnsComponent do
       <!-- Dropdown menu -->
       <%= if @expanded do %>
         <div
-          class="z-50 absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-42 border border-secondary-500 max-h-60 overflow-y-auto mt-2"
+          class="z-50 absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-42 border border-secondary-500 min-w-60 max-h-96 overflow-y-auto mt-2"
           phx-click-away="close"
           phx-target={@myself}
         >
+          <div class="flex p-2 rounded">
+            <label class="inline-flex items-center w-full">
+              <.button phx-click="show_all" class="w-full">Show all</.button>
+              <.button phx-click="hide_all" class="w-full">Hide all</.button>
+            </label>
+          </div>
+          <.form :let={f} for={@search_form} phx-change="search" phx-target={@myself}>
+            <.input
+              type="text"
+              field={f[:query]}
+              class="w-full p-2 rounded"
+              placeholder="Search columns"
+            />
+          </.form>
           <form phx-change="show_cols">
             <ul class="p-3 space-y-1 text-sm text-gray-700">
-              <%= for col <- @columns do %>
+              <%= for col <- @filtered_columns do %>
                 <li>
                   <div class="flex p-2 rounded hover:bg-gray-100">
                     <label class="inline-flex items-center w-full cursor-pointer">

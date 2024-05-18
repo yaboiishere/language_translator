@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
+  alias LanguageTranslator.ProcessGroups
   alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   use LanguageTranslatorWeb, :live_component
 
@@ -38,8 +39,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
               <div class="mt-4 ml-2">
                 <input
                   type="checkbox"
-                  value={@is_public}
-                  checked={@is_public}
+                  value={@form_data.is_public}
+                  checked={@form_data.is_public}
                   class="sr-only peer"
                   name="is_public"
                 />
@@ -191,7 +192,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   def handle_event(
         "update",
-        %{"analysis" => analysis_params} = params,
+        %{"analysis_create_changeset" => analysis_params} = params,
         %{assigns: %{analysis: analysis}} = socket
       ) do
     is_public =
@@ -206,6 +207,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
     case Models.update_analysis(analysis, analysis_params) do
       {:ok, analysis} ->
+        ProcessGroups.Analysis.edit_analysis(analysis)
         notify_parent({:saved, analysis})
 
         {:noreply,

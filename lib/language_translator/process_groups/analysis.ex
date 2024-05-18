@@ -21,6 +21,10 @@ defmodule LanguageTranslator.ProcessGroups.Analysis do
     broadcast({:update_analysis, analysis})
   end
 
+  def edit_analysis(analysis) do
+    broadcast({:edit_analysis, analysis})
+  end
+
   def count_members() do
     @group_name
     |> :pg.get_members()

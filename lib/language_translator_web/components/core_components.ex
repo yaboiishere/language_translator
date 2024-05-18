@@ -540,10 +540,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           class="divide-y divide-secondary-200 border-t border-secondary-200 text-md text-zinc-700 overflow-y-scroll w-full"
         >
           <%= for row <- @rows do %>
-            <tr
-              id={@row_id && @row_id.(row)}
-              class="hover:bg-primary-200 rounded-lg h-14 overflow-y-auto w-full"
-            >
+            <tr id={@row_id && @row_id.(row)} class="hover:bg-primary-200 h-14 overflow-y-auto w-full">
               <%= for {col, i} <- Enum.with_index(@col) do %>
                 <%= if (col[:id] in @show_cols) do %>
                   <td
@@ -551,7 +548,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
                     class={[
                       "p-0 max-h-20 divide-secondary-200 max-w-40",
                       @row_click && "hover:cursor-pointer",
-                      i == 0 && "rounded-l-lg",
+                      i == 0 && "rounded-l-md",
                       col[:id] == "id" && "max-w-20"
                     ]}
                   >
@@ -899,18 +896,21 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   end
 
   attr :date_time_utc, :map, required: true
+  attr :same_line, :boolean
 
   def date_time(%{date_time_utc: date_time} = assigns) do
+    same_line = Map.get(assigns, :same_line, false)
+
     %DateTime{year: year, day: day, month: month, hour: hour, minute: minute, second: second} =
       date_time
 
     date = "#{year}/#{month}/#{day}"
     time = "#{hour}:#{minute}:#{second}"
 
-    assigns = assign(assigns, date: date, time: time)
+    assigns = assign(assigns, date: date, time: time, same_line: same_line)
 
     ~H"""
-    <div>
+    <div class={[if(@same_line, do: "flex gap-2 justify-center", else: "")]}>
       <%= @date %>
       <div>
         <%= @time %>

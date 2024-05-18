@@ -19,4 +19,11 @@ defmodule LanguageTranslatorWeb.Changesets.PaginationChangeset do
     |> Map.from_struct()
     |> Map.drop([:__meta__, :__struct__])
   end
+
+  def to_string_map(%__MODULE__{} = pagination) do
+    pagination
+    |> to_map()
+    |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
+    |> Enum.into(%{})
+  end
 end

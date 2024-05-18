@@ -11,6 +11,16 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias Ecto.Changeset
 
+  @default_show_cols [
+    "id",
+    "text",
+    "romanization",
+    "language",
+    "language_code",
+    "created_at",
+    "updated_at"
+  ]
+
   @impl true
   def mount(_params, _session, socket) do
     socket = assign(socket, page_size: 10)
@@ -19,18 +29,8 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
 
   @impl true
   def handle_params(params, _url, %{assigns: %{page_size: page_size}} = socket) do
-    default_show_cols = [
-      "id",
-      "text",
-      "romanization",
-      "language",
-      "language_code",
-      "created_at",
-      "updated_at"
-    ]
-
     order_and_filter =
-      %OrderAndFilterChangeset{show_cols: default_show_cols, order_by: "id_desc"}
+      %OrderAndFilterChangeset{show_cols: @default_show_cols, order_by: "id_desc"}
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
 
@@ -93,6 +93,62 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
                socket,
                :index,
                Map.merge(params, %{page: page, page_size: page_size})
+             )
+         )}
+    end
+  end
+
+  def handle_event(
+        "show_all",
+        _params,
+        %{assigns: %{pagination: %{page: page, page_size: page_size}}} = socket
+      ) do
+    socket
+    |> Util.update_show_cols(@default_show_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.word_index_path(
+               socket,
+               :index,
+               params
+             )
+         )}
+    end
+  end
+
+  def handle_event(
+        "hide_all",
+        _params,
+        %{
+          assigns: %{
+            pagination: %{page: page, page_size: page_size}
+          }
+        } = socket
+      ) do
+    socket
+    |> Util.update_show_cols(["none"])
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        params = Map.merge(params, %{page: page, page_size: page_size})
+
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.word_index_path(
+               socket,
+               :index,
+               params
              )
          )}
     end
