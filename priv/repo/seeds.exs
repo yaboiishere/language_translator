@@ -19,7 +19,8 @@ User.registration_changeset(%User{}, %{
   username: "admin",
   email: "admin@language.com",
   password: "ZdravaParola@123",
-  is_admin: true
+  is_admin: true,
+  main_language_code: "bg"
 })
 |> Changeset.change(%{is_admin: true})
 |> Repo.insert!()
@@ -27,14 +28,16 @@ User.registration_changeset(%User{}, %{
 User.registration_changeset(%User{}, %{
   username: "misho",
   email: "mixaildobrev@gmail.com",
-  password: "ZdravaParola@123"
+  password: "ZdravaParola@123",
+  main_language_code: "en"
 })
 |> Repo.insert!()
 
 User.registration_changeset(%User{}, %{
   username: "anoniq",
   email: "anoniq@gmail.com",
-  password: "ZdravaParola@123"
+  password: "ZdravaParola@123",
+  main_language_code: "bg"
 })
 |> Repo.insert!()
 

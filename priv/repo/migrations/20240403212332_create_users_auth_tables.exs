@@ -10,6 +10,13 @@ defmodule LanguageTranslator.Repo.Migrations.CreateUsersAuthTables do
       add :hashed_password, :string, null: false
       add :confirmed_at, :naive_datetime
       add :is_admin, :boolean, default: false
+
+      add(
+        :main_language_code,
+        references(:languages, column: "code", type: :text, on_delete: :nilify_all),
+        null: false
+      )
+
       timestamps(type: :utc_datetime)
     end
 

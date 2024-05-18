@@ -1,30 +1,44 @@
 <div class="w-full max-w-2xl gap-4 px-4 py-4 leading-10 mx-auto">
   <div class="p-4 w-full bg-white rounded-t-xl h-1/5">
-    <div class="text-center">
-      <div class="flex gap-4 justify-center text-2xl text-gray">
-        <div>Word:</div>
+    <div class="flex justify-around">
+      <div class="">
         <div class="text-2xl font-semibold text-gray-900">
+          <span class="font-normal">Word:</span>
           <%= @word.text %>
         </div>
-      </div>
-      <div class="flex gap-4 justify-center text-2xl text-gray">
-        <div>Romanization:</div>
-        <div class="text-2xl font-semibold text-gray-900">
+        <div class="flex gap-4 text-2xl font-semibold text-gray">
+          <span class="font-normal">Romanized:</span>
           <%= @word.romanized_text %>
         </div>
       </div>
-      <div class="flex gap-4 justify-center text-2xl text-gray">
-        <div>Language:</div>
-        <div class="text-2xl font-semibold text-gray-900">
+      <div>
+        <div class="flex gap-4 text-2xl font-semibold text-gray">
+          <span class="font-normal">Language:</span>
           <%= @word.language.display_name %>
         </div>
-      </div>
-      <div class="flex gap-4 justify-center text-2xl text-gray">
-        <div>Language code:</div>
-        <div class="text-2xl font-semibold text-gray-900">
+        <div class="flex gap-4 text-2xl text-gray font-semibold">
+          <span class="font-normal">Language code:</span>
           <%= @word.language_code %>
         </div>
       </div>
+    </div>
+    <div class="flex gap-4 justify-center text-2xl text-gray">
+      <%= if @main_language_translation do %>
+        <div>
+          Translation in <%= @main_language_translation.target_word.language.display_name %> :
+        </div>
+        <div class="text-2xl font-semibold text-gray-900">
+          <%= @main_language_translation.target_word.text %>
+        </div>
+      <% else %>
+        <div class="overflow-none">
+          <%= "Translation in #{@current_user.main_language.display_name} :" %>
+        </div>
+
+        <div class="text-2xl font-semibold text-gray-900">
+          No translation found
+        </div>
+      <% end %>
     </div>
   </div>
   <div class="w-full bg-white shadow-md h-4/5 rounded-b-xl">

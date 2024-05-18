@@ -1,8 +1,11 @@
 defmodule LanguageTranslatorWeb.UserRegistrationLive do
+  alias LanguageTranslator.Models.Language
   use LanguageTranslatorWeb, :live_view
 
   alias LanguageTranslator.Accounts
   alias LanguageTranslator.Accounts.User
+
+  import LiveSelect
 
   def render(assigns) do
     ~H"""
@@ -34,6 +37,20 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
         <.input field={@form[:username]} type="text" label="Username" required />
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
+        <.label>
+          Main language
+          <p class="text-sm text-gray-500">The language you are most comfortable with</p>
+          <.live_select
+            field={@form[:main_language_code]}
+            options={@languages}
+            mode={:single}
+            text_input_class={text_input_class()}
+            text_input_selected_class={text_input_class()}
+            tags_container_extra_class="order-last"
+            tag_class={tag_class()}
+            dropdown_extra_class="max-h-60 overflow-y-auto"
+          />
+        </.label>
 
         <:actions>
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
@@ -49,6 +66,7 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
     socket =
       socket
       |> assign(trigger_submit: false, check_errors: false)
+      |> assign(languages: Language.languages_for_select())
       |> assign_form(changeset)
 
     {:ok, socket, temporary_assigns: [form: nil]}
@@ -67,6 +85,7 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
         {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset, label: "changeset")
         {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
     end
   end
@@ -74,6 +93,28 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+  end
+
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    options =
+      case live_select_id do
+        "user_main_language_code_live_select_component" -> Language.search_display_name(text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "live_select_blur",
+        %{"id" => "user_main_language_code_live_select_component" = live_select_id},
+        socket
+      ) do
+    options = Language.languages_for_select()
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+    {:noreply, socket}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
@@ -84,5 +125,13 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
     else
       assign(socket, form: form)
     end
+  end
+
+  defp text_input_class() do
+    "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900"
+  end
+
+  defp tag_class() do
+    "bg-primary-200 flex p-1 rounded-lg text-sm"
   end
 end

@@ -5,6 +5,7 @@ defmodule LanguageTranslatorWeb.WordLive.Show do
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslator.Models.Word
   alias LanguageTranslator.ProcessGroups
+  alias LanguageTranslator.Models.Translation
   alias LanguageTranslatorWeb.Router.Helpers, as: Routes
 
   @impl true
@@ -25,14 +26,38 @@ defmodule LanguageTranslatorWeb.WordLive.Show do
   end
 
   @impl true
-  def handle_params(%{"word_id" => word_id}, _url, socket) do
+  def handle_params(
+        %{"word_id" => word_id},
+        _url,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
     ProcessGroups.Analysis.join(self())
     word = Word.get!(word_id)
 
     translations =
       Word.get_translations(word)
 
-    {:noreply, assign(socket, word: word, translations: translations)}
+    main_language_translation =
+      if current_user do
+        word
+        |> Translation.get_by_source_word_and_language(current_user.main_language_code)
+        |> case do
+          {:ok, translation} ->
+            translation
+
+          {:error, _} ->
+            nil
+        end
+      else
+        nil
+      end
+
+    {:noreply,
+     assign(socket,
+       word: word,
+       translations: translations,
+       main_language_translation: main_language_translation
+     )}
   end
 
   @impl true
@@ -61,7 +86,7 @@ defmodule LanguageTranslatorWeb.WordLive.Show do
       ) do
     socket =
       socket
-      |> put_flash(:info, "Analysis done!")
+      |> put_flash(:info, "Analysis updated!")
       |> push_patch(to: Routes.word_show_path(socket, :show, id))
 
     {:noreply, socket}

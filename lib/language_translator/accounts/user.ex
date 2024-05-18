@@ -3,6 +3,7 @@ defmodule LanguageTranslator.Accounts.User do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslator.Repo
   alias LanguageTranslatorWeb.Util
@@ -16,6 +17,11 @@ defmodule LanguageTranslator.Accounts.User do
     field :is_admin, :boolean, default: false
 
     has_many :analysis, Analysis, on_delete: :nilify_all
+
+    belongs_to :main_language, Language,
+      foreign_key: :main_language_code,
+      references: :code,
+      type: :string
 
     timestamps(type: :utc_datetime)
   end
@@ -45,7 +51,8 @@ defmodule LanguageTranslator.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :username, :password])
+    |> cast(attrs, [:email, :username, :password, :main_language_code])
+    |> validate_required([:email, :username, :password, :main_language_code])
     |> validate_email(opts)
     |> validate_password(opts)
   end
