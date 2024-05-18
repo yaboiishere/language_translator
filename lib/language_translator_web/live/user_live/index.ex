@@ -32,7 +32,7 @@ defmodule LanguageTranslatorWeb.UserLive.Index do
     socket =
       socket
       |> assign_new(:current_user, fn -> current_user end)
-      |> assign(page_size: 10)
+      |> assign(page_size: 25)
 
     {:ok, socket}
   end

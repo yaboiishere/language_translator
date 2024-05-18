@@ -192,10 +192,7 @@ defmodule LanguageTranslator.Accounts.User do
   end
 
   def all_query(%{order_by: order_by, filter_by: filter_by}) do
-    query =
-      from(u in __MODULE__)
-
-    query
+    from(u in __MODULE__)
     |> order_by(^resolve_order_by(order_by))
     |> filter_by(filter_by)
   end

@@ -1,0 +1,22 @@
+<div class="2xl:mx-96 bg-white rounded-xl p-5 h-min text-secondary-950">
+  <.header>
+    All supported languages
+  </.header>
+
+  <.language_filters_form
+    filter_by={@order_and_filter.filter_by}
+    show_cols={@order_and_filter.show_cols}
+  />
+  <.table
+    id="languages"
+    rows={@languages}
+    order_by={@order_and_filter.order_by}
+    show_cols={@order_and_filter.show_cols}
+    pagination={@pagination}
+  >
+    <:col :let={language} id="display_name" label="Display Name">
+      <%= language.display_name %>
+    </:col>
+    <:col :let={language} id="code" label="Language Code"><%= language.code %></:col>
+  </.table>
+</div>

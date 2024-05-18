@@ -103,6 +103,7 @@ defmodule LanguageTranslatorWeb.Router do
     live "/analysis", AnalysisLive.Index, :index
     live "/words/:word_id", WordLive.Show, :show
     live "/words", WordLive.Index, :index
+    live "/languages", LanguageLive.Index, :index
   end
 
   scope "/", LanguageTranslatorWeb do

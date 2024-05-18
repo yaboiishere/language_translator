@@ -36,6 +36,12 @@
           >
             Words
           </.link>
+          <.link
+            href={~p"/languages"}
+            class="text-md leading-6 text-zinc-900 font-medium hover:text-zinc-700"
+          >
+            Languages
+          </.link>
           <%= if @current_user && @current_user.is_admin do %>
             <.link
               href={~p"/users"}

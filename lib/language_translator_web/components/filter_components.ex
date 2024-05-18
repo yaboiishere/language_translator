@@ -86,6 +86,28 @@ defmodule LanguageTranslatorWeb.FilterComponents do
     """
   end
 
+  attr :filter_by, :map, required: true
+
+  def language_filters_form(assigns) do
+    ~H"""
+    <div>
+      <.form :let={f} for={@filter_by} phx-change="filter">
+        <div class="grid grid-rows-1 space-x-4 align-top">
+          <div class="grid grid-cols-11 gap-4">
+            <div class="col-span-2"></div>
+            <div class="col-span-2"></div>
+
+            <div class="col-span-3">
+              <.render_language_text_filter filter_by={@filter_by} form={f} />
+            </div>
+            <.clear_button />
+          </div>
+        </div>
+      </.form>
+    </div>
+    """
+  end
+
   def render_id_filter(assigns) do
     value = get_in(assigns, [:filter_by, "id"])
     id = "id_filter"
@@ -284,6 +306,24 @@ defmodule LanguageTranslatorWeb.FilterComponents do
         field={@form[:public]}
         options={[{"All", nil}, {"Public", "true"}, {"Private", "false"}]}
         class="pr-0 py-0"
+      />
+    </div>
+    """
+  end
+
+  defp render_language_text_filter(assigns) do
+    value = get_in(assigns, [:filter_by, "display_name"])
+    assigns = assigns |> assign(value: value)
+
+    ~H"""
+    <div class="flex flex-col text-sm justify-center max-w-60">
+      <.input
+        name="source_language"
+        value={@value}
+        field={@form[:display_name]}
+        type="text"
+        label="Display Name"
+        class="pr-0 py-0 h-[22px]"
       />
     </div>
     """

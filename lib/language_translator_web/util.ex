@@ -92,14 +92,18 @@ defmodule LanguageTranslatorWeb.Util do
     |> Enum.into(%{})
   end
 
-  def paginate(query, %{
-        page: page_number,
-        page_size: page_size
-      }) do
+  def paginate(
+        query,
+        %{
+          page: page_number,
+          page_size: page_size
+        },
+        count_by \\ :id
+      ) do
     entries = from(q in query, limit: ^page_size, offset: ^((page_number - 1) * page_size))
 
     total_entries =
-      from(q in query) |> Repo.aggregate(:count, :id)
+      from(q in query) |> Repo.aggregate(:count, count_by)
 
     %{
       entries: entries,

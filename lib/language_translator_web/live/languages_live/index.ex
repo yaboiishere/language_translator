@@ -1,101 +1,65 @@
-defmodule LanguageTranslatorWeb.WordLive.Index do
+defmodule LanguageTranslatorWeb.LanguageLive.Index do
+  alias LanguageTranslator.Models.Language
   use LanguageTranslatorWeb, :live_view
-
   import LanguageTranslatorWeb.FilterComponents
 
-  alias LanguageTranslator.Models.Word
-  alias LanguageTranslator.Models.Language
+  alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias LanguageTranslatorWeb.Util
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias LanguageTranslatorWeb.Changesets.PaginationChangeset
-  alias LanguageTranslatorWeb.Router.Helpers, as: Routes
   alias Ecto.Changeset
 
   @default_show_cols [
-    "id",
-    "text",
-    "romanization",
-    "language",
-    "language_code",
+    "code",
+    "display_name",
     "created_at",
     "updated_at"
   ]
 
   @impl true
   def mount(_params, _session, socket) do
-    socket = assign(socket, page_size: 25)
+    socket =
+      socket
+      |> assign(page_size: 100)
+
     {:ok, socket}
   end
 
   @impl true
   def handle_params(params, _url, %{assigns: %{page_size: page_size}} = socket) do
-    order_and_filter =
-      %OrderAndFilterChangeset{show_cols: @default_show_cols, order_by: "id_desc"}
-      |> OrderAndFilterChangeset.changeset(params)
-      |> Changeset.apply_changes()
-
     pagination =
       %PaginationChangeset{page: 1, page_size: page_size}
       |> PaginationChangeset.changeset(params)
       |> Changeset.apply_changes()
 
-    %{
-      entries: words,
-      page_number: page_number,
-      page_size: page_size,
-      total_entries: total_entries,
-      total_pages: total_pages
-    } =
-      Word.paginate_all(order_and_filter, pagination)
+    order_and_filter =
+      %OrderAndFilterChangeset{
+        show_cols: @default_show_cols,
+        order_by: "display_name_asc"
+      }
+      |> OrderAndFilterChangeset.changeset(params)
+      |> Changeset.apply_changes()
+
+    IO.inspect(order_and_filter, label: "order_and_filter")
+
+    pagination_params =
+      %{
+        entries: languages
+      } =
+      Language.paginate_all(order_and_filter, pagination)
 
     pagination =
       pagination
-      |> PaginationChangeset.changeset(%{
-        page: page_number,
-        page_size: page_size,
-        total_entries: total_entries,
-        total_pages: total_pages
-      })
+      |> PaginationChangeset.changeset(pagination_params)
       |> Changeset.apply_changes()
 
     socket =
       socket
       |> assign(:order_and_filter, order_and_filter)
-      |> assign(:words, words)
+      |> assign(:languages, languages)
       |> assign(:pagination, pagination)
 
     {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event(
-        "show_cols",
-        checked_cols,
-        %{
-          assigns: %{
-            pagination: %{page: page, page_size: page_size}
-          }
-        } = socket
-      ) do
-    checked_cols = Util.format_show_cols(checked_cols)
-
-    socket
-    |> Util.update_show_cols(checked_cols)
-    |> case do
-      nil ->
-        {:noreply, socket}
-
-      params ->
-        {:noreply,
-         push_patch(socket,
-           to:
-             Routes.word_index_path(
-               socket,
-               :index,
-               Map.merge(params, %{page: page, page_size: page_size})
-             )
-         )}
-    end
   end
 
   def handle_event(
@@ -115,7 +79,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
         {:noreply,
          push_patch(socket,
            to:
-             Routes.word_index_path(
+             Routes.language_index_path(
                socket,
                :index,
                params
@@ -145,7 +109,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
         {:noreply,
          push_patch(socket,
            to:
-             Routes.word_index_path(
+             Routes.language_index_path(
                socket,
                :index,
                params
@@ -158,10 +122,10 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
   def handle_event(
         "sort",
         %{"col" => field},
-        %{assigns: %{pagination: %{page_size: page_size}}} = socket
+        %{assigns: %{pagination: %{page_size: page_size}}} =
+          socket
       ) do
-    socket
-    |> Util.update_order_by(field)
+    Util.update_order_by(socket, field)
     |> case do
       nil ->
         {:noreply, socket}
@@ -169,55 +133,42 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
       params ->
         {:noreply,
          push_patch(socket,
-           to: Routes.word_index_path(socket, :index, Map.put(params, :page_size, page_size))
+           to: Routes.language_index_path(socket, :index, Map.put(params, :page_size, page_size))
          )}
     end
   end
 
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    options =
-      case live_select_id do
-        "source_language_filter" -> Language.search_display_name(text)
-        "language_code_filter" -> Language.search_code(text)
-        "id_filter" -> Word.search_id(text)
-        "_page_size_live_select_component" -> Util.page_size_options()
-      end
-
-    send_update(LiveSelect.Component, id: live_select_id, options: options)
-
-    {:noreply, socket}
-  end
-
   @impl true
   def handle_event(
-        "live_select_blur",
-        %{"id" => live_select_id},
-        socket
+        "show_cols",
+        checked_cols,
+        %{assigns: %{pagination: %{page: page, page_size: page_size}}} = socket
       ) do
-    options =
-      case live_select_id do
-        "source_language_filter" -> Language.languages_for_select()
-        "language_code_filter" -> Language.language_codes_for_select()
-        "_page_size_live_select_component" -> Util.page_size_options()
-        "id_filter" -> []
-      end
+    checked_cols = Util.format_show_cols(checked_cols)
 
-    send_update(LiveSelect.Component, id: live_select_id, options: options)
+    socket
+    |> Util.update_show_cols(checked_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
 
-    {:noreply, socket}
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to:
+             Routes.language_index_path(
+               socket,
+               :index,
+               Map.merge(params, %{page: page, page_size: page_size})
+             )
+         )}
+    end
   end
 
-  @impl true
-  def handle_event(
-        "filter",
-        params,
-        %{assigns: %{pagination: %{page_size: page_size}}} = socket
-      ) do
+  def handle_event("filter", params, %{assigns: %{pagination: %{page_size: page_size}}} = socket) do
     clean_params =
       Util.clean_filter_params(params, [
         "_target",
-        "source_language_text_input",
-        "source_language_code_text_input",
         "_page_size_live_select_component"
       ])
 
@@ -227,14 +178,14 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
       nil ->
         {:noreply, socket}
 
-      new_params ->
+      params ->
         {:noreply,
          push_patch(socket,
            to:
-             Routes.word_index_path(
+             Routes.language_index_path(
                socket,
                :index,
-               Map.put(new_params, :page_size, page_size)
+               Map.merge(params, %{page_size: page_size})
              )
          )}
     end
@@ -254,7 +205,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
     {:noreply,
      push_patch(socket,
        to:
-         Routes.word_index_path(
+         Routes.language_index_path(
            socket,
            :index,
            Map.merge(OrderAndFilterChangeset.to_map(order_and_filter), %{
@@ -277,7 +228,7 @@ defmodule LanguageTranslatorWeb.WordLive.Index do
     {:noreply,
      push_patch(socket,
        to:
-         Routes.word_index_path(
+         Routes.language_index_path(
            socket,
            :index,
            params
