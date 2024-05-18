@@ -6,23 +6,23 @@
           <span class="font-normal">Word:</span>
           <%= @word.text %>
         </div>
-        <div class="flex gap-4 text-2xl font-semibold text-gray">
+        <div class="flex gap-2 text-2xl font-semibold text-gray">
           <span class="font-normal">Romanized:</span>
           <%= @word.romanized_text %>
         </div>
       </div>
       <div>
-        <div class="flex gap-4 text-2xl font-semibold text-gray">
+        <div class="flex gap-2 text-2xl font-semibold text-gray">
           <span class="font-normal">Language:</span>
           <%= @word.language.display_name %>
         </div>
-        <div class="flex gap-4 text-2xl text-gray font-semibold">
+        <div class="flex gap-2 text-2xl text-gray font-semibold">
           <span class="font-normal">Language code:</span>
           <%= @word.language_code %>
         </div>
       </div>
     </div>
-    <div class="flex gap-4 justify-center text-2xl text-gray">
+    <div class="flex gap-2 justify-center text-2xl text-gray">
       <%= if @main_language_translation do %>
         <div>
           Translation in <%= @main_language_translation.target_word.language.display_name %> :
