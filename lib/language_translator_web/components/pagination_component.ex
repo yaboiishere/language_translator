@@ -83,7 +83,10 @@ defmodule LanguageTranslatorWeb.PaginationComponent do
         </nav>
         <div class="flex justify-end bg-white pr-0 py-0">
           <div class="text-sm text-gray-700">
-            Showing <span class="font-medium"><%= @page_size * (@page - 1) + 1 %></span>
+            Showing
+            <span class="font-medium">
+              <%= if @total_entries == 0, do: 0, else: @page_size * (@page - 1) + 1 %>
+            </span>
             to <span class="font-medium"><%= clamp(@page_size * @page, 0, @total_entries) %></span>
             of <span class="font-medium"><%= @total_entries %></span>
             results
