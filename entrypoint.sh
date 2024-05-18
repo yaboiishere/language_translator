@@ -13,7 +13,7 @@ if [[ -f assets/package.json ]]; then
 fi
 
 # Wait until Postgres is ready
-while ! pg_isready -q -h $PGHOST -p $PGPORT -U $PGUSER
+while ! pg_isready -q -h $PGHOST -p 5433 -U $PGUSER
 do
   echo "$(date) - waiting for database to start"
   sleep 2

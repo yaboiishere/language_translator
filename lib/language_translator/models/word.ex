@@ -30,7 +30,7 @@ defmodule LanguageTranslator.Models.Word do
     |> cast(attrs, [:text, :language_code, :romanized_text])
     |> validate_required([:text, :language_code, :romanized_text])
     |> unique_constraint([:language_code, :text], name: :words_language_code_text_index)
-    |> validate_length(:text, min: 1, max: 255)
+    |> validate_length(:text, min: 1, max: 64)
   end
 
   def get!(id) do

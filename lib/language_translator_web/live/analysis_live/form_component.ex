@@ -100,6 +100,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                 <label class="text-md font-semibold leading-6">
                   Upload a file with words to be analyzed
                   <.live_file_input upload={@uploads[:words]} accept="text/plain" />
+                  <.input type="hidden" field={@form[:words]} />
                 </label>
               <% else %>
                 <label class="text-start text-sm font-semibold leading-6">
@@ -225,63 +226,62 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         "save",
         %{"analysis_create_changeset" => analysis_params} = params,
         %{
-          assigns: %{current_user: current_user, form_data: form_data} = assigns
+          assigns: %{current_user: current_user} = assigns
         } = socket
       ) do
     is_file = Map.get(assigns, :is_file)
 
-    analysis_params_changeset =
-      %AnalysisCreateChangeset{}
-      |> AnalysisCreateChangeset.changeset(analysis_params)
-      |> Map.put(:action, :validate)
-
-    if analysis_params_changeset.valid? do
-      separator =
-        analysis_params
-        |> Map.get("separator")
-        |> AnalysisCreateChangeset.resolve_separator()
-
-      is_public =
-        params
-        |> Map.get("is_public", "off")
-        |> case do
-          "on" -> true
-          _ -> false
-        end
-
-      extra_fields = %{"user_id" => current_user.id, "is_public" => is_public}
-      analysis = Map.merge(analysis_params, extra_fields)
-
-      words =
-        if is_file do
-          consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->
-            File.read!(path)
-            |> clean_words(separator)
-            |> then(&{:ok, &1})
-          end)
-          |> List.flatten()
-        else
+    %AnalysisCreateChangeset{}
+    |> AnalysisCreateChangeset.changeset(analysis_params)
+    |> Map.put(:action, :validate)
+    |> case do
+      %{valid?: true} = changeset ->
+        separator =
           analysis_params
-          |> Map.get("words")
-          |> clean_words(separator)
+          |> Map.get("separator")
+          |> AnalysisCreateChangeset.resolve_separator()
+
+        is_public =
+          params
+          |> Map.get("is_public", "off")
+          |> case do
+            "on" -> true
+            _ -> false
+          end
+
+        extra_fields = %{"user_id" => current_user.id, "is_public" => is_public}
+        analysis = Map.merge(analysis_params, extra_fields)
+
+        words =
+          if is_file do
+            consume_uploaded_entries(socket, :words, fn %{path: path}, _entry ->
+              File.read!(path)
+              |> clean_words(separator)
+              |> then(&{:ok, &1})
+            end)
+            |> List.flatten()
+          else
+            analysis_params
+            |> Map.get("words")
+            |> clean_words(separator)
+          end
+
+        AnalysisCreateChangeset.validate_words_changeset(changeset, %{
+          words: Enum.join(words, separator),
+          separator: separator
+        })
+        |> Map.put(:action, :validate)
+        |> case do
+          %{valid?: true} ->
+            analysis = Map.put(analysis, "source_words", words)
+            save_analysis(socket, socket.assigns.action, analysis)
+
+          changeset ->
+            {:noreply, assign_form(socket, changeset)}
         end
 
-      case words do
-        words when is_list(words) and length(words) > 0 ->
-          analysis = Map.put(analysis, "source_words", words)
-          save_analysis(socket, socket.assigns.action, analysis)
-
-        _ ->
-          changeset =
-            form_data
-            |> AnalysisCreateChangeset.changeset(analysis_params)
-            |> Map.put(:action, :validate)
-            |> Changeset.add_error(:words, "At least one word is required")
-
-          {:noreply, assign_form(socket, changeset)}
-      end
-    else
-      {:noreply, assign_form(socket, analysis_params_changeset)}
+      analysis_params_changeset ->
+        {:noreply, assign_form(socket, analysis_params_changeset)}
     end
   end
 

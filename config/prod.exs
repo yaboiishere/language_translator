@@ -19,3 +19,11 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+config :libcluster,
+  topologies: [
+    dns: [
+      strategy: Cluster.Strategy.DNSPoll,
+      config: [polling_interval: 5_000, query: "app", node_basename: "phx_cluster"]
+    ]
+  ]

@@ -61,7 +61,8 @@ defmodule LanguageTranslator.MixProject do
       {:bandit, "~> 1.2"},
       {:any_ascii, "~> 0.3.2"},
       {:akin, "~> 0.2.0"},
-      {:live_select, "~> 1.0"}
+      {:live_select, "~> 1.0"},
+      {:libcluster, "~> 3.3"}
     ]
   end
 

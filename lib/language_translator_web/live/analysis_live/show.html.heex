@@ -2,7 +2,7 @@
   <.header>
     Analysis <%= @analysis.id %>
     <:actions>
-      <%= if @current_user == @analysis.user do %>
+      <%= if @current_user.id == @analysis.user_id do %>
         <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
           <.button>Edit analysis</.button>
         </.link>

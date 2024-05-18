@@ -21,6 +21,8 @@ defmodule LanguageTranslator.Translator.Supervisor do
     {:ok, languages} = Translate.get_languages()
     cleaned_languages = languages |> Enum.map(&Map.take(&1, [:code, :display_name]))
 
+    Application.ensure_started(Repo)
+
     {137, inserted_languages} =
       Repo.insert_all(Language, cleaned_languages,
         conflict_target: [:code],

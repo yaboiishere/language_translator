@@ -8,11 +8,11 @@ defmodule LanguageTranslator.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      LanguageTranslator.Repo,
       LanguageTranslator.Config,
       {Task.Supervisor, name: LanguageTranslator.TaskSupervisor},
       {DynamicSupervisor, name: LanguageTranslator.DynamicSupervisor, strategy: :one_for_one},
       LanguageTranslatorWeb.Telemetry,
-      LanguageTranslator.Repo,
       {DNSCluster,
        query: Application.get_env(:language_translator, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: LanguageTranslator.PubSub},
@@ -21,7 +21,6 @@ defmodule LanguageTranslator.Application do
       # Start process groups
       %{id: :pg, start: {:pg, :start_link, []}},
       # Start translators supervisor
-      LanguageTranslator.Translator.Supervisor,
       # Start translation aggregator process
       # LanguageTranslator.Translator.Aggregator,
       # Start the http services
@@ -33,7 +32,8 @@ defmodule LanguageTranslator.Application do
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry
-      LanguageTranslatorWeb.Endpoint
+      LanguageTranslatorWeb.Endpoint,
+      LanguageTranslator.Translator.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

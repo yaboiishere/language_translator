@@ -59,12 +59,12 @@
       <div class="sr-only">
         <.link navigate={~p"/analysis/#{analysis}"}>Show</.link>
       </div>
-      <%= if @current_user == analysis.user do %>
+      <%= if @current_user.id == analysis.user_id do %>
         <.link patch={~p"/analysis/#{analysis}/edit"}>Edit</.link>
       <% end %>
     </:action>
     <:action :let={analysis}>
-      <%= if @current_user == analysis.user do %>
+      <%= if @current_user.id == analysis.user_id do %>
         <.link
           phx-click={
             JS.push("delete", value: %{id: analysis.id})

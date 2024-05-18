@@ -40,8 +40,6 @@ defmodule LanguageTranslatorWeb.LanguageLive.Index do
       |> OrderAndFilterChangeset.changeset(params)
       |> Changeset.apply_changes()
 
-    IO.inspect(order_and_filter, label: "order_and_filter")
-
     pagination_params =
       %{
         entries: languages
