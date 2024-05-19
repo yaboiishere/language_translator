@@ -76,6 +76,18 @@ if config_env() == :prod do
     secret_key_base: secret_key_base,
     server: true
 
+  config :logger,
+     backends: [:console, LokiLogger]
+
+  loki_host = System.get_env("LOKI_HOST") || "http://localhost:3100"
+  config :logger, :loki_logger,
+       level: :debug,
+       format: "$metadata level=$level $message",
+       metadata: :all,
+       max_buffer: 300,
+       loki_labels: %{application: "language_translator", elixir_node: node()},
+       loki_host: loki_host
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
