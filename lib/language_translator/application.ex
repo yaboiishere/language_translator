@@ -23,9 +23,9 @@ defmodule LanguageTranslator.Application do
       # Start translation aggregator process
       # LanguageTranslator.Translator.Aggregator,
       # Start the http services
-      # LanguageTranslator.Http.Supervisor,
+      LanguageTranslator.Http.Supervisor,
       # Start the analysis monitor
-      # LanguageTranslator.Translator.AnalysisMonitor,
+      LanguageTranslator.Translator.AnalysisMonitor,
       # Start the analysis refresher
       {LanguageTranslator.Translator.Refresher, interval: 60_000},
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)

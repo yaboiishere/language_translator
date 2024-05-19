@@ -30,12 +30,14 @@ username = System.get_env("POSTGRES_USER") || raise "PGUSER is not set"
 password = System.get_env("POSTGRES_PASSWORD") || raise "PGPASSWORD is not set"
 db_host = System.get_env("POSTGRES_HOST") || raise "PGHOST is not set"
 db_port = System.get_env("POSTGRES_PORT") || raise "PGPORT is not set"
+db = System.get_env("POSTGRES_DB") || raise "PGDATABASE is not set"
 
 maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
 config :language_translator, LanguageTranslator.Repo,
   username: username,
   password: password,
+  database: db,
   port: String.to_integer(db_port),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   socket_options: maybe_ipv6,

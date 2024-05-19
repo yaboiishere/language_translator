@@ -1,8 +1,9 @@
 #!/bin/sh
 
 . /app/.env
-export NODE_ID="${ENV}-$(hostname | rev | cut -d_ -f1 | rev)"
+export NODE_ID="$(hostname -i)"
 echo "Starting language_translator NODE_ID=${NODE_ID}"
+gcloud auth activate-service-account --key-file=service_account.json
 
 # wait until Postgres is ready
 while ! pg_isready -q -h $PGHOST -p $PGPORT -U $PGUSER
@@ -11,10 +12,9 @@ do
   sleep 2
 done
 
-gcloud auth activate-service-account --key-file=service_account.json
-
-
 bin="/app/bin/language_translator"
+eval "$bin eval \"LanguageTranslator.Release.create\""
+set -e
 eval "$bin eval \"LanguageTranslator.Release.migrate\""
 exec "$bin" "start"
 

@@ -50,7 +50,7 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
               <tr class="sticky top-0 z-40 border-b">
                 <th
                   scope="col"
-                  class="relative sticky top-0 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300 flex shrink-0 grow-1"
+                  class="relative sticky -top-1 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300 flex shrink-0 grow-1"
                 >
                   <div class="mx-auto">
                     <%= "#{@source_language.display_name} - #{@source_language.code}" %>

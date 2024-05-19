@@ -6,7 +6,8 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :language_translator, LanguageTranslatorWeb.Endpoint,
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  server: true
 
 # Configures Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: LanguageTranslator.Finch
@@ -15,7 +16,7 @@ config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: LanguageTranslat
 config :swoosh, local: false
 
 # Do not print debug messages in production
-config :logger, level: :debug
+config :logger, level: :warning
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
