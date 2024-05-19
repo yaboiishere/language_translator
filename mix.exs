@@ -9,9 +9,6 @@ defmodule LanguageTranslator.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      escript: [
-        emu_args: ["-name", "language_translator@#{System.get_env("NODE_ID") || "appa"}"]
-      ],
       deps: deps()
     ]
   end

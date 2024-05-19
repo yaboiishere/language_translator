@@ -3,6 +3,12 @@
 . /app/.env
 export NODE_ID="$(hostname -i)"
 echo "Starting language_translator NODE_ID=${NODE_ID}"
+echo """
+#!/bin/sh
+export RELEASE_NODE=language_translator@${NODE_ID}
+export RELEASE_DISTRIBUTION=name
+""" > /app/releases/0.1.0/env.sh
+
 gcloud auth activate-service-account --key-file=service_account.json
 
 # wait until Postgres is ready

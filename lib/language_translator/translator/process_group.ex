@@ -11,7 +11,7 @@ defmodule LanguageTranslator.Translator.ProcessGroup do
 
   def broadcast(message) do
     @group_name
-    |> :pg.get_members()
+    |> :pg.get_local_members()
     |> Enum.each(fn pid ->
       send(pid, message)
     end)
@@ -19,7 +19,7 @@ defmodule LanguageTranslator.Translator.ProcessGroup do
 
   def translate(source_language, word, caller_ref) do
     @group_name
-    |> :pg.get_members()
+    |> :pg.get_local_members()
     |> Enum.map(fn pid ->
       send(pid, {:translate, source_language, word, caller_ref})
     end)
