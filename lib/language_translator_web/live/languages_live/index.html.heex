@@ -3,10 +3,7 @@
     All supported languages
   </.header>
 
-  <.language_filters_form
-    filter_by={@order_and_filter.filter_by}
-    show_cols={@order_and_filter.show_cols}
-  />
+  <.language_filters_form filter_by={@order_and_filter.filter_by} />
   <.table
     id="languages"
     rows={@languages}

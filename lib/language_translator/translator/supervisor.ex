@@ -3,7 +3,6 @@ defmodule LanguageTranslator.Translator.Supervisor do
 
   alias LanguageTranslator.Translator
   alias LanguageTranslator.GoogleApi.Translate
-  alias LanguageTranslator.Repo
   alias LanguageTranslator.Models.Language
 
   def start_link(_) do
@@ -18,19 +17,27 @@ defmodule LanguageTranslator.Translator.Supervisor do
   end
 
   defp children do
-    {:ok, languages} = Translate.get_languages()
-    cleaned_languages = languages |> Enum.map(&Map.take(&1, [:code, :display_name]))
+    Translate.get_languages()
+    |> case do
+      {:ok, languages} ->
+        # cleaned_languages =
+        #   languages
+        #   |> Enum.map(fn %{name: name, code: code} ->
+        #     Language.changeset(%Language{}, %{display_name: name, code: code})
+        #   end)
 
-    Application.ensure_started(Repo)
+        # {137, inserted_languages} =
+        #   Repo.insert_all(Language, cleaned_languages,
+        #     conflict_target: [:code],
+        #     on_conflict: {:replace_all_except, [:id, :inserted_at]},
+        #     returning: true
+        #   )
 
-    {137, inserted_languages} =
-      Repo.insert_all(Language, cleaned_languages,
-        conflict_target: [:code],
-        on_conflict: {:replace_all_except, [:id, :inserted_at]},
-        returning: true
-      )
+        Enum.flat_map(languages, &create_worker/1)
 
-    Enum.flat_map(inserted_languages, &create_worker/1)
+      {:error, _} ->
+        raise "Failed to fetch languages"
+    end
   end
 
   defp create_worker(%Language{code: code} = language) do

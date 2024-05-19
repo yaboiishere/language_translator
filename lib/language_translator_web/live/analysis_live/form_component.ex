@@ -6,7 +6,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   alias LanguageTranslator.Models
   alias LanguageTranslator.Repo
   alias LanguageTranslator.Translator
-  alias Ecto.Changeset
 
   @impl true
   def render(assigns) do

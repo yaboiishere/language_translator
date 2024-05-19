@@ -20,20 +20,20 @@ defmodule LanguageTranslator.Application do
       {Finch, name: LanguageTranslator.Finch},
       # Start process groups
       %{id: :pg, start: {:pg, :start_link, []}},
-      # Start translators supervisor
       # Start translation aggregator process
       # LanguageTranslator.Translator.Aggregator,
       # Start the http services
-      LanguageTranslator.Http.Supervisor,
+      # LanguageTranslator.Http.Supervisor,
       # Start the analysis monitor
-      LanguageTranslator.Translator.AnalysisMonitor,
+      # LanguageTranslator.Translator.AnalysisMonitor,
       # Start the analysis refresher
       {LanguageTranslator.Translator.Refresher, interval: 60_000},
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry
-      LanguageTranslatorWeb.Endpoint,
-      LanguageTranslator.Translator.Supervisor
+      # Start translators supervisor
+      LanguageTranslator.Translator.Supervisor,
+      LanguageTranslatorWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

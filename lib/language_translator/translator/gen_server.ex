@@ -5,6 +5,7 @@ defmodule LanguageTranslator.Translator.GenServer do
   alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Translator.ProcessGroup
   alias LanguageTranslator.GoogleApi.Translate
+  alias LanguageTranslator.Repo
 
   defstruct [:language]
 
@@ -19,7 +20,21 @@ defmodule LanguageTranslator.Translator.GenServer do
 
   def init(state) do
     ProcessGroup.join(self())
+    # {:ok, {:continue, {:persist_language, state}}}
     {:ok, state}
+  end
+
+  def handle_continue({:persist_language, %{language: language} = init_state}, _state) do
+    changeset = Language.changeset(language, %{})
+
+    {:ok, language} =
+      Repo.insert(changeset,
+        conflict_target: [:code],
+        on_conflict: {:replace_all_except, [:id, :inserted_at]},
+        returning: true
+      )
+
+    {:noreply, %{init_state | language: language}}
   end
 
   def handle_info(

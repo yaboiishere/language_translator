@@ -490,7 +490,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     attr :id, :string
   end
 
-  slot :pagination, required: true
+  attr :pagination, :map, required: true
 
   slot :action, doc: "the slot for showing user actions in the last table column"
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source /app/.env
+. /app/.env
 export NODE_ID="${ENV}-$(hostname | rev | cut -d_ -f1 | rev)"
 echo "Starting language_translator NODE_ID=${NODE_ID}"
 
@@ -13,8 +13,8 @@ done
 
 gcloud auth activate-service-account --key-file=service_account.json
 
-bin="/app/bin/server"
-set -e
+
+bin="/app/bin/language_translator"
 eval "$bin eval \"LanguageTranslator.Release.migrate\""
 exec "$bin" "start"
 
