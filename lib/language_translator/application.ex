@@ -27,7 +27,7 @@ defmodule LanguageTranslator.Application do
       # Start the analysis monitor
       LanguageTranslator.Translator.AnalysisMonitor,
       # Start the analysis refresher
-      {LanguageTranslator.Translator.Refresher, interval: 60_000},
+      {LanguageTranslator.Translator.Refresher, interval: 60_000 + :rand.uniform(10_000)},
       # Start a worker by calling: LanguageTranslator.Worker.start_link(arg)
       # {LanguageTranslator.Worker, arg},
       # Start to serve requests, typically the last entry

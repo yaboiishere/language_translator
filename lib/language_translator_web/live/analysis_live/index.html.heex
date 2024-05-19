@@ -49,7 +49,7 @@
       <.date_time date_time_utc={analysis.updated_at} />
     </:col>
     <:action :let={analysis}>
-      <%= if analysis.status == :failed and @current_user.id == analysis.user_id do %>
+      <%= if analysis.status == :failed && @current_user && @current_user.id == analysis.user_id do %>
         <.link phx-click="retry" phx-value-id={analysis.id}>Retry</.link>
       <% else %>
         <div class="hidden" />

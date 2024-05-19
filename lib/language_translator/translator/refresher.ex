@@ -15,6 +15,16 @@ defmodule LanguageTranslator.Translator.Refresher do
 
   def init(interval: interval) do
     Process.send_after(self(), :refresh, interval)
+    from(a in Analysis, where: a.status == :processing)
+    |> Repo.update_all(set: [status: :failed])
+    |> case do 
+      {0, _} -> Logger.info("No analyses to update")
+      {_, analyses} -> 
+        analyses
+        |> Enum.each(fn analysis -> 
+          ProcessGroups.Analysis.update_analysis(analysis)
+        end)
+      end
     {:ok, %{interval: interval}}
   end
 
@@ -45,7 +55,7 @@ defmodule LanguageTranslator.Translator.Refresher do
   end
 
   defp refresh_analyses do
-    from(a in Analysis, where: a.status != :completed, preload: [:source_language, :user])
+    from(a in Analysis, where: a.status == :failed, preload: [:source_language, :user])
     |> Repo.all()
     |> Enum.reject(&AnalysisMonitor.is_analysis_running?/1)
     |> Enum.each(fn analysis ->
