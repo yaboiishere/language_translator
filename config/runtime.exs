@@ -74,19 +74,44 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base,
-    server: true
+    server: true,
+    check_origin: [
+      "http://localhost:443"
+    ]
 
   config :logger,
-     backends: [:console, LokiLogger]
+    backends: [:console, LokiLogger]
 
   loki_host = System.get_env("LOKI_HOST") || "http://localhost:3100"
+
   config :logger, :loki_logger,
-       level: :debug,
-       format: "$metadata level=$level $message",
-       metadata: :all,
-       max_buffer: 300,
-       loki_labels: %{application: "language_translator", elixir_node: node()},
-       loki_host: loki_host
+    level: :debug,
+    format: "$metadata level=$level $message",
+    metadata: :all,
+    max_buffer: 300,
+    loki_labels: %{application: "language_translator", elixir_node: node()},
+    loki_host: loki_host
+
+  email_host = System.get_env("EMAIL_HOST") || throw("EMAIL_HOST is not set")
+  email_port = String.to_integer(System.get_env("EMAIL_PORT") || throw("EMAIL_PORT is not set"))
+  email_username = System.get_env("EMAIL_USER") || throw("EMAIL_USER is not set")
+  email_password = System.get_env("EMAIL_PASSWORD") || throw("EMAIL_PASSWORD is not set")
+
+  config :language_translator, LanguageTranslator.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: email_host,
+    port: email_port,
+    username: email_username,
+    password: email_password,
+    tls: :if_available,
+    ssl: false,
+    auth: :if_available,
+    retries: 2,
+    no_mx_lookups: false,
+    ssl_opts: [
+      verify: :verify_none,
+      depth: 0
+    ]
 
   # ## SSL Support
   #

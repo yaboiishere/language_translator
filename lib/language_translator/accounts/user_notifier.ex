@@ -8,7 +8,7 @@ defmodule LanguageTranslator.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"LanguageTranslator", "contact@example.com"})
+      |> from({"Language Translator", "MS_HVFR8z@language-translator.info"})
       |> subject(subject)
       |> text_body(body)
 

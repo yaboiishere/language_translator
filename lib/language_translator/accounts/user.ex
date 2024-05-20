@@ -55,6 +55,8 @@ defmodule LanguageTranslator.Accounts.User do
     |> validate_required([:email, :username, :password, :main_language_code])
     |> validate_email(opts)
     |> validate_password(opts)
+    |> unsafe_validate_unique(:username, LanguageTranslator.Repo)
+    |> unique_constraint(:username)
   end
 
   defp validate_email(changeset, opts) do
