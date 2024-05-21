@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Accounts do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Changeset
   alias LanguageTranslator.Repo
 
   alias LanguageTranslator.Accounts.{User, UserToken, UserNotifier}
@@ -125,6 +126,26 @@ defmodule LanguageTranslator.Accounts do
   """
   def change_user_email(user, attrs \\ %{}) do
     User.email_changeset(user, attrs, validate_email: false)
+  end
+
+  def change_user_main_language(user, attrs \\ %{}) do
+    User.main_language_changeset(user, attrs)
+  end
+
+  def change_user_username(user, attrs \\ %{}) do
+    User.username_changeset(user, attrs)
+  end
+
+  def update_user_main_language(user, main_language_code) do
+    user
+    |> User.main_language_changeset(%{main_language_code: main_language_code})
+    |> Changeset.apply_action(:update)
+  end
+
+  def update_user_username(user, username) do
+    user
+    |> User.username_changeset(%{username: username})
+    |> Changeset.apply_action(:update)
   end
 
   @doc """

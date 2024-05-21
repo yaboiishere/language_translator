@@ -59,6 +59,21 @@ defmodule LanguageTranslator.Accounts.User do
     |> unique_constraint(:username)
   end
 
+  def main_language_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:main_language_code])
+    |> validate_required([:main_language_code])
+  end
+
+  def username_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:username])
+    |> validate_required([:username])
+    |> validate_length(:username, max: 160)
+    |> unsafe_validate_unique(:username, LanguageTranslator.Repo)
+    |> unique_constraint(:username)
+  end
+
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])

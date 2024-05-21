@@ -1,17 +1,18 @@
 defmodule LanguageTranslatorWeb.UserSettingsLive do
+  alias LanguageTranslator.Repo
+  alias LanguageTranslator.Models.Language
   use LanguageTranslatorWeb, :live_view
-
+  import LiveSelect
   alias LanguageTranslator.Accounts
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-3xl bg-white rounded-lg text-secondary-950 p-5">
+    <div class="mx-auto max-w-screen-xl bg-white rounded-lg text-secondary-950 p-5">
       <.header class="text-center">
         Account Settings
         <:subtitle>Manage your account email address and password settings</:subtitle>
       </.header>
-
-      <div class="grid grid-cols-2 divide-x justify-around mt-5">
+      <div class="grid grid-cols-3 divide-x justify-around mt-5">
         <div class="md:px-5">
           <.header class="text-center">Change Email</.header>
           <div class="-mt-8">
@@ -38,6 +39,49 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
           </div>
         </div>
         <div class="md:px-5">
+          <div class="">
+            <.header class="text-center">Change Main Language</.header>
+            <div class="-mt-8 ">
+              <.simple_form
+                for={@main_language_form}
+                id="main_language_form"
+                phx-submit="update_main_language"
+              >
+                <p class="text-sm text-gray-500 text-center">
+                  The language you are most comfortable with
+                </p>
+                <.label>
+                  Main Language
+                  <.live_select
+                    field={@main_language_form[:main_language_code]}
+                    options={@languages}
+                    mode={:single}
+                    text_input_class={text_input_class()}
+                    text_input_selected_class={text_input_class()}
+                    tags_container_extra_class="order-last"
+                    tag_class={tag_class()}
+                    dropdown_extra_class="max-h-60 overflow-y-auto"
+                  />
+                </.label>
+                <:actions>
+                  <.button phx-disable-with="Changing...">Change Main Language</.button>
+                </:actions>
+              </.simple_form>
+            </div>
+          </div>
+          <div class="divide-y">
+            <.header class="text-center mt-5">Change Username</.header>
+            <div class="-mt-8">
+              <.simple_form for={@username_form} id="username_form" phx-submit="update_username">
+                <.input field={@username_form[:username]} type="text" label="Username" required />
+                <:actions>
+                  <.button phx-disable-with="Changing...">Change Username</.button>
+                </:actions>
+              </.simple_form>
+            </div>
+          </div>
+        </div>
+        <div class="md:px-5">
           <.header class="text-center">Change Password</.header>
           <div class="-mt-8">
             <.simple_form
@@ -50,10 +94,10 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
               phx-trigger-action={@trigger_submit}
             >
               <.input
-                field={@password_form[:email]}
+                field={@password_form[:username]}
                 type="hidden"
                 id="hidden_user_email"
-                value={@current_email}
+                value={@current_user.username}
               />
               <.input field={@password_form[:password]} type="password" label="New password" required />
               <.input
@@ -98,6 +142,9 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
     user = socket.assigns.current_user
     email_changeset = Accounts.change_user_email(user)
     password_changeset = Accounts.change_user_password(user)
+    main_language_changeset = Accounts.change_user_main_language(user)
+    languages = Language.languages_for_select()
+    user_changeset = Accounts.change_user_username(user)
 
     socket =
       socket
@@ -106,6 +153,9 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(:main_language_form, to_form(main_language_changeset))
+      |> assign(:username_form, to_form(user_changeset))
+      |> assign(:languages, languages)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -171,5 +221,79 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
     end
+  end
+
+  def handle_event("update_main_language", params, socket) do
+    %{"user" => %{"main_language_code" => main_language_code}} = params
+    user = socket.assigns.current_user
+
+    case Accounts.update_user_main_language(user, main_language_code) do
+      {:ok, _} ->
+        main_language_changeset =
+          Accounts.change_user_main_language(user, %{main_language_code: main_language_code})
+
+        IO.inspect(main_language_changeset)
+
+        Repo.update!(main_language_changeset)
+
+        main_language_form =
+          to_form(main_language_changeset)
+
+        {:noreply, assign(socket, main_language_form: main_language_form)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, main_language_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("update_username", params, socket) do
+    %{"user" => %{"username" => username}} = params
+    user = socket.assigns.current_user
+
+    case Accounts.update_user_username(user, username) do
+      {:ok, _} ->
+        username_changeset =
+          Accounts.change_user_username(user, %{username: username})
+
+        Repo.update!(username_changeset)
+
+        username_form =
+          to_form(username_changeset)
+
+        {:noreply, assign(socket, username_form: username_form)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, username_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    options =
+      case live_select_id do
+        "user_main_language_code_live_select_component" -> Language.search_display_name(text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "live_select_blur",
+        %{"id" => "user_main_language_code_live_select_component" = live_select_id},
+        socket
+      ) do
+    options = Language.languages_for_select()
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+    {:noreply, socket}
+  end
+
+  defp text_input_class() do
+    "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900"
+  end
+
+  defp tag_class() do
+    "bg-primary-200 flex p-1 rounded-lg text-sm"
   end
 end
