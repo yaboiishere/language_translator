@@ -19,7 +19,6 @@ services:
     volumes:
       - ./service_account.json:/app/service_account.json
       - ./.env.prod:/app/.env
-      - letsencrypt:/etc/letsencrypt
 
 
   postgres:
@@ -90,7 +89,6 @@ services:
     user: root
     volumes:
       - grafana_data:/var/lib/grafana
-      - letsencrypt:/etc/letsencrypt
     entrypoint:
       - sh
       - -euc
