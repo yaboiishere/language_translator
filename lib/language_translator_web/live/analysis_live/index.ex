@@ -143,20 +143,24 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} =
           socket
       ) do
-    {flash_type, flash_message} =
-      case analysis.status do
-        :completed -> {:info, "Analysis #{analysis.id} completed successfully."}
-        :failed -> {:error, "Analysis #{analysis.id} failed."}
-        _ -> {:info, "Analysis #{analysis.id} updated with status: #{analysis.status}"}
-      end
-
     socket =
-      socket
-      |> put_flash(flash_type, flash_message)
-      |> assign(
-        :analysis_collection,
-        Analysis.get_all(current_user, order_and_filter)
-      )
+      if analysis.is_public || (current_user && analysis.user_id == current_user.id) do
+        {flash_type, flash_message} =
+          case analysis.status do
+            :completed -> {:info, "Analysis #{analysis.id} completed successfully."}
+            :failed -> {:error, "Analysis #{analysis.id} failed."}
+            _ -> {:info, "Analysis #{analysis.id} updated with status: #{analysis.status}"}
+          end
+
+        socket
+        |> put_flash(flash_type, flash_message)
+        |> assign(
+          :analysis_collection,
+          Analysis.get_all(current_user, order_and_filter)
+        )
+      else
+        socket
+      end
 
     {:noreply, socket}
   end

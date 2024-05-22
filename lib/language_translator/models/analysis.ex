@@ -95,7 +95,9 @@ defmodule LanguageTranslator.Models.Analysis do
 
   def get_by_source_language(user, %Analysis{source_language_code: source_language_code, id: id}) do
     from(a in __MODULE__,
-      where: a.source_language_code == ^source_language_code and a.id != ^id,
+      where:
+        a.source_language_code == ^source_language_code and a.id != ^id and
+          a.status == :completed,
       select: {a.id, a.description}
     )
     |> user_owner_query(user)
@@ -108,7 +110,8 @@ defmodule LanguageTranslator.Models.Analysis do
       where:
         ilike(a.description, ^"#{search}%") and
           a.id != ^analysis.id and
-          a.source_language_code == ^analysis.source_language_code,
+          a.source_language_code == ^analysis.source_language_code and
+          a.status == :completed,
       order_by: a.description
     )
     |> user_owner_query(user)

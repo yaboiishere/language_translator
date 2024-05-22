@@ -51,67 +51,72 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   def handle_params(%{"id" => id} = params, _, %{assigns: %{current_user: current_user}} = socket) do
     analysis = Models.get_analysis!(id, @analysis_preloads)
 
-    extra_ids = Map.get(params, "extra_ids", [])
+    if analysis.status == :completed do
+      extra_ids = Map.get(params, "extra_ids", [])
 
-    valid_extra_description_to_ids =
-      Analysis.get_by_source_language(current_user, analysis)
+      valid_extra_description_to_ids =
+        Analysis.get_by_source_language(current_user, analysis)
 
-    words = Word.analysis_words(id, extra_ids)
+      words = Word.analysis_words(id, extra_ids)
 
-    entries =
-      words
-      |> Enum.map(fn {%Word{text: _text, romanized_text: _romanized_text} = word, translations} ->
-        {
-          word,
-          translations
-          |> Enum.map(fn
-            %Translation{
-              target_word: %Word{
-                text: text,
-                romanized_text: romanized_text,
-                language: %Language{display_name: language, code: code}
-              },
-              similarity: similarity
-            } ->
-              %Table{
-                lavenshtein:
-                  similarity |> Float.round(2) |> Float.to_string() |> then(fn x -> "#{x}%" end),
-                romanized_text: romanized_text,
-                text: text,
-                language_display_name: language,
-                language_code: code
-              }
-          end)
-        }
-      end)
+      entries =
+        words
+        |> Enum.uniq()
+        |> Enum.map(fn {%Word{text: _text, romanized_text: _romanized_text} = word, translations} ->
+          {
+            word,
+            translations
+            |> Enum.map(fn
+              %Translation{
+                target_word: %Word{
+                  text: text,
+                  romanized_text: romanized_text,
+                  language: %Language{display_name: language, code: code}
+                },
+                similarity: similarity
+              } ->
+                %Table{
+                  lavenshtein:
+                    similarity |> Float.round(2) |> Float.to_string() |> then(fn x -> "#{x}%" end),
+                  romanized_text: romanized_text,
+                  text: text,
+                  language_display_name: language,
+                  language_code: code
+                }
+            end)
+          }
+        end)
 
-    columns =
-      entries
-      |> List.first()
-      |> elem(1)
-      |> Enum.map(fn %Table{
-                       language_display_name: language_display_name,
-                       language_code: language_code
-                     } ->
-        %{label: language_display_name, id: language_code}
-      end)
+      columns =
+        entries
+        |> List.first()
+        |> elem(1)
+        |> Enum.map(fn %Table{
+                         language_display_name: language_display_name,
+                         language_code: language_code
+                       } ->
+          %{label: language_display_name, id: language_code}
+        end)
 
-    order_and_filter =
-      %OrderAndFilterChangeset{show_cols: columns |> Enum.map(&Map.get(&1, :id))}
-      |> OrderAndFilterChangeset.changeset(params)
-      |> Changeset.apply_changes()
+      order_and_filter =
+        %OrderAndFilterChangeset{show_cols: columns |> Enum.map(&Map.get(&1, :id))}
+        |> OrderAndFilterChangeset.changeset(params)
+        |> Changeset.apply_changes()
 
-    socket =
-      socket
-      |> assign(:order_and_filter, order_and_filter)
-      |> assign(:page_title, page_title(socket.assigns.live_action))
-      |> assign(:analysis, analysis)
-      |> assign(:entries, entries)
-      |> assign(:columns, columns)
-      |> assign(:extra_ids, extra_ids)
-      |> assign(:valid_extra_ids, valid_extra_description_to_ids)
+      socket =
+        socket
+        |> assign(:order_and_filter, order_and_filter)
+        |> assign(:page_title, page_title(socket.assigns.live_action))
+        |> assign(:analysis, analysis)
+        |> assign(:entries, entries)
+        |> assign(:columns, columns)
+        |> assign(:extra_ids, extra_ids)
+        |> assign(:valid_extra_ids, valid_extra_description_to_ids)
 
-    {:noreply, socket}
+      {:noreply, socket}
+    else
+      {:noreply, push_patch(socket, to: Routes.analysis_index_path(socket, :index))}
+    end
   end
 
   @impl true

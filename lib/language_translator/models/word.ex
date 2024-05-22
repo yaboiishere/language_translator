@@ -118,6 +118,7 @@ defmodule LanguageTranslator.Models.Word do
     )
     |> Repo.all()
     |> Repo.preload([:source_word, target_word: :language])
+    |> Enum.uniq()
     |> Enum.group_by(& &1.source_word)
   end
 
