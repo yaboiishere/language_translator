@@ -38,7 +38,9 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
     Repo.transaction(fn ->
       Enum.map(
         words,
-        &Task.Supervisor.async(TaskSupervisor, fn -> translate_word(&1, language) end)
+        &Task.Supervisor.async({TaskSupervisor, Node.self()}, fn ->
+          translate_word(&1, language)
+        end)
       )
       |> Enum.flat_map(&Task.await(&1, 60_000))
       |> Enum.map(fn translation ->

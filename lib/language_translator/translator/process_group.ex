@@ -27,7 +27,7 @@ defmodule LanguageTranslator.Translator.ProcessGroup do
 
   def count_members() do
     @group_name
-    |> :pg.get_members()
+    |> :pg.get_local_members()
     |> length()
   end
 end
