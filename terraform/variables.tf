@@ -30,7 +30,7 @@ variable "worker_server_type" {
 variable "worker_count" {
   description = "Number of worker nodes to create"
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "ssh_public_key" {

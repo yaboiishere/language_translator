@@ -41,8 +41,9 @@ services:
       - pg_data:/var/lib/postgresql/data
     deploy:
       replicas: 1
-      constraints:
-        - node.role == manager
+      placement:
+        constraints:
+          - node.role == manager
 
   haproxy:
     image: "ghcr.io/tomdess/docker-haproxy-certbot"
