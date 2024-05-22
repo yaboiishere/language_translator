@@ -9,7 +9,15 @@ defmodule LanguageTranslator.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.cobertura": :test
+      ]
     ]
   end
 
@@ -64,7 +72,8 @@ defmodule LanguageTranslator.MixProject do
       {:akin, "~> 0.2.0"},
       {:live_select, "~> 1.0"},
       {:libcluster, "~> 3.3"},
-      {:loki_logger, "~> 0.3.0"}
+      {:loki_logger, "~> 0.3.0"},
+      {:excoveralls, "~> 0.18", only: :test}
     ]
   end
 

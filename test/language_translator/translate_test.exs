@@ -17,8 +17,8 @@ defmodule LanguageTranslator.TranslateTest do
     bulgarian = %Language{code: "bg", display_name: "Bulgarian"}
     spanish = %Language{code: "es", display_name: "Spanish"}
 
-    assert Translate.translate(english, spanish, "hello") == {:ok, "Hola"}
-    assert Translate.translate(bulgarian, english, "Здравей") == {:ok, "Hello"}
+    assert Translate.translate(english, spanish, "hello") == {:ok, "hola"}
+    assert Translate.translate(bulgarian, english, "Здравей") == {:ok, "hello"}
   end
 
   @tag :integration

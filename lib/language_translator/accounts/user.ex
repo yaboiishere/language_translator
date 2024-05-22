@@ -55,23 +55,46 @@ defmodule LanguageTranslator.Accounts.User do
     |> validate_required([:email, :username, :password, :main_language_code])
     |> validate_email(opts)
     |> validate_password(opts)
-    |> unsafe_validate_unique(:username, LanguageTranslator.Repo)
-    |> unique_constraint(:username)
+    |> validate_username(:username)
+    |> validate_main_language_code(:main_language_code)
   end
 
   def main_language_changeset(user, attrs) do
     user
     |> cast(attrs, [:main_language_code])
     |> validate_required([:main_language_code])
+    |> validate_main_language_code(:main_language_code)
   end
 
   def username_changeset(user, attrs) do
     user
     |> cast(attrs, [:username])
     |> validate_required([:username])
-    |> validate_length(:username, max: 160)
-    |> unsafe_validate_unique(:username, LanguageTranslator.Repo)
-    |> unique_constraint(:username)
+    |> validate_username(:username)
+  end
+
+  defp validate_username(changeset, field) do
+    changeset
+    |> validate_length(field, max: 64)
+    |> unsafe_validate_unique(field, LanguageTranslator.Repo)
+    |> unique_constraint(field)
+  end
+
+  defp validate_main_language_code(changeset, field) do
+    main_language_field =
+      changeset |> get_change(field)
+
+    if main_language_field do
+      language_code = main_language_field |> String.split("-") |> List.first()
+
+      if String.length(language_code) in [2, 3] do
+        changeset
+      else
+        add_error(changeset, field, "must be a valid language code")
+      end
+    else
+      changeset
+    end
   end
 
   defp validate_email(changeset, opts) do
@@ -199,8 +222,8 @@ defmodule LanguageTranslator.Accounts.User do
 
   def get_all(params, preloads \\ []) do
     all_query(params)
-    |> Repo.preload(preloads)
     |> Repo.all()
+    |> Repo.preload(preloads)
   end
 
   def paginate_all(params, pagination, preloads \\ []) do

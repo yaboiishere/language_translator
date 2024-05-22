@@ -26,13 +26,15 @@ defmodule LanguageTranslatorWeb.UserLoginLiveTest do
 
   describe "user login" do
     test "redirects if user login with valid credentials", %{conn: conn} do
-      password = "123456789abcd"
+      password = "123456789@Abcd"
       user = user_fixture(%{password: password})
 
       {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
       form =
-        form(lv, "#login_form", user: %{email: user.email, password: password, remember_me: true})
+        form(lv, "#login_form",
+          user: %{username: user.username, password: password, remember_me: true}
+        )
 
       conn = submit_form(form, conn)
 
@@ -46,7 +48,7 @@ defmodule LanguageTranslatorWeb.UserLoginLiveTest do
 
       form =
         form(lv, "#login_form",
-          user: %{email: "test@email.com", password: "123456", remember_me: true}
+          user: %{username: "username", password: "123456", remember_me: true}
         )
 
       conn = submit_form(form, conn)

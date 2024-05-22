@@ -41,3 +41,4 @@ npm-debug.log
 # Ignore docker related files.
 /_pgdata
 **service_account****.json**
+**.terraform**

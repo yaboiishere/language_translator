@@ -23,3 +23,9 @@ dmix *args:
 
 test *args:
   mix test {{args}}
+
+dockerize:
+  docker build -t language_translator:latest .
+  docker tag language_translator:latest ghcr.io/yaboiishere/language_translator:latest
+  docker push ghcr.io/yaboiishere/language_translator:latest
+

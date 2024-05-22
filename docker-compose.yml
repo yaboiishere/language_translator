@@ -2,12 +2,10 @@ version: '3.7'
 
 services:
   app:
+    image: ghcr.io/yaboiishere/language_translator:latest
     hostname: "app"
     env_file:
       - .env.prod
-    build:
-      context: .
-      dockerfile: Dockerfile
     environment:
       PGUSER: $POSTGRES_USER
       PGPASSWORD: $POSTGRES_PASSWORD
@@ -38,6 +36,8 @@ services:
 
   haproxy:
     image: "ghcr.io/tomdess/docker-haproxy-certbot"
+    environment:
+      - CERT=$PHX_HOST
     volumes:
       - ./docker/prod/haproxy.conf:/etc/haproxy/haproxy.cfg
       - /etc/letsencrypt

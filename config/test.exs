@@ -1,5 +1,6 @@
 import Config
 
+config :language_translator, env: :test
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
@@ -24,7 +25,7 @@ config :language_translator, LanguageTranslatorWeb.Endpoint,
   server: false
 
 # In test we don't send emails.
-config :language_translator, LanguageTranslator.Mailer, adapter: Bamboo.TestAdapter
+config :language_translator, LanguageTranslator.Mailer, adapter: Swoosh.Adapters.Test
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false

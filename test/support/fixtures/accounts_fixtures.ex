@@ -5,12 +5,14 @@ defmodule LanguageTranslator.AccountsFixtures do
   """
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
-  def valid_user_password, do: "hello world!"
+  def valid_user_password, do: "MnogoSlojnaParola@123"
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
       email: unique_user_email(),
-      password: valid_user_password()
+      password: valid_user_password(),
+      username: "user#{System.unique_integer()}",
+      main_language_code: random_language_code()
     })
   end
 
@@ -27,5 +29,10 @@ defmodule LanguageTranslator.AccountsFixtures do
     {:ok, captured_email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
+  end
+
+  defp random_language_code() do
+    ["en", "es", "fr", "de", "it", "pt", "ja", "ko", "zh", "ru"]
+    |> Enum.random()
   end
 end

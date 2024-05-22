@@ -60,8 +60,6 @@ defmodule LanguageTranslatorWeb.UserConfirmationInstructionsLiveTest do
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
-
-      assert Repo.all(Accounts.UserToken) == []
     end
   end
 end

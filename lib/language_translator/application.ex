@@ -36,7 +36,7 @@ defmodule LanguageTranslator.Application do
       LanguageTranslatorWeb.Endpoint
     ]
 
-     children =
+    children =
       case Application.get_env(:libcluster, :topologies) do
         nil ->
           children
@@ -47,8 +47,6 @@ defmodule LanguageTranslator.Application do
             | children
           ]
       end
-
-
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

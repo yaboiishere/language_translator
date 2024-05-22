@@ -1,3 +1,4 @@
+
 # Find eligible builder and runner images on Docker Hub. We use Ubuntu/Debian
 # instead of Alpine to avoid DNS resolution issues in production.
 #
@@ -64,6 +65,7 @@ RUN mix release
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
+LABEL org.opencontainers.image.source=https://github.com/yaboiishere/language_translator
 RUN apt-get update -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates curl python3 postgresql-client\
   && apt-get clean && rm -f /var/lib/apt/lists/*_*

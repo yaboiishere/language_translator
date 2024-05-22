@@ -16,7 +16,6 @@
       <div class="flex items-center justify-between border-secondary-950 py-3 text-md">
         <div class="flex items-center gap-4">
           <a href="/" class="w-10 fill-secondary-950 hover:fill-zinc-700">
-            <!-- <svg src={~p"/images/planet.svg"} width="36" class="fill-secondary-950 hover:fill-zinc-700" /> -->
             <.logo />
           </a>
           <.link href={~p"/"}>
@@ -52,12 +51,15 @@
           <% end %>
         </div>
         <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
+          <div class="text-red-500">
+            THIS IS FOR EDUCATIONAL PURPOSES ONLY
+          </div>
           <%= if @current_user do %>
             <div class="grid grid-rows-1 text-md leading-6 text-zinc-900 text-right">
               <span>Logged in as:</span>
               <.link
                 href={~p"/users/settings"}
-                class="text-md leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+                class="text-md leading-6 text-secondary-900 font-semibold hover:text-zinc-700"
               >
                 <%= @current_user.username %>
               </.link>
@@ -91,19 +93,6 @@
             </div>
           <% end %>
         </div>
-        <!--   <a href="https://twitter.com/elixirphoenix" class="hover:text-zinc-700"> -->
-        <!--     @elixirphoenix -->
-        <!--   </a> -->
-        <!--   <a href="https://github.com/phoenixframework/phoenix" class="hover:text-zinc-700"> -->
-        <!--     GitHub -->
-        <!--   </a> -->
-        <!--   <a -->
-        <!--     href="https://hexdocs.pm/phoenix/overview.html" -->
-        <!--     class="rounded-lg bg-zinc-100 px-2 py-1 hover:bg-zinc-200/80" -->
-        <!--   > -->
-        <!--     Get Started <span aria-hidden="true">&rarr;</span> -->
-        <!--   </a> -->
-        <!-- </div> -->
       </div>
     </header>
     <%= @inner_content %>

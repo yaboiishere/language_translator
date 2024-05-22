@@ -1,5 +1,7 @@
 import Config
 
+config :language_translator, env: :dev
+
 # Configure your database
 config :language_translator, LanguageTranslator.Repo,
   database: "language_translator_dev",

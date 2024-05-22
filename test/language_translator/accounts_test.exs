@@ -15,6 +15,10 @@ defmodule LanguageTranslator.AccountsTest do
       %{id: id} = user = user_fixture()
       assert %User{id: ^id} = Accounts.get_user_by_email(user.email)
     end
+
+    test "returns nil when email is not found" do
+      assert nil == Accounts.get_user_by_email("non_existant@gmail.com")
+    end
   end
 
   describe "get_user_by_email_and_password/2" do
@@ -32,6 +36,24 @@ defmodule LanguageTranslator.AccountsTest do
 
       assert %User{id: ^id} =
                Accounts.get_user_by_email_and_password(user.email, valid_user_password())
+    end
+  end
+
+  describe "get_user_by_username_and_password/2" do
+    test "does not return the user if the username does not exist" do
+      refute Accounts.get_user_by_username_and_password("unknown", "hello world!")
+    end
+
+    test "does not return the user if the password is not valid" do
+      user = user_fixture()
+      refute Accounts.get_user_by_username_and_password(user.username, "invalid")
+    end
+
+    test "returns the user if the username and password are valid" do
+      %{id: id} = user = user_fixture()
+
+      assert %User{id: ^id} =
+               Accounts.get_user_by_username_and_password(user.username, valid_user_password())
     end
   end
 
@@ -54,24 +76,36 @@ defmodule LanguageTranslator.AccountsTest do
 
       assert %{
                password: ["can't be blank"],
-               email: ["can't be blank"]
-             } = errors_on(changeset)
+               email: ["can't be blank"],
+               username: ["can't be blank"],
+               main_language_code: ["can't be blank"]
+             } == errors_on(changeset)
     end
 
-    test "validates email and password when given" do
+    test "validates username, email and password when given" do
       {:error, changeset} = Accounts.register_user(%{email: "not valid", password: "not valid"})
 
       assert %{
                email: ["must have the @ sign and no spaces"],
-               password: ["should be at least 12 character(s)"]
-             } = errors_on(changeset)
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
+               username: ["can't be blank"],
+               main_language_code: ["can't be blank"]
+             } == errors_on(changeset)
     end
 
     test "validates maximum values for email and password for security" do
       too_long = String.duplicate("db", 100)
-      {:error, changeset} = Accounts.register_user(%{email: too_long, password: too_long})
+
+      {:error, changeset} =
+        Accounts.register_user(%{email: too_long, password: too_long, username: too_long})
+
       assert "should be at most 160 character(s)" in errors_on(changeset).email
       assert "should be at most 72 character(s)" in errors_on(changeset).password
+      assert "should be at most 64 character(s)" in errors_on(changeset).username
     end
 
     test "validates email uniqueness" do
@@ -84,6 +118,12 @@ defmodule LanguageTranslator.AccountsTest do
       assert "has already been taken" in errors_on(changeset).email
     end
 
+    test "validates username uniqueness" do
+      %{username: username} = user_fixture()
+      {:error, changeset} = Accounts.register_user(%{username: username})
+      assert "has already been taken" in errors_on(changeset).username
+    end
+
     test "registers users with a hashed password" do
       email = unique_user_email()
       {:ok, user} = Accounts.register_user(valid_user_attributes(email: email))
@@ -92,12 +132,25 @@ defmodule LanguageTranslator.AccountsTest do
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
+
+    test "fails registration if main_language_code is not valid" do
+      {:error, changeset} = Accounts.register_user(%{main_language_code: "invalid"})
+      assert "must be a valid language code" in errors_on(changeset).main_language_code
+    end
   end
 
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+
+      assert changeset.required == [
+               :password,
+               :email,
+               :email,
+               :username,
+               :password,
+               :main_language_code
+             ]
     end
 
     test "allows fields to be set" do
@@ -121,6 +174,50 @@ defmodule LanguageTranslator.AccountsTest do
     test "returns a user changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_email(%User{})
       assert changeset.required == [:email]
+    end
+
+    test "allows fields to be set" do
+      changeset =
+        Accounts.change_user_email(%User{}, %{
+          "email" => "new_email@gmail.com"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :email) == "new_email@gmail.com"
+    end
+  end
+
+  describe "change_user_username/2" do
+    test "returns a user changeset" do
+      assert %Ecto.Changeset{} = changeset = Accounts.change_user_username(%User{})
+      assert changeset.required == [:username]
+    end
+
+    test "allows fields to be set" do
+      changeset =
+        Accounts.change_user_username(%User{}, %{
+          "username" => "new username"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :username) == "new username"
+    end
+  end
+
+  describe "change_user_main_language/2" do
+    test "returns a user changeset" do
+      assert %Ecto.Changeset{} = changeset = Accounts.change_user_main_language(%User{})
+      assert changeset.required == [:main_language_code]
+    end
+
+    test "allows fields to be set" do
+      changeset =
+        Accounts.change_user_main_language(%User{}, %{
+          "main_language_code" => "en"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :main_language_code) == "en"
     end
   end
 
@@ -229,7 +326,7 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "does not update email if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {2, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       assert Accounts.update_user_email(user, token) == :error
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
@@ -243,13 +340,15 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "allows fields to be set" do
+      new_password = "New valid password@123"
+
       changeset =
         Accounts.change_user_password(%User{}, %{
-          "password" => "new valid password"
+          "password" => new_password
         })
 
       assert changeset.valid?
-      assert get_change(changeset, :password) == "new valid password"
+      assert get_change(changeset, :password) == new_password
       assert is_nil(get_change(changeset, :hashed_password))
     end
   end
@@ -267,7 +366,11 @@ defmodule LanguageTranslator.AccountsTest do
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -289,24 +392,82 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "updates the password", %{user: user} do
+      new_password = "new valid Password@123"
+
       {:ok, user} =
         Accounts.update_user_password(user, valid_user_password(), %{
-          password: "new valid password"
+          password: new_password
         })
 
       assert is_nil(user.password)
-      assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
+      assert Accounts.get_user_by_email_and_password(user.email, new_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do
       _ = Accounts.generate_user_session_token(user)
+      new_password = "new valid Password@123"
 
       {:ok, _} =
         Accounts.update_user_password(user, valid_user_password(), %{
-          password: "new valid password"
+          password: new_password
         })
 
       refute Repo.get_by(UserToken, user_id: user.id)
+    end
+  end
+
+  describe "update_user_main_language/2" do
+    setup do
+      %{user: user_fixture()}
+    end
+
+    test "validates main_language_code", %{user: user} do
+      {:error, changeset} =
+        Accounts.update_user_main_language(
+          user,
+          "invalid"
+        )
+
+      assert %{
+               main_language_code: ["must be a valid language code"]
+             } = errors_on(changeset)
+    end
+
+    test "updates the main language", %{user: user} do
+      {:ok, user} =
+        Accounts.update_user_main_language(user, "en")
+
+      assert user.main_language_code == "en"
+    end
+  end
+
+  describe "update_user_username/2" do
+    setup do
+      %{user: user_fixture()}
+    end
+
+    test "validates username", %{user: user} do
+      {:error, changeset} =
+        Accounts.update_user_username(user, String.duplicate("db", 100))
+
+      assert %{
+               username: ["should be at most 64 character(s)"]
+             } = errors_on(changeset)
+    end
+
+    test "validates username uniqueness", %{user: user} do
+      %{username: username} = user_fixture()
+      {:error, changeset} = Accounts.update_user_username(user, username)
+      assert "has already been taken" in errors_on(changeset).username
+    end
+
+    test "updates the username", %{user: user} do
+      new_username = "new_username"
+
+      {:ok, user} =
+        Accounts.update_user_username(user, new_username)
+
+      assert user.username == new_username
     end
   end
 
@@ -348,7 +509,7 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "does not return user for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {2, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       refute Accounts.get_user_by_session_token(token)
     end
   end
@@ -408,7 +569,7 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "does not confirm email if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {2, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       assert Accounts.confirm_user(token) == :error
       refute Repo.get!(User, user.id).confirmed_at
       assert Repo.get_by(UserToken, user_id: user.id)
@@ -457,7 +618,7 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "does not return the user if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {2, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       refute Accounts.get_user_by_reset_password_token(token)
       assert Repo.get_by(UserToken, user_id: user.id)
     end
@@ -476,7 +637,11 @@ defmodule LanguageTranslator.AccountsTest do
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -488,14 +653,16 @@ defmodule LanguageTranslator.AccountsTest do
     end
 
     test "updates the password", %{user: user} do
-      {:ok, updated_user} = Accounts.reset_user_password(user, %{password: "new valid password"})
+      new_password = "new Valid password@123"
+      {:ok, updated_user} = Accounts.reset_user_password(user, %{password: new_password})
       assert is_nil(updated_user.password)
-      assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
+      assert Accounts.get_user_by_email_and_password(user.email, new_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do
+      new_password = "new Valid password@123"
       _ = Accounts.generate_user_session_token(user)
-      {:ok, _} = Accounts.reset_user_password(user, %{password: "new valid password"})
+      {:ok, _} = Accounts.reset_user_password(user, %{password: new_password})
       refute Repo.get_by(UserToken, user_id: user.id)
     end
   end
