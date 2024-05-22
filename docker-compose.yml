@@ -32,7 +32,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./_pgdata:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
 
   haproxy:
     image: "ghcr.io/tomdess/docker-haproxy-certbot"
@@ -78,7 +78,7 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     user: root
     volumes:
-      - /docker_data/grafana_data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     entrypoint:
       - sh
       - -euc
@@ -104,4 +104,6 @@ services:
 
 volumes:
   loki_data:
+  pg_data:
+  grafana_data:
 
