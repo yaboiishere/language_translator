@@ -1,6 +1,7 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   use LanguageTranslatorWeb, :live_view
 
+  import LiveSelect
   alias Ecto.Changeset
   alias LanguageTranslator.Models.Word
   alias LanguageTranslatorWeb.AnalysisLive.FormComponent
@@ -14,6 +15,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Models.Language
+  alias LanguageTranslator.Models.Analysis
   alias LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset
   alias Ecto.Changeset
 
@@ -40,15 +42,21 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
     socket =
       socket
       |> assign(:current_user, current_user)
+      |> assign(:extra_ids_form, %{})
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_params(%{"id" => id} = params, _, socket) do
+  def handle_params(%{"id" => id} = params, _, %{assigns: %{current_user: current_user}} = socket) do
     analysis = Models.get_analysis!(id, @analysis_preloads)
 
-    words = Word.analysis_words(id)
+    extra_ids = Map.get(params, "extra_ids", [])
+
+    valid_extra_description_to_ids =
+      Analysis.get_by_source_language(current_user, analysis)
+
+    words = Word.analysis_words(id, extra_ids)
 
     entries =
       words
@@ -100,6 +108,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
       |> assign(:analysis, analysis)
       |> assign(:entries, entries)
       |> assign(:columns, columns)
+      |> assign(:extra_ids, extra_ids)
+      |> assign(:valid_extra_ids, valid_extra_description_to_ids)
 
     {:noreply, socket}
   end
@@ -123,10 +133,18 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
   def handle_event("show_cols", checked_cols, %{assigns: %{analysis: %{id: id}}} = socket) do
     checked_cols = Util.format_show_cols(checked_cols)
 
-    {:noreply,
-     push_patch(socket,
-       to: Routes.analysis_show_path(socket, :show, id, show_cols: checked_cols)
-     )}
+    socket
+    |> Util.update_show_cols(checked_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.analysis_show_path(socket, :show, id, params)
+         )}
+    end
   end
 
   def handle_event(
@@ -136,17 +154,122 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
       ) do
     checked_cols = columns |> Enum.map(&Map.get(&1, :id))
 
-    {:noreply,
-     push_patch(socket,
-       to: Routes.analysis_show_path(socket, :show, id, show_cols: checked_cols)
-     )}
+    socket
+    |> Util.update_show_cols(checked_cols)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.analysis_show_path(socket, :show, id, params)
+         )}
+    end
   end
 
   def handle_event("hide_all", _params, %{assigns: %{analysis: %{id: id}}} = socket) do
-    {:noreply,
-     push_patch(socket, to: Routes.analysis_show_path(socket, :show, id, show_cols: ["none"]))}
+    socket
+    |> Util.update_show_cols(["none"])
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.analysis_show_path(socket, :show, id, params)
+         )}
+    end
+  end
+
+  def handle_event(
+        "add_extra_ids",
+        %{"extra_ids" => extra_ids},
+        %{
+          assigns: %{
+            analysis: %{id: id},
+            extra_ids: old_extra_ids
+          }
+        } = socket
+      ) do
+    new_extra_ids = old_extra_ids ++ extra_ids
+
+    socket
+    |> Util.update_extra_ids(new_extra_ids)
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.analysis_show_path(socket, :show, id, params)
+         )}
+    end
+  end
+
+  def handle_event(
+        "add_extra_ids",
+        _params,
+        %{
+          assigns: %{
+            analysis: %{id: id}
+          }
+        } = socket
+      ) do
+    socket
+    |> Util.update_extra_ids([])
+    |> case do
+      nil ->
+        {:noreply, socket}
+
+      params ->
+        {:noreply,
+         push_patch(socket,
+           to: Routes.analysis_show_path(socket, :show, id, params)
+         )}
+    end
+  end
+
+  def handle_event(
+        "live_select_blur",
+        %{"id" => live_select_id},
+        %{assigns: %{analysis: analysis, current_user: current_user}} = socket
+      ) do
+    options =
+      case live_select_id do
+        "extra_analysis" -> Analysis.get_by_source_language(current_user, analysis)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "live_select_change",
+        %{"text" => text, "id" => live_select_id},
+        %{assigns: %{current_user: current_user, analysis: analysis}} = socket
+      ) do
+    options =
+      case live_select_id do
+        "extra_analysis" -> Analysis.search_description(current_user, analysis, text)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
   end
 
   defp page_title(:show), do: "Show Analysis"
   defp page_title(:edit), do: "Edit Analysis"
+
+  defp text_input_class() do
+    "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900 pr-0 py-0"
+  end
+
+  defp tag_class() do
+    "bg-primary-200 flex p-1 rounded-lg text-sm"
+  end
 end

@@ -2,7 +2,7 @@
   <.header>
     Analysis <%= @analysis.id %>
     <:actions>
-      <%= if @current_user.id == @analysis.user_id do %>
+      <%= if @current_user && @current_user.id == @analysis.user_id do %>
         <.link patch={~p"/analysis/#{@analysis}/show/edit"} phx-click={JS.push_focus()}>
           <.button>Edit analysis</.button>
         </.link>
@@ -18,6 +18,21 @@
     show_cols={@order_and_filter.show_cols}
     columns={@columns}
   />
+  <.form :let={f} for={@extra_ids_form} phx-change="add_extra_ids">
+  <.live_select
+    id="extra_analysis"
+    field={f[:extra_ids]}
+    options={@valid_extra_ids}
+    mode={:tags}
+    container_extra_class="flex flex-col"
+    dropdown_extra_class="max-h-60 overflow-y-auto"
+    text_input_class={text_input_class()}
+    text_input_selected_class={text_input_class()}
+    tags_container_extra_class="order-last"
+    tag_class={tag_class()}
+    phx-blur="live_select_blur"
+  />
+  </.form>
 
   <div class="mt-4 ">
     <.list>

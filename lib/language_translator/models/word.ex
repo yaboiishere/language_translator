@@ -103,9 +103,10 @@ defmodule LanguageTranslator.Models.Word do
     |> Repo.all()
   end
 
-  def analysis_words(analysis_id) do
+  def analysis_words(analysis_id, extra_analysis_ids \\ []) do
+    valid_ids = [analysis_id | extra_analysis_ids]
     from(at in AnalysisTranslation,
-      where: at.analysis_id == ^analysis_id,
+      where: at.analysis_id in ^valid_ids,
       join: t in Translation,
       on: t.id == at.translation_id,
       join: tw in Word,

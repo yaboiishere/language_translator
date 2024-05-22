@@ -72,6 +72,18 @@ defmodule LanguageTranslatorWeb.Util do
     end
   end
 
+  def update_extra_ids(%{assigns: %{order_and_filter: order_and_filter}}, extra_ids) do
+    order_and_filter
+    |> OrderAndFilterChangeset.changeset(%{"extra_ids" => extra_ids})
+    |> case do
+      %{valid?: true} = changeset ->
+        changeset |> Changeset.apply_changes() |> OrderAndFilterChangeset.to_map()
+
+      _ ->
+        nil
+    end
+  end
+
   def format_show_cols(checked_cols) do
     checked_cols
     |> Enum.filter(fn {_, value} -> value == "true" end)

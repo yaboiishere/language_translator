@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Models.Analysis do
   import Ecto.Query
   require Logger
 
+  alias LanguageTranslator.Models.Analysis
   alias LanguageTranslatorWeb.Util
   alias LanguageTranslator.Translator
   alias LanguageTranslator.Repo
@@ -82,6 +83,39 @@ defmodule LanguageTranslator.Models.Analysis do
     |> all_query(params)
     |> Repo.all()
     |> Repo.preload(preloads)
+  end
+
+  defp user_owner_query(query, nil) do
+    where(query, [a], a.is_public == true)
+  end
+
+  defp user_owner_query(query, user) do
+    where(query, [a], a.is_public == true or a.user_id == ^user.id)
+  end
+
+  def get_by_source_language(user, %Analysis{source_language_code: source_language_code, id: id}) do
+    from(a in __MODULE__,
+      where: a.source_language_code == ^source_language_code and a.id != ^id,
+      select: {a.id, a.description}
+    )
+    |> user_owner_query(user)
+    |> Repo.all()
+    |> Enum.map(fn {id, description} -> {"#{id} - #{description}", id} end)
+  end
+
+  def search_description(user, analysis, search) do
+    from(a in __MODULE__,
+      where:
+        ilike(a.description, ^"#{search}%") and
+          a.id != ^analysis.id and
+          a.source_language_code == ^analysis.source_language_code,
+      order_by: a.description
+    )
+    |> user_owner_query(user)
+    |> Repo.all()
+    |> Enum.map(fn %Analysis{description: description, id: id} ->
+      {"#{id} - #{description}", id}
+    end)
   end
 
   def paginate_all(user_or_nil, params, pagination, preloads \\ @default_preloads) do
