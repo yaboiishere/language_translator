@@ -19,6 +19,13 @@ services:
     volumes:
       - ./service_account.json:/app/service_account.json
       - ./.env.prod:/app/.env
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        preferences:
+          - spread: node.labels.language_translator
 
 
   postgres:
@@ -32,6 +39,10 @@ services:
     restart: always
     volumes:
       - pg_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      constraints:
+        - node.role == manager
 
   haproxy:
     image: "ghcr.io/tomdess/docker-haproxy-certbot"
@@ -42,6 +53,13 @@ services:
     volumes:
       - ./docker/prod/haproxy.conf:/etc/haproxy/haproxy.cfg
       - letsencrypt:/etc/letsencrypt
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
 
     ports:
       - published: 80
