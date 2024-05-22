@@ -29,3 +29,5 @@ dockerize:
   docker tag language_translator:latest ghcr.io/yaboiishere/language_translator:latest
   docker push ghcr.io/yaboiishere/language_translator:latest
 
+swarm:
+  export $(cat .env.prod) > /dev/null 2>&1; docker stack deploy -c docker-compose.yml --with-registry-auth language_translator
