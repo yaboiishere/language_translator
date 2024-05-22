@@ -76,7 +76,8 @@ if config_env() == :prod do
     secret_key_base: secret_key_base,
     server: true,
     check_origin: [
-      "http://localhost:443"
+      "http://localhost:443",
+      "https://language-translator.info"
     ]
 
   config :logger,
