@@ -76,6 +76,11 @@ resource "hcloud_server" "manager" {
   }
 
   provisioner "file" {
+    source = "service_account.json"
+    destination = "/root/service_account.json"
+  }
+
+  provisioner "file" {
     source = ".env.prod"
     destination = "/root/.env.prod"
   }
@@ -129,6 +134,7 @@ resource "null_resource" "manager_init" {
       "sudo chmod 400 /root/.ssh/id_rsa.pub",
       "git clone https://$GIT_TOKEN@github.com/yaboiishere/language_translator.git",
       "cp .env.prod language_translator/.env.prod",
+      "cp service_account.json language_translator/service_account.json",
       "cd language_translator",
       "echo $GIT_TOKEN | docker login ghcr.io -u yaboiishere --password-stdin",
       "docker compose pull",
@@ -176,6 +182,11 @@ resource "hcloud_server" "worker" {
   }
 
   provisioner "file" {
+    source = "service_account.json"
+    destination = "/root/service_account.json"
+  }
+
+  provisioner "file" {
     source = "rsyslog"
     destination = "/etc/logrotate.d/rsyslog"
   }
@@ -196,6 +207,7 @@ resource "hcloud_server" "worker" {
       "echo $GIT_TOKEN | docker login ghcr.io -u yaboiishere --password-stdin",
       "git clone https://$GIT_TOKEN@github.com/yaboiishere/yaboiishere.git",
       "cp .env.prod language_translator/.env.prod",
+      "cp service_account.json language_translator/service_account.json",
       "sudo scp -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no -o NoHostAuthenticationForLocalhost=yes -o UserKnownHostsFile=/dev/null root@${var.manager_private_ip}:/worker_token .",
       "cd language_translator",
       "docker swarm join --token $(cat /root/worker_token) ${var.manager_private_ip}:2377",

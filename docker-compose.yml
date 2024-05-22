@@ -19,6 +19,8 @@ services:
     volumes:
       - ./service_account.json:/app/service_account.json
       - ./.env.prod:/app/.env
+      - letsencrypt:/etc/letsencrypt
+
 
   postgres:
     image: postgres:16-alpine
@@ -29,8 +31,6 @@ services:
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       PGDATA: /var/lib/postgresql/data/pgdata
     restart: always
-    ports:
-      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
 
@@ -42,7 +42,8 @@ services:
       - STAGING=${LETS_ENCRYPT_STAGING}
     volumes:
       - ./docker/prod/haproxy.conf:/etc/haproxy/haproxy.cfg
-      - /etc/letsencrypt
+      - letsencrypt:/etc/letsencrypt
+
     ports:
       - published: 80
         target: 80
@@ -54,6 +55,14 @@ services:
         mode: ingress
       - published: 8404
         target: 8404
+        protocol: tcp
+        mode: host
+      - published: 5432
+        target: 5432
+        protocol: tcp
+        mode: host
+      - published: 3000
+        target: 3000
         protocol: tcp
         mode: host
     dns:
@@ -81,6 +90,7 @@ services:
     user: root
     volumes:
       - grafana_data:/var/lib/grafana
+      - letsencrypt:/etc/letsencrypt
     entrypoint:
       - sh
       - -euc
@@ -101,11 +111,10 @@ services:
         EOF
         /run.sh
     image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
 
 volumes:
   loki_data:
   pg_data:
   grafana_data:
+  letsencrypt:
 

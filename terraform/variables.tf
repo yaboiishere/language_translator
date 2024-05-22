@@ -12,7 +12,7 @@ variable "image" {
 variable "manager_server_type" {
   description = "Hetzner Cloud server type for the manager"
   type        = string
-  default     = "cax11"
+  default     = "cpx11"
 }
 
 variable "manager_private_ip" {
@@ -24,7 +24,7 @@ variable "manager_private_ip" {
 variable "worker_server_type" {
   description = "Hetzner Cloud server type for the worker"
   type        = string
-  default     = "cax11"
+  default     = "cx11"
 }
 
 variable "worker_count" {
