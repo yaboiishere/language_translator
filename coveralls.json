@@ -1,0 +1,13 @@
+{
+  "skip_files": [
+    "test/",
+    "lib/language_translator.ex",
+    "lib/language_translator/http.ex",
+    "lib/language_translator/http/behaviour.ex",
+    "lib/language_translator/release.ex",
+    "lib/language_translator/repo.ex",
+    "lib/language_translator/mailer.ex",
+    "lib/language_translator/models.ex",
+    " lib/language_translator/tasks/translate_task.ex"
+  ]
+}
