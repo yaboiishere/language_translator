@@ -51,7 +51,7 @@ defmodule LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset do
 
       words ->
         words
-        |> Enum.any?(&(String.length(&1) > 64))
+        |> Enum.any?(&(String.length(&1) > 80))
         |> case do
           true ->
             add_error(

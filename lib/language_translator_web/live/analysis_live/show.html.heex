@@ -12,28 +12,43 @@
       </.link>
     </:actions>
   </.header>
-  <.live_component
-    id="show_cols"
-    module={ShowColumnsComponent}
-    show_cols={@order_and_filter.show_cols}
-    columns={@columns}
-  />
-  <.form :let={f} for={@extra_ids_form} phx-change="add_extra_ids">
-  <.live_select
-    id="extra_analysis"
-    field={f[:extra_ids]}
-    options={@valid_extra_ids}
-    mode={:tags}
-    container_extra_class="flex flex-col"
-    dropdown_extra_class="max-h-60 overflow-y-auto"
-    text_input_class={text_input_class()}
-    text_input_selected_class={text_input_class()}
-    tags_container_extra_class="order-last"
-    tag_class={tag_class()}
-    phx-blur="live_select_blur"
-    max_selectable={5}
-  />
-  </.form>
+  <div class="flex gap-4 justify-between">
+    <.live_component
+      id="show_cols"
+      module={ShowColumnsComponent}
+      show_cols={@order_and_filter.show_cols}
+      columns={@columns}
+    />
+    <%= if @current_user do %>
+      <.form
+        :let={f}
+        for={@extra_ids_form}
+        phx-change="add_extra_ids"
+        phx-submit="create_merged_analysis"
+      >
+        <div class="flex gap-4 ">
+          <div>
+            <.label for="extra_analysis">Extra analysis</.label>
+            <.live_select
+              id="extra_analysis"
+              field={f[:extra_ids]}
+              options={@valid_extra_ids}
+              mode={:tags}
+              container_extra_class="flex flex-col max-w-80"
+              dropdown_extra_class="max-h-60 overflow-y-auto"
+              text_input_class={text_input_class()}
+              text_input_selected_class={text_input_class()}
+              tags_container_extra_class="order-last"
+              tag_class={tag_class()}
+              phx-blur="live_select_blur"
+              max_selectable={5}
+            />
+          </div>
+          <.button class="max-h-10 mt-[22px]">Save merged analysis</.button>
+        </div>
+      </.form>
+    <% end %>
+  </div>
 
   <div class="mt-4 ">
     <.list>

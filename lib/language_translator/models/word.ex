@@ -30,7 +30,7 @@ defmodule LanguageTranslator.Models.Word do
     |> cast(attrs, [:text, :language_code, :romanized_text])
     |> validate_required([:text, :language_code, :romanized_text])
     |> unique_constraint([:language_code, :text], name: :words_language_code_text_index)
-    |> validate_length(:text, min: 1, max: 64)
+    |> validate_length(:text, min: 1, max: 80)
   end
 
   def get!(id) do
@@ -105,6 +105,7 @@ defmodule LanguageTranslator.Models.Word do
 
   def analysis_words(analysis_id, extra_analysis_ids \\ []) do
     valid_ids = [analysis_id | extra_analysis_ids]
+
     from(at in AnalysisTranslation,
       where: at.analysis_id in ^valid_ids,
       join: t in Translation,

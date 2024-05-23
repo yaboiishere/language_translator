@@ -10,6 +10,7 @@ defmodule LanguageTranslator.Repo.Migrations.CreateAnalysis do
     create table(:analysis) do
       add :description, :text
       add :status, :text, default: "pending", null: false
+      add :type, :text, default: "manual", null: false
 
       add :source_language_code, references(:languages, column: :code, type: :text), null: false
 

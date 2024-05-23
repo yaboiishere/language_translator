@@ -52,7 +52,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
     analysis = Models.get_analysis!(id, @analysis_preloads)
 
     if analysis.status == :completed do
-      extra_ids = Map.get(params, "extra_ids", [])
+      extra_ids =
+        Map.get(params, "extra_ids", [])
 
       valid_extra_description_to_ids =
         Analysis.get_by_source_language(current_user, analysis)
@@ -83,6 +84,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
                   language_display_name: language,
                   language_code: code
                 }
+            end)
+            |> Enum.reject(fn %Table{language_code: language_code} ->
+              language_code == analysis.source_language_code
             end)
           }
         end)
@@ -145,6 +149,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
         {:noreply, socket}
 
       params ->
+        params =
+          Map.reject(params, fn {_k, v} -> is_nil(v) end)
+
         {:noreply,
          push_patch(socket,
            to: Routes.analysis_show_path(socket, :show, id, params)
@@ -166,6 +173,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
         {:noreply, socket}
 
       params ->
+        params =
+          Map.reject(params, fn {_k, v} -> is_nil(v) end)
+
         {:noreply,
          push_patch(socket,
            to: Routes.analysis_show_path(socket, :show, id, params)
@@ -181,6 +191,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
         {:noreply, socket}
 
       params ->
+        params =
+          Map.reject(params, fn {_k, v} -> is_nil(v) end)
+
         {:noreply,
          push_patch(socket,
            to: Routes.analysis_show_path(socket, :show, id, params)
@@ -198,7 +211,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
           }
         } = socket
       ) do
-    new_extra_ids = old_extra_ids ++ extra_ids
+    new_extra_ids =
+      (old_extra_ids ++ extra_ids)
+      |> Enum.uniq()
 
     socket
     |> Util.update_extra_ids(new_extra_ids)
@@ -267,11 +282,30 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "create_merged_analysis",
+        %{"extra_ids" => extra_ids},
+        %{assigns: %{analysis: analysis, current_user: current_user}} = socket
+      ) do
+    Analysis.create_merged_analysis(analysis, extra_ids, current_user)
+
+    socket =
+      socket
+      |> put_flash(:info, "Merged analysis created successfully")
+      |> push_navigate(to: Routes.analysis_index_path(socket, :index))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("create_merged_analysis", _params, socket) do
+    {:noreply, socket}
+  end
+
   defp page_title(:show), do: "Show Analysis"
   defp page_title(:edit), do: "Edit Analysis"
 
   defp text_input_class() do
-    "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900 pr-0 py-0"
+    "block w-80 max-w-80 rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm text-gray-900"
   end
 
   defp tag_class() do

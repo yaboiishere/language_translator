@@ -62,9 +62,10 @@ defmodule LanguageTranslator.Translator.Refresher do
     from(a in Analysis, where: a.status == :failed, preload: [:source_language, :user])
     |> Repo.all()
     |> Enum.reject(&AnalysisMonitor.is_analysis_running?/1)
-    |> Enum.each(fn analysis ->
-      refresh_analysis(analysis)
-    end)
+    |> case do
+      [] -> Logger.info("No analyses to refresh")
+      [hd | _tl] -> refresh_analysis(hd)
+    end
   end
 
   defp refresh_analysis(analysis) do

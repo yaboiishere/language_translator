@@ -17,12 +17,13 @@ defmodule LanguageTranslator.Models.Analysis do
   @default_preloads ~w(source_language user)a
 
   @required_fields ~w(source_language_code status user_id source_words)a
-  @available_fields ~w(description is_public)a ++ @required_fields
+  @available_fields ~w(description is_public type)a ++ @required_fields
   schema "analysis" do
     field :description, :string
     field :status, Ecto.Enum, values: ~w(pending processing completed failed)a, default: :pending
     field :is_public, :boolean, default: false
     field :source_words, {:array, :string}
+    field :type, Ecto.Enum, values: ~w(manual auto merged)a, default: :manual
 
     belongs_to :user, User
 
@@ -62,7 +63,31 @@ defmodule LanguageTranslator.Models.Analysis do
       user_id: user.id,
       is_public: false,
       description: "Auto-generated analysis for #{word.text}",
-      status: :pending
+      status: :pending,
+      type: :auto
+    })
+    |> Repo.insert!()
+    |> Repo.preload(@default_preloads)
+    |> Translator.async_translate()
+  end
+
+  def create_merged_analysis(analysis, extra_ids, user) do
+    analyses = [analysis | get_all(user, %{order_by: nil, filter_by: %{"id" => extra_ids}})]
+
+    source_words =
+      analyses
+      |> Enum.flat_map(& &1.source_words)
+      |> Enum.uniq()
+
+    %__MODULE__{}
+    |> changeset(%{
+      source_language_code: analysis.source_language_code,
+      source_words: source_words,
+      user_id: user.id,
+      is_public: false,
+      description: "Merged analysis (#{analysis.id}, #{Enum.join(extra_ids, ", ")})",
+      status: :pending,
+      type: :merged
     })
     |> Repo.insert!()
     |> Repo.preload(@default_preloads)
@@ -97,7 +122,7 @@ defmodule LanguageTranslator.Models.Analysis do
     from(a in __MODULE__,
       where:
         a.source_language_code == ^source_language_code and a.id != ^id and
-          a.status == :completed,
+          a.status == :completed and a.type != :merged,
       select: {a.id, a.description}
     )
     |> user_owner_query(user)
@@ -111,7 +136,7 @@ defmodule LanguageTranslator.Models.Analysis do
         ilike(a.description, ^"#{search}%") and
           a.id != ^analysis.id and
           a.source_language_code == ^analysis.source_language_code and
-          a.status == :completed,
+          a.status == :completed and a.type != :merged,
       order_by: a.description
     )
     |> user_owner_query(user)

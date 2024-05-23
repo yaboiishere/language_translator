@@ -7,7 +7,7 @@ defmodule LanguageTranslatorWeb.Changesets.OrderAndFilterChangeset do
     field :order_by, :string
     field :show_cols, {:array, :string}
     field :filter_by, :map
-    field :extra_ids, {:array, :integer}
+    field :extra_ids, {:array, :string}
   end
 
   def changeset(order_and_filter, attrs \\ %{}) do

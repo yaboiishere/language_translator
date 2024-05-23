@@ -15,7 +15,7 @@ defmodule LanguageTranslator.Http.Cache do
   end
 
   def fetch(word, source_language, target_language) when is_binary(word) do
-    GenServer.call(__MODULE__, {:fetch, word, source_language, target_language})
+    GenServer.call(__MODULE__, {:fetch, word, source_language, target_language}, 600_000)
   end
 
   def store(word, source_language, translated_word, target_language)

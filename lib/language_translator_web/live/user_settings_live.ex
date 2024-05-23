@@ -232,8 +232,6 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
         main_language_changeset =
           Accounts.change_user_main_language(user, %{main_language_code: main_language_code})
 
-        IO.inspect(main_language_changeset)
-
         Repo.update!(main_language_changeset)
 
         main_language_form =
