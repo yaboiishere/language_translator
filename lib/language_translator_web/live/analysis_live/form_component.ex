@@ -1,4 +1,6 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
+  alias LanguageTranslator.Models.Analysis
+  alias Ecto.Changeset
   alias LanguageTranslator.ProcessGroups
   alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   use LanguageTranslatorWeb, :live_component
@@ -141,10 +143,18 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   @impl true
   def update(%{form_data: form_data} = assigns, socket) do
+    is_public =
+      form_data.changes[:is_public]
+      |> case do
+        true -> true
+        _ -> false
+      end
+
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_form(form_data)}
+     |> assign_form(form_data)
+     |> assign(:is_public, is_public)}
   end
 
   @impl true
@@ -181,21 +191,31 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   def handle_event(
         "update",
-        %{"analysis_create_changeset" => analysis_params},
+        analysis_params,
         %{assigns: %{analysis: analysis}} = socket
       ) do
-    case Models.update_analysis(analysis, analysis_params) do
-      {:ok, analysis} ->
-        ProcessGroups.Analysis.edit_analysis(analysis)
-        notify_parent({:saved, analysis})
+    analysis
+    |> Analysis.changeset(analysis_params)
+    |> case do
+      %{valid?: true} = changeset ->
+        Repo.update(changeset)
+        |> case do
+          {:ok, analysis} ->
+            ProcessGroups.Analysis.edit_analysis(analysis)
+            notify_parent({:saved, analysis})
 
-        {:noreply,
-         socket
-         |> assign(:analysis, analysis)
-         |> put_flash(:info, "Analysis updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+            {:noreply,
+             socket
+             |> assign(:analysis, analysis)
+             |> put_flash(:info, "Analysis updated successfully")
+             |> push_patch(to: socket.assigns.patch)}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+          {:error, changeset} ->
+            {:noreply, assign_form(socket, changeset)}
+        end
+
+      changeset ->
+        IO.inspect(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end
@@ -245,7 +265,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           separator: separator
         })
         |> Map.put(:action, :validate)
-        |> tap(&IO.inspect/1)
         |> case do
           %{valid?: true} ->
             analysis = Map.put(analysis, "source_words", words)

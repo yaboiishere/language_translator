@@ -98,9 +98,21 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    analysis = Analysis.get!(id)
+
+    changeset =
+      Analysis.changeset(
+        %Analysis{},
+        analysis |> Map.drop([:__meta__, :__struct__])
+      )
+
+    IO.inspect(changeset)
+
     socket
     |> assign(:page_title, "Edit Analysis")
-    |> assign(:analysis, Analysis.get!(id))
+    |> assign(:analysis, analysis)
+    |> assign(:form_data, changeset)
+    |> assign(:merge, false)
   end
 
   defp apply_action(socket, :new, params) do
@@ -153,7 +165,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
   @impl true
   def handle_info(
         {:update_analysis, analysis},
-        %{assigns: %{current_user: current_user, order_and_filter: order_and_filter}} =
+        %{
+          assigns: %{
+            current_user: current_user,
+            order_and_filter: order_and_filter,
+            pagination: pagination
+          }
+        } =
           socket
       ) do
     socket =
@@ -165,11 +183,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
             _ -> {:info, "Analysis #{analysis.id} updated with status: #{analysis.status}"}
           end
 
+        %{entries: entries} = Analysis.paginate_all(current_user, order_and_filter, pagination)
+
         socket
         |> put_flash(flash_type, flash_message)
         |> assign(
           :analysis_collection,
-          Analysis.get_all(current_user, order_and_filter)
+          entries
         )
       else
         socket
@@ -189,11 +209,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
           }
         } = socket
       ) do
+    %{entries: entries} = Analysis.paginate_all(current_user, order_and_filter, pagination)
+
     socket =
       socket
       |> assign(
         :analysis_collection,
-        Analysis.paginate_all(current_user, order_and_filter, pagination)
+        entries
       )
 
     {:noreply, socket}
