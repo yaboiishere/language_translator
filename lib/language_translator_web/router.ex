@@ -97,16 +97,6 @@ defmodule LanguageTranslatorWeb.Router do
   end
 
   scope "/", LanguageTranslatorWeb do
-    pipe_through :browser
-
-    live "/", AnalysisLive.Index, :index
-    live "/analysis", AnalysisLive.Index, :index
-    live "/words/:word_id", WordLive.Show, :show
-    live "/words", WordLive.Index, :index
-    live "/languages", LanguageLive.Index, :index
-  end
-
-  scope "/", LanguageTranslatorWeb do
     pipe_through [:browser, :no_auth]
     live "/analysis/:id", AnalysisLive.Show, :show
   end
@@ -121,5 +111,15 @@ defmodule LanguageTranslatorWeb.Router do
   scope "/", LanguageTranslatorWeb do
     pipe_through [:browser, :require_admin]
     live "/users", UserLive.Index, :index
+  end
+
+  scope "/", LanguageTranslatorWeb do
+    pipe_through :browser
+
+    live "/", AnalysisLive.Index, :index
+    live "/analysis", AnalysisLive.Index, :index
+    live "/words/:word_id", WordLive.Show, :show
+    live "/words", WordLive.Index, :index
+    live "/languages", LanguageLive.Index, :index
   end
 end

@@ -106,8 +106,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
         analysis |> Map.drop([:__meta__, :__struct__])
       )
 
-    IO.inspect(changeset)
-
     socket
     |> assign(:page_title, "Edit Analysis")
     |> assign(:analysis, analysis)
@@ -115,29 +113,35 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
     |> assign(:merge, false)
   end
 
-  defp apply_action(socket, :new, params) do
-    merged_analysis =
-      Map.get(params, "merged_analysis", nil)
+  defp apply_action(%{assigns: %{current_user: current_user}} = socket, :new, params) do
+    if current_user && current_user.confirmed_at do
+      merged_analysis =
+        Map.get(params, "merged_analysis", nil)
 
-    analysis_create_changeset =
-      if merged_analysis do
-        AnalysisCreateChangeset.changeset(
-          %AnalysisCreateChangeset{is_file: false},
-          URI.decode_query(merged_analysis)
-        )
-      else
-        AnalysisCreateChangeset.changeset(%AnalysisCreateChangeset{}, %{})
-      end
+      analysis_create_changeset =
+        if merged_analysis do
+          AnalysisCreateChangeset.changeset(
+            %AnalysisCreateChangeset{is_file: false},
+            URI.decode_query(merged_analysis)
+          )
+        else
+          AnalysisCreateChangeset.changeset(%AnalysisCreateChangeset{}, %{})
+        end
 
-    languages =
-      Language.languages_for_select()
+      languages =
+        Language.languages_for_select()
 
-    socket
-    |> assign(:page_title, "New Analysis")
-    |> assign(:form_data, analysis_create_changeset)
-    |> assign(:analysis, %Analysis{})
-    |> assign(:languages, languages)
-    |> assign(:merge, merged_analysis != nil)
+      socket
+      |> assign(:page_title, "New Analysis")
+      |> assign(:form_data, analysis_create_changeset)
+      |> assign(:analysis, %Analysis{})
+      |> assign(:languages, languages)
+      |> assign(:merge, merged_analysis != nil)
+    else
+      socket
+      |> put_flash(:error, "You must confirm your email before creating an analysis.")
+      |> push_patch(to: Routes.analysis_index_path(socket, :index, %{}))
+    end
   end
 
   defp apply_action(socket, :index, _params) do

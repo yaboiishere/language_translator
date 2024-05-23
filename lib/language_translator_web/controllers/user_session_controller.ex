@@ -5,7 +5,11 @@ defmodule LanguageTranslatorWeb.UserSessionController do
   alias LanguageTranslatorWeb.UserAuth
 
   def create(conn, %{"_action" => "registered"} = params) do
-    create(conn, params, "Account created successfully!")
+    create(
+      conn,
+      params,
+      "Please check your email to confirm your account in order to be able to create analyses."
+    )
   end
 
   def create(conn, %{"_action" => "password_updated"} = params) do

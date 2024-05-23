@@ -34,6 +34,15 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
               />
               <:actions>
                 <.button phx-disable-with="Changing...">Change Email</.button>
+                <%= if @current_user.confirmed_at == nil do %>
+                  <.button
+                    phx-click="resend_confirmation_email"
+                    phx-disable-with="Resending..."
+                    class=""
+                  >
+                    Resend confirmation email
+                  </.button>
+                <% end %>
               </:actions>
             </.simple_form>
           </div>
@@ -285,6 +294,18 @@ defmodule LanguageTranslatorWeb.UserSettingsLive do
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
     {:noreply, socket}
+  end
+
+  def handle_event("resend_confirmation_email", _params, socket) do
+    user = socket.assigns.current_user
+
+    case Accounts.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}")) do
+      {:ok, _} ->
+        {:noreply, put_flash(socket, :info, "Confirmation email sent successfully.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Confirmation email could not be sent.")}
+    end
   end
 
   defp text_input_class() do

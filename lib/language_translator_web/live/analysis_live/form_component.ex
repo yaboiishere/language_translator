@@ -1,13 +1,12 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
-  alias LanguageTranslator.Models.Analysis
-  alias Ecto.Changeset
-  alias LanguageTranslator.ProcessGroups
-  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   use LanguageTranslatorWeb, :live_component
 
   alias LanguageTranslator.Models
   alias LanguageTranslator.Repo
   alias LanguageTranslator.Translator
+  alias LanguageTranslator.Models.Analysis
+  alias LanguageTranslator.ProcessGroups
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
 
   @impl true
   def render(assigns) do
@@ -215,7 +214,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         end
 
       changeset ->
-        IO.inspect(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end
@@ -227,6 +225,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           assigns: %{current_user: current_user}
         } = socket
       ) do
+    IO.inspect(analysis_params)
+
     %AnalysisCreateChangeset{}
     |> AnalysisCreateChangeset.changeset(analysis_params)
     |> Map.put(:action, :validate)
@@ -242,7 +242,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
         is_file =
           case analysis_params["is_file"] do
-            "on" -> true
+            "true" -> true
             _ -> false
           end
 
