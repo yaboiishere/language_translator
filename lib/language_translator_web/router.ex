@@ -115,6 +115,7 @@ defmodule LanguageTranslatorWeb.Router do
     pipe_through [:browser, :require_auth]
     live "/analysis/:id/edit", AnalysisLive.Index, :edit
     live "/analysis/:id/show/edit", AnalysisLive.Show, :edit
+    live "/analysis/new", AnalysisLive.Index, :new
   end
 
   scope "/", LanguageTranslatorWeb do

@@ -4,6 +4,7 @@ defmodule LanguageTranslator.Models.Analysis do
   import Ecto.Query
   require Logger
 
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslatorWeb.Util
   alias LanguageTranslator.Translator
@@ -71,27 +72,26 @@ defmodule LanguageTranslator.Models.Analysis do
     |> Translator.async_translate()
   end
 
-  def create_merged_analysis(analysis, extra_ids, user) do
+  def create_analysis_for_merge(analysis, extra_ids, user) do
     analyses = [analysis | get_all(user, %{order_by: nil, filter_by: %{"id" => extra_ids}})]
 
     source_words =
       analyses
       |> Enum.flat_map(& &1.source_words)
       |> Enum.uniq()
+      |> Enum.join(",")
 
-    %__MODULE__{}
-    |> changeset(%{
+    %AnalysisCreateChangeset{}
+    |> AnalysisCreateChangeset.changeset(%{
       source_language_code: analysis.source_language_code,
-      source_words: source_words,
-      user_id: user.id,
-      is_public: false,
+      words: source_words,
       description: "Merged analysis (#{analysis.id}, #{Enum.join(extra_ids, ", ")})",
-      status: :pending,
-      type: :merged
+      type: "merged",
+      separator: ",",
+      is_file: false
     })
-    |> Repo.insert!()
-    |> Repo.preload(@default_preloads)
-    |> Translator.async_translate()
+    |> apply_changes()
+    |> Map.drop([:__meta__, :__struct__])
   end
 
   def get_all(_user_or_nil, _params, _preloads \\ @default_preloads)

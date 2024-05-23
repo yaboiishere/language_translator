@@ -91,10 +91,10 @@
     title={@page_title}
     action={@live_action}
     analysis={@analysis}
-    form_data={%{is_public: @analysis.is_public, description: @analysis.description}}
+    form_data={@form_data}
     patch={~p"/analysis"}
-    is_file={@is_file}
     languages={@languages}
     current_user={@current_user}
+    merge={@merge}
   />
 </.modal>

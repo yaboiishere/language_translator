@@ -94,11 +94,15 @@ defmodule LanguageTranslatorWeb.FilterComponents do
       <.form :let={f} for={@filter_by} phx-change="filter">
         <div class="grid grid-rows-1 space-x-4 align-top">
           <div class="grid grid-cols-11 gap-4">
-            <div class="col-span-2"></div>
+            <div class="col-span-1"></div>
             <div class="col-span-2"></div>
 
             <div class="col-span-3">
               <.render_language_text_filter filter_by={@filter_by} form={f} />
+            </div>
+
+            <div class="col-span-3">
+              <.render_language_code_filter filter_by={@filter_by} form={f} />
             </div>
             <.clear_button />
           </div>

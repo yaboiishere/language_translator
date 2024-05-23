@@ -17,7 +17,8 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       </.header>
 
       <.simple_form
-        for={@form}
+        :let={f}
+        for={@form_data}
         id="analysis-form"
         phx-target={@myself}
         phx-change="validate"
@@ -26,7 +27,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       >
         <div class="grid grid-cols-6 gap-1">
           <div class="col-span-5">
-            <.input field={@form[:description]} type="text" label="Description" />
+            <.input field={f[:description]} type="text" label="Description" />
           </div>
           <div class="ml-6">
             <div class="ml-2 flex  items-center mx-auto">
@@ -36,14 +37,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
             </div>
             <label class="flex items-center cursor-pointer mb-8">
               <div class="mt-4 ml-2">
-                <input
-                  type="checkbox"
-                  value={@form_data.is_public}
-                  checked={@form_data.is_public}
-                  class="sr-only peer"
-                  name="is_public"
-                />
-                <.toggle />
+                <.input type="toggle" field={f[:is_public]} value={@is_public} class="sr-only peer" />
               </div>
             </label>
           </div>
@@ -53,53 +47,56 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           <div class="grid grid-cols-6 min-w-full justify-between gap-8">
             <div class="col-span-3">
               <.input
-                field={@form[:source_language_code]}
+                field={f[:source_language_code]}
                 type="select"
                 label="Source Language"
                 options={@languages}
+                disabled={@merge}
               />
+              <%= if @merge do %>
+                <.input type="hidden" field={f[:source_language_code]} />
+              <% end %>
             </div>
             <div class="col-span-2">
               <.input
                 type="select"
                 label="Separator"
                 options={@separators}
-                value={@separator}
-                field={@form[:separator]}
+                field={f[:separator]}
+                disabled={@merge}
               />
+              <%= if @merge do %>
+                <.input type="hidden" field={f[:separator]} />
+              <% end %>
             </div>
             <div class="flex min-w-full justify-between">
               <div class="block">
                 <div class="">
-                  <.label>
-                    <%= if @is_file do %>
-                      Upload File
-                    <% else %>
-                      Enter Text
-                    <% end %>
-                  </.label>
+                  <%= if !@merge do %>
+                    <.label>
+                      <%= if @is_file do %>
+                        Upload File
+                      <% else %>
+                        Enter Text
+                      <% end %>
+                    </.label>
+                  <% end %>
                 </div>
                 <label class="flex mx-auto items-center cursor-pointer mb-8">
                   <div class="mt-4 ml-2">
-                    <input
-                      type="checkbox"
-                      value={@is_file}
-                      checked={@is_file}
-                      class="sr-only peer"
-                      phx-target={@myself}
-                      phx-click={:toggle_is_file}
-                    />
-                    <.toggle />
+                    <%= if !@merge do %>
+                      <.input type="toggle" class="sr-only peer" field={f[:is_file]} value={@is_file} />
+                    <% end %>
                   </div>
                 </label>
               </div>
             </div>
             <div class="col-span-full">
-              <%= if @is_file do %>
+              <%= if @is_file && !@merge do %>
                 <label class="text-md font-semibold leading-6">
                   Upload a file with words to be analyzed
                   <.live_file_input upload={@uploads[:words]} accept="text/plain" />
-                  <.input type="hidden" field={@form[:words]} />
+                  <.input type="hidden" field={f[:words]} />
                 </label>
               <% else %>
                 <label class="text-start text-sm font-semibold leading-6">
@@ -107,7 +104,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                   <.input
                     type="textarea"
                     class="w-full h-40 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none text-md"
-                    field={@form[:words]}
+                    field={f[:words]}
                   >
                   </.input>
                 </label>
@@ -115,9 +112,10 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
             </div>
           </div>
         <% end %>
-        <:actions>
+
+        <div class={["flex justify-end", if(@is_file, do: "-mt-10", else: "mt-4")]}>
           <.button phx-disable-with="Saving...">Save Analysis</.button>
-        </:actions>
+        </div>
       </.simple_form>
     </div>
     """
@@ -134,57 +132,48 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         {"Newline", "newline"}
       ])
       |> allow_upload(:words, accept: ["text/plain"], max_entries: 1, max_file_size: 500_000)
-      |> assign(:words, "")
-      |> assign(:separator, ",")
       |> assign(:uploaded_files, [])
+      |> assign(:is_file, true)
       |> assign(:is_public, false)
-      |> assign(:form_data, %AnalysisCreateChangeset{})
 
     {:ok, socket}
   end
 
   @impl true
   def update(%{form_data: form_data} = assigns, socket) do
-    changeset = AnalysisCreateChangeset.changeset(%AnalysisCreateChangeset{}, form_data)
-
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_form(changeset)}
-  end
-
-  @impl true
-  def handle_event("toggle_is_file", _, socket) do
-    is_file = !socket.assigns.is_file
-
-    socket =
-      if is_file do
-        socket
-        |> assign(:is_file, true)
-      else
-        socket
-        |> assign(:is_file, false)
-      end
-
-    {:noreply, socket}
+     |> assign_form(form_data)}
   end
 
   @impl true
   def handle_event(
         "validate",
-        %{"analysis_create_changeset" => analysis_params} = params,
+        analysis_params,
         socket
       ) do
-    is_public = params["is_public"]
-
     changeset =
       %AnalysisCreateChangeset{}
       |> AnalysisCreateChangeset.changeset(analysis_params)
       |> Map.put(:action, :validate)
 
+    is_file =
+      case analysis_params["is_file"] do
+        "true" -> true
+        _ -> false
+      end
+
+    is_public =
+      case analysis_params["is_public"] do
+        "true" -> true
+        _ -> false
+      end
+
     socket =
       socket
       |> assign_form(changeset)
+      |> assign(:is_file, is_file)
       |> assign(:is_public, is_public)
 
     {:noreply, socket}
@@ -192,19 +181,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   def handle_event(
         "update",
-        %{"analysis_create_changeset" => analysis_params} = params,
+        %{"analysis_create_changeset" => analysis_params},
         %{assigns: %{analysis: analysis}} = socket
       ) do
-    is_public =
-      params
-      |> Map.get("is_public", "off")
-      |> case do
-        "on" -> true
-        _ -> false
-      end
-
-    analysis_params = Map.put(analysis_params, "is_public", is_public)
-
     case Models.update_analysis(analysis, analysis_params) do
       {:ok, analysis} ->
         ProcessGroups.Analysis.edit_analysis(analysis)
@@ -223,13 +202,11 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
   def handle_event(
         "save",
-        %{"analysis_create_changeset" => analysis_params} = params,
+        analysis_params,
         %{
-          assigns: %{current_user: current_user} = assigns
+          assigns: %{current_user: current_user}
         } = socket
       ) do
-    is_file = Map.get(assigns, :is_file)
-
     %AnalysisCreateChangeset{}
     |> AnalysisCreateChangeset.changeset(analysis_params)
     |> Map.put(:action, :validate)
@@ -240,16 +217,14 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           |> Map.get("separator")
           |> AnalysisCreateChangeset.resolve_separator()
 
-        is_public =
-          params
-          |> Map.get("is_public", "off")
-          |> case do
+        extra_fields = %{"user_id" => current_user.id}
+        analysis = Map.merge(analysis_params, extra_fields)
+
+        is_file =
+          case analysis_params["is_file"] do
             "on" -> true
             _ -> false
           end
-
-        extra_fields = %{"user_id" => current_user.id, "is_public" => is_public}
-        analysis = Map.merge(analysis_params, extra_fields)
 
         words =
           if is_file do
@@ -270,6 +245,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           separator: separator
         })
         |> Map.put(:action, :validate)
+        |> tap(&IO.inspect/1)
         |> case do
           %{valid?: true} ->
             analysis = Map.put(analysis, "source_words", words)
@@ -320,10 +296,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset))
+    assign(socket, :form_data, to_form(changeset))
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp clean_words(nil, _separator), do: []
 
   defp clean_words(words, separator) do
     words

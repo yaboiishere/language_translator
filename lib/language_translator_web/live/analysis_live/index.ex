@@ -32,7 +32,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
 
     socket =
       socket
-      |> assign(:is_file, true)
       |> assign(:languages, [])
       |> assign_new(:current_user, fn -> current_user end)
       |> assign(page_size: 25)
@@ -104,15 +103,29 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
     |> assign(:analysis, Analysis.get!(id))
   end
 
-  defp apply_action(socket, :new, _params) do
+  defp apply_action(socket, :new, params) do
+    merged_analysis =
+      Map.get(params, "merged_analysis", nil)
+
+    analysis_create_changeset =
+      if merged_analysis do
+        AnalysisCreateChangeset.changeset(
+          %AnalysisCreateChangeset{is_file: false},
+          URI.decode_query(merged_analysis)
+        )
+      else
+        AnalysisCreateChangeset.changeset(%AnalysisCreateChangeset{}, %{})
+      end
+
     languages =
       Language.languages_for_select()
 
     socket
     |> assign(:page_title, "New Analysis")
-    |> assign(:form_data, %AnalysisCreateChangeset{})
+    |> assign(:form_data, analysis_create_changeset)
     |> assign(:analysis, %Analysis{})
     |> assign(:languages, languages)
+    |> assign(:merge, merged_analysis != nil)
   end
 
   defp apply_action(socket, :index, _params) do

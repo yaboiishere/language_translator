@@ -69,10 +69,11 @@ defmodule LanguageTranslator.Models.Language do
     |> filter_by(filter_by)
   end
 
-  defp resolve_order_by("name_desc"), do: [desc: :display_name]
-  defp resolve_order_by("name_asc"), do: [asc: :display_name]
-  defp resolve_order_by("code_desc"), do: [desc: :code]
-  defp resolve_order_by("code_asc"), do: [asc: :code]
+  defp resolve_order_by("display_name_desc"), do: [desc: :display_name]
+  defp resolve_order_by("display_name_asc"), do: [asc: :display_name]
+  defp resolve_order_by("language_code_desc"), do: [desc: :code]
+  defp resolve_order_by("language_code_asc"), do: [asc: :code]
+
   defp resolve_order_by(_), do: [asc: :display_name]
 
   defp filter_by(query, nil) do
@@ -91,6 +92,10 @@ defmodule LanguageTranslator.Models.Language do
 
   defp filter_by(query, {"source_language", display_name}) do
     where(query, [a], ilike(a.display_name, ^"#{display_name}%"))
+  end
+
+  defp filter_by(query, {"language_code", code}) do
+    where(query, [a], a.code in ^code)
   end
 
   defp to_select_option(languages) do

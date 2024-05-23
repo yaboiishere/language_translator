@@ -167,7 +167,8 @@ defmodule LanguageTranslatorWeb.LanguageLive.Index do
     clean_params =
       Util.clean_filter_params(params, [
         "_target",
-        "_page_size_live_select_component"
+        "_page_size_live_select_component",
+        "language_code_filter"
       ])
 
     socket
@@ -232,5 +233,38 @@ defmodule LanguageTranslatorWeb.LanguageLive.Index do
            params
          )
      )}
+  end
+
+  @impl true
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    options =
+      case live_select_id do
+        "language_code_filter" ->
+          Language.search_code(text)
+
+        "_page_size_live_select_component" ->
+          Util.page_size_options()
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "live_select_blur",
+        %{"id" => live_select_id},
+        socket
+      ) do
+    options =
+      case live_select_id do
+        "language_code_filter" -> Language.language_codes_for_select()
+        "_page_size_live_select_component" -> Util.page_size_options()
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
   end
 end

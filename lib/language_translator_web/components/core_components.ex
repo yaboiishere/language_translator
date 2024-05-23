@@ -283,7 +283,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file hidden month number password
-               range radio search select tel text textarea time url week)
+               range radio search select tel text textarea time url week toggle)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -308,6 +308,32 @@ defmodule LanguageTranslatorWeb.CoreComponents do
     |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
     |> assign_new(:value, fn -> field.value end)
     |> input()
+  end
+
+  def input(%{type: "toggle"} = assigns) do
+    assigns =
+      assign_new(assigns, :checked, fn ->
+        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+      end)
+
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <label class="flex items-center gap-4 text-sm leading-6 text-secondary-950">
+        <input type="hidden" name={@name} value="false" />
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@value}
+          class="rounded border-secondary-200 text-secondary-950 focus:ring-0 sr-only peer"
+          {@rest}
+        />
+        <.toggle />
+      </label>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
   end
 
   def input(%{type: "checkbox"} = assigns) do
@@ -539,38 +565,49 @@ defmodule LanguageTranslatorWeb.CoreComponents do
           id={@id}
           class="divide-y divide-secondary-200 border-t border-secondary-200 text-md text-zinc-700 overflow-y-scroll w-full"
         >
-          <%= for row <- @rows do %>
-            <tr id={@row_id && @row_id.(row)} class="hover:bg-primary-200 h-14 overflow-y-auto w-full">
-              <%= for {col, i} <- Enum.with_index(@col) do %>
-                <%= if (col[:id] in @show_cols) do %>
-                  <td
-                    phx-click={@row_click && @row_click.(row)}
-                    class={[
-                      "p-0 max-h-20 divide-secondary-200 max-w-40",
-                      @row_click && "hover:cursor-pointer",
-                      i == 0 && "rounded-l-md",
-                      col[:id] == "id" && "max-w-20"
-                    ]}
-                  >
-                    <span class={["", i == 0 && "font-semibold text-secondary-950"]}>
-                      <%= render_slot(col, @row_item.(row)) %>
-                    </span>
-                  </td>
-                <% end %>
-              <% end %>
-              <td :if={@action != []} class="relative w-14 p-0 rounded-r-md">
-                <div class="flex justify-center text-center text-sm font-medium rounded-r-lg">
-                  <%= for {action, i} <- Enum.with_index(@action) do %>
-                    <div class={[
-                      "relative font-semibold text-secondary-950 hover:text-zinc-700 mr-2",
-                      i + 1 == length(@action) && "rounded-r-lg"
-                    ]}>
-                      <div class="ml-2">
-                        <%= render_slot(action, @row_item.(row)) %>
-                      </div>
-                    </div>
+          <%= if @rows != [] do %>
+            <%= for row <- @rows do %>
+              <tr
+                id={@row_id && @row_id.(row)}
+                class="hover:bg-primary-200 h-14 overflow-y-auto w-full"
+              >
+                <%= for {col, i} <- Enum.with_index(@col) do %>
+                  <%= if (col[:id] in @show_cols) do %>
+                    <td
+                      phx-click={@row_click && @row_click.(row)}
+                      class={[
+                        "p-0 max-h-20 divide-secondary-200 max-w-40",
+                        @row_click && "hover:cursor-pointer",
+                        i == 0 && "rounded-l-md",
+                        col[:id] == "id" && "max-w-20"
+                      ]}
+                    >
+                      <span class={["", i == 0 && "font-semibold text-secondary-950"]}>
+                        <%= render_slot(col, @row_item.(row)) %>
+                      </span>
+                    </td>
                   <% end %>
-                </div>
+                <% end %>
+                <td :if={@action != []} class="relative w-14 p-0 rounded-r-md">
+                  <div class="flex justify-center text-center text-sm font-medium rounded-r-lg">
+                    <%= for {action, i} <- Enum.with_index(@action) do %>
+                      <div class={[
+                        "relative font-semibold text-secondary-950 hover:text-zinc-700 mr-2",
+                        i + 1 == length(@action) && "rounded-r-lg"
+                      ]}>
+                        <div class="ml-2">
+                          <%= render_slot(action, @row_item.(row)) %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr class="h-14">
+              <td class="text-center" colspan={length(@col) + 1}>
+                <%= gettext("No data available") %>
               </td>
             </tr>
           <% end %>

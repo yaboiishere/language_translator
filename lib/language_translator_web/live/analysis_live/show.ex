@@ -1,4 +1,5 @@
 defmodule LanguageTranslatorWeb.AnalysisLive.Show do
+  alias LanguageTranslatorWeb.Changesets.AnalysisCreateChangeset
   use LanguageTranslatorWeb, :live_view
 
   import LiveSelect
@@ -287,12 +288,12 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
         %{"extra_ids" => extra_ids},
         %{assigns: %{analysis: analysis, current_user: current_user}} = socket
       ) do
-    Analysis.create_merged_analysis(analysis, extra_ids, current_user)
+    merged_analysis = Analysis.create_analysis_for_merge(analysis, extra_ids, current_user)
 
     socket =
       socket
       |> put_flash(:info, "Merged analysis created successfully")
-      |> push_navigate(to: Routes.analysis_index_path(socket, :index))
+      |> push_navigate(to: ~p"/analysis/new?merged_analysis=#{URI.encode_query(merged_analysis)}")
 
     {:noreply, socket}
   end
