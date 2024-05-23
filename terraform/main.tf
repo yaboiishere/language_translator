@@ -205,7 +205,7 @@ resource "hcloud_server" "worker" {
       "sudo chmod 400 /root/.ssh/id_rsa.pub",
       ". /root/.env.prod",
       "echo $GIT_TOKEN | docker login ghcr.io -u yaboiishere --password-stdin",
-      "git clone https://$GIT_TOKEN@github.com/yaboiishere/yaboiishere.git",
+      "git clone https://$GIT_TOKEN@github.com/yaboiishere/language_translator.git",
       "cp .env.prod language_translator/.env.prod",
       "cp service_account.json language_translator/service_account.json",
       "sudo scp -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no -o NoHostAuthenticationForLocalhost=yes -o UserKnownHostsFile=/dev/null root@${var.manager_private_ip}:/worker_token .",

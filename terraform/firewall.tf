@@ -58,6 +58,14 @@ resource "hcloud_firewall" "language_translator_manager_firewall" {
       "::/0"
     ]
   }
+
+  # Portainer
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port = "9443"
+    source_ips = var.allowed_ips
+  }
 }
 
 

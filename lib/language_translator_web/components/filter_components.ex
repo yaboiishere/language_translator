@@ -338,9 +338,15 @@ defmodule LanguageTranslatorWeb.FilterComponents do
   def clear_button(assigns) do
     ~H"""
     <div class="mt-3">
-      <.button type="clear" class="bg-red-600 hover:bg-red-400 max-h-10 p-0">
+      <button
+        type="clear"
+        class={[
+          "phx-submit-loading:opacity-75 rounded-lg hover:bg-red-400 bg-red-600",
+          "text-sm font-semibold leading-6 text-text-light hover:text-text-medium px-2 mt-[18px]"
+        ]}
+      >
         Clear
-      </.button>
+      </button>
     </div>
     """
   end
