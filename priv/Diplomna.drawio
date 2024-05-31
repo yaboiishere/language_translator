@@ -1,9 +1,100 @@
-<mxfile host="app.diagrams.net" modified="2024-05-31T16:43:10.409Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" version="24.4.13" etag="69mgqioLxuVF8rvYL977" type="github">
+<mxfile host="app.diagrams.net" modified="2024-05-31T16:55:52.441Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" etag="7R9018gngraloAjpNSOe" version="24.4.13" type="github">
   <diagram name="Page-1" id="2dEBALkieBUElnn932cV">
-    <mxGraphModel>
+    <mxGraphModel dx="1434" dy="738" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Ypa651LzHrWGOjXj8Snl-1" target="Ypa651LzHrWGOjXj8Snl-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-1" value="Интернет&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/internet_cloud.svg;" vertex="1" parent="1">
+          <mxGeometry x="120" y="190" width="142.86" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-4" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+          <mxGeometry x="330" y="110" width="410" height="445" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="Ypa651LzHrWGOjXj8Snl-4" source="Ypa651LzHrWGOjXj8Snl-5" target="Ypa651LzHrWGOjXj8Snl-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-5" value="Външно дисково&amp;nbsp;&lt;div&gt;пространство&lt;/div&gt;" style="shadow=0;dashed=0;html=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.3d.datastore_volume;" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="330" y="108" width="54" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="Ypa651LzHrWGOjXj8Snl-4" source="Ypa651LzHrWGOjXj8Snl-7" target="Ypa651LzHrWGOjXj8Snl-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Ypa651LzHrWGOjXj8Snl-4" source="Ypa651LzHrWGOjXj8Snl-7" target="Ypa651LzHrWGOjXj8Snl-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="245" />
+              <mxPoint x="310" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Ypa651LzHrWGOjXj8Snl-4" source="Ypa651LzHrWGOjXj8Snl-7" target="Ypa651LzHrWGOjXj8Snl-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="310" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="230" y="245" />
+              <mxPoint x="150" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-7" value="Мениджър" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="190" y="85" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-8" value="Работник 1" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="270" y="315" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-9" value="Работник 2" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="110" y="315" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="Ypa651LzHrWGOjXj8Snl-4" source="Ypa651LzHrWGOjXj8Snl-2" target="Ypa651LzHrWGOjXj8Snl-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-2" value="Защитна стена" style="image;html=1;image=img/lib/clip_art/networking/Firewall_02_128x128.png" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="30" y="95" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-12" value="Hetzner" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="Ypa651LzHrWGOjXj8Snl-4">
+          <mxGeometry x="170" y="-5" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-20" value="" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Personal_Computer_with_Server.svg;" vertex="1" parent="1">
+          <mxGeometry x="380" y="350" width="62.400000000000006" height="62.400000000000006" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.481;exitY=-0.016;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="Ypa651LzHrWGOjXj8Snl-21" target="Ypa651LzHrWGOjXj8Snl-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="50" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-21" value="Клиент 1" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Personal_Computer_with_Server.svg;" vertex="1" parent="1">
+          <mxGeometry x="20" y="380" width="62.400000000000006" height="62.400000000000006" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Ypa651LzHrWGOjXj8Snl-22" target="Ypa651LzHrWGOjXj8Snl-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="50" y="320" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="151" y="320" />
+              <mxPoint x="50" y="320" />
+              <mxPoint x="50" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-22" value="Клиент 2" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Personal_Computer_with_Server.svg;" vertex="1" parent="1">
+          <mxGeometry x="120" y="380" width="62.400000000000006" height="62.400000000000006" as="geometry" />
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Ypa651LzHrWGOjXj8Snl-23" target="Ypa651LzHrWGOjXj8Snl-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="320" />
+              <mxPoint x="50" y="320" />
+              <mxPoint x="50" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ypa651LzHrWGOjXj8Snl-23" value="Клиент 3" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Personal_Computer_with_Server.svg;" vertex="1" parent="1">
+          <mxGeometry x="220" y="380" width="62.400000000000006" height="62.400000000000006" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
