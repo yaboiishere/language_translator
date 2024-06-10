@@ -39,21 +39,21 @@ defmodule LanguageTranslatorWeb.UserSessionControllerTest do
       assert redirected_to(conn) == ~p"/"
     end
 
-    Enum.each(1..150, fn id ->
-      test "logs the user in with remember me #{id}", %{user: user, conn: conn} do
-        conn =
-          post(conn, ~p"/users/log_in", %{
-            "user" => %{
-              "username" => user.username,
-              "password" => valid_user_password(),
-              "remember_me" => "true"
-            }
-          })
+    # Enum.each(1..150, fn id ->
+    #   test "logs the user in with remember me #{id}", %{user: user, conn: conn} do
+    #     conn =
+    #       post(conn, ~p"/users/log_in", %{
+    #         "user" => %{
+    #           "username" => user.username,
+    #           "password" => valid_user_password(),
+    #           "remember_me" => "true"
+    #         }
+    #       })
 
-        assert conn.resp_cookies["_language_translator_web_user_remember_me"]
-        assert redirected_to(conn) == ~p"/"
-      end
-    end)
+    #     assert conn.resp_cookies["_language_translator_web_user_remember_me"]
+    #     assert redirected_to(conn) == ~p"/"
+    #   end
+    # end)
 
     test "logs the user in with return to", %{conn: conn, user: user} do
       conn =

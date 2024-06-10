@@ -10,8 +10,9 @@ defmodule LanguageTranslator.Http.Cache do
 
   defstruct(size: 0, words: %{}, tick: 0)
 
-  def start_link(%{size: size}) do
-    GenServer.start_link(__MODULE__, %__MODULE__{size: size, words: %{}}, name: __MODULE__)
+  def start_link(%{size: size} = opts) do
+    name = Map.get(opts, :name, __MODULE__)
+    GenServer.start_link(__MODULE__, %__MODULE__{size: size, words: %{}}, name: name)
   end
 
   def fetch(word, source_language, target_language) when is_binary(word) do
@@ -70,14 +71,8 @@ defmodule LanguageTranslator.Http.Cache do
          %Language{code: target_code}},
         %__MODULE__{words: words} = state
       ) do
-    case Map.fetch(words, {source_code, target_code, source_word}) do
-      {:ok, _translated_word} ->
-        {:noreply, state}
-
-      _ ->
-        {:noreply,
-         %{state | words: Map.put(words, {source_code, target_code, source_word}, target_word)}}
-    end
+    {:noreply,
+     %{state | words: Map.put(words, {source_code, target_code, source_word}, target_word)}}
   end
 
   @impl true

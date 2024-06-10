@@ -14,7 +14,7 @@ gcloud auth activate-service-account --key-file=service_account.json
 # wait until Postgres is ready
 while ! pg_isready -q -h $PGHOST -p $PGPORT -U $PGUSER
 do
-  echo "$(date) - waiting for database to start"
+  echo "$(date) $PGHOST:$PGPORT - waiting for database to start"
   sleep 2
 done
 

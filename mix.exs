@@ -73,6 +73,7 @@ defmodule LanguageTranslator.MixProject do
       {:live_select, "~> 1.0"},
       {:libcluster, "~> 3.3"},
       {:loki_logger, "~> 0.3.0"},
+      {:mock, "~> 0.3.0", only: :test},
       {:excoveralls, "~> 0.18", only: :test}
     ]
   end

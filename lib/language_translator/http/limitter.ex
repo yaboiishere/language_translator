@@ -20,6 +20,10 @@ defmodule LanguageTranslator.Http.Limitter do
 
   defstruct delay: 0, pending_requests: []
 
+  def make_request(method, url, headers, body, ref) do
+    GenServer.cast(__MODULE__, {:request, method, url, headers, body, ref, self()})
+  end
+
   def make_request(method, url, headers, body \\ %{}) do
     ref = make_ref()
     GenServer.cast(__MODULE__, {:request, method, url, headers, body, ref, self()})

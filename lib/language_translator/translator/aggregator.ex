@@ -20,6 +20,8 @@ defmodule LanguageTranslator.Translator.Aggregator do
   end
 
   def translate(%Language{} = source_language, word) do
+    IO.inspect("Translating #{word} from #{source_language.display_name}")
+
     try do
       GenServer.call(name(source_language), {:translate, word}, 600_000)
     catch

@@ -30,3 +30,5 @@ config :libcluster,
       config: [polling_interval: 5_000, query: "app", node_basename: "language_translator"]
     ]
   ]
+
+config :language_translator, :use_mock, false

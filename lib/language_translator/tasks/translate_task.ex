@@ -22,7 +22,21 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
   def run(analysis) do
     :ok = AnalysisMonitor.add_analysis(analysis)
 
-    translate(analysis)
+    if Application.get_env(:language_translator, :env) == :test do
+      {:ok, translate(analysis)}
+    else
+      Repo.transaction(fn ->
+        translate(analysis)
+      end)
+      |> case do
+        {:ok, analysis} ->
+          {:ok, analysis}
+
+        {:error, reason} ->
+          Logger.error("Failed to translate analysis: #{inspect(reason)}")
+          {:error, reason}
+      end
+    end
     |> case do
       {:ok, analysis} ->
         ProcessGroups.Analysis.update_analysis(analysis)
@@ -35,38 +49,34 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
   defp translate(
          %Analysis{source_words: words, source_language: %Language{} = language} = analysis
        ) do
-    Repo.transaction(fn ->
-      Enum.map(
-        words,
-        &Task.Supervisor.async({TaskSupervisor, Node.self()}, fn ->
-          translate_word(&1, language)
-        end)
-      )
-      |> Enum.flat_map(&Task.await(&1, 60_000))
-      |> Enum.map(fn translation ->
-        %{translation_id: translation.id, analysis_id: analysis.id}
-      end)
-      |> Enum.uniq()
-      |> then(fn entries ->
-        Repo.insert_all(AnalysisTranslation, entries,
-          on_conflict: {:replace_all_except, [:id, :inserted_at]},
-          conflict_target: [:translation_id, :analysis_id]
-        )
-      end)
+    parent = self()
 
-      {:ok, analysis} = Models.update_analysis(analysis, %{status: :completed})
+    Enum.map(
+      words,
+      &Task.Supervisor.async({TaskSupervisor, Node.self()}, fn ->
+        if Application.get_env(:language_translator, :env) == :test do
+          Ecto.Adapters.SQL.Sandbox.allow(Repo, parent, self())
+        end
 
-      analysis
-      |> Repo.preload([:source_language, :user])
+        translate_word(&1, language)
+      end)
+    )
+    |> Enum.flat_map(&Task.await(&1, 60_000))
+    |> Enum.map(fn translation ->
+      %{translation_id: translation.id, analysis_id: analysis.id}
     end)
-    |> case do
-      {:ok, analysis} ->
-        {:ok, analysis}
+    |> Enum.uniq()
+    |> then(fn entries ->
+      Repo.insert_all(AnalysisTranslation, entries,
+        on_conflict: {:replace_all_except, [:id, :inserted_at]},
+        conflict_target: [:translation_id, :analysis_id]
+      )
+    end)
 
-      {:error, reason} ->
-        Logger.error("Failed to translate analysis: #{inspect(reason)}")
-        {:error, reason}
-    end
+    {:ok, analysis} = Models.update_analysis(analysis, %{status: :completed})
+
+    analysis
+    |> Repo.preload([:source_language, :user])
   end
 
   defp translate_word(word, %Language{code: code} = language) do
@@ -81,6 +91,7 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
     )
     |> case do
       {:ok, initial_word} ->
+        IO.inspect(translations)
         persist_translations(translations, initial_word)
 
       {:error, changeset} ->

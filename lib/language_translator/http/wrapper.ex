@@ -63,15 +63,15 @@ defmodule LanguageTranslator.Http.Wrapper do
   #   }
   # end
 
-  defp process_response_body({:ok, %Finch.Response{status: status, body: body}}, _url)
-       when status in [200, 201, 204] do
+  def process_response_body({:ok, %Finch.Response{status: status, body: body}}, _url)
+      when status in [200, 201, 204] do
     {:ok, parse_body(body)}
   end
 
-  defp process_response_body(
-         {:ok, %Finch.Response{status: status, body: body, headers: _headers}},
-         url
-       ) do
+  def process_response_body(
+        {:ok, %Finch.Response{status: status, body: body, headers: _headers}},
+        url
+      ) do
     {
       :error,
       %{
@@ -90,11 +90,11 @@ defmodule LanguageTranslator.Http.Wrapper do
   #   {:error, reason}
   # end
 
-  defp process_response_body({:error, reason}, _url) do
+  def process_response_body({:error, reason}, _url) do
     {:error, reason}
   end
 
-  defp parse_body(body) do
+  def parse_body(body) do
     body
     |> Jason.decode()
     |> case do

@@ -48,7 +48,7 @@ services:
   haproxy:
     image: "ghcr.io/tomdess/docker-haproxy-certbot"
     environment:
-      - CERT=$PHX_HOST
+      # - CERT=$PHX_HOST
       - EMAIL=${LETS_ENCRYPT_EMAIL}
       - STAGING=${LETS_ENCRYPT_STAGING}
     volumes:
