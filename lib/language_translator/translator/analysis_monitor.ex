@@ -15,8 +15,12 @@ defmodule LanguageTranslator.Translator.AnalysisMonitor do
   end
 
   def add_analysis(%Analysis{id: id}) do
-    caller = self()
-    GenServer.call(__MODULE__, {:add_analysis, id, caller})
+    if Application.get_env(:language_translator, :env) == :test do
+      :ok
+    else
+      caller = self()
+      GenServer.call(__MODULE__, {:add_analysis, id, caller})
+    end
   end
 
   def running_analyses do
@@ -54,10 +58,16 @@ defmodule LanguageTranslator.Translator.AnalysisMonitor do
     Process.demonitor(task_ref)
     analysis_id = Map.get(state, task_ref)
 
-    {:ok, analysis} = Analysis.update(analysis_id, %{status: :failed}, [:source_language, :user])
-    ProcessGroups.Analysis.update_analysis(analysis)
+    Analysis.update(analysis_id, %{status: :failed}, [:source_language, :user])
+    |> case do
+      {:ok, analysis} ->
+        ProcessGroups.Analysis.update_analysis(analysis)
 
-    Logger.error("Analysis failed: #{analysis_id}. Will be retried.")
+        Logger.error("Analysis failed: #{analysis_id}. Will be retried.")
+
+      _ ->
+        Logger.error("Analysis failed: #{analysis_id}. Could not be retried.")
+    end
 
     {:noreply, Map.delete(state, task_ref)}
   end

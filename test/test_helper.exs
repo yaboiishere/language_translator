@@ -6,9 +6,6 @@ Sandbox.mode(Repo, :manual)
 
 pid = Sandbox.start_owner!(Repo)
 
-analysis_monitor_pid = Process.whereis(LanguageTranslator.Translator.AnalysisMonitor)
 Sandbox.allow(Repo, pid, LanguageTranslator.Translator.Supervisor)
-Sandbox.allow(Repo, pid, analysis_monitor_pid)
-Sandbox.allow(Repo, pid, LanguageTranslator.Translator.Refresher)
-
+Application.ensure_all_started(:hound)
 ExUnit.start()

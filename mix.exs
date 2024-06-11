@@ -74,7 +74,8 @@ defmodule LanguageTranslator.MixProject do
       {:libcluster, "~> 3.3"},
       {:loki_logger, "~> 0.3.0"},
       {:mock, "~> 0.3.0", only: :test},
-      {:excoveralls, "~> 0.18", only: :test}
+      {:excoveralls, "~> 0.18", only: :test},
+      {:hound, "~> 1.0"}
     ]
   end
 
@@ -90,7 +91,8 @@ defmodule LanguageTranslator.MixProject do
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "seed"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --exclude e2e"],
+      "test.e2e": ["ecto.create --quiet", "ecto.migrate --quiet", "test --include e2e"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind language_translator", "esbuild language_translator"],
       "assets.deploy": [

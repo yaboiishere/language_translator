@@ -35,6 +35,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
       |> assign(:languages, [])
       |> assign_new(:current_user, fn -> current_user end)
       |> assign(page_size: 25)
+      |> assign(page_title: "Listing Analysis")
 
     {:ok, socket}
   end

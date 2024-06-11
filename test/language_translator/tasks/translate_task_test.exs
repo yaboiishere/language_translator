@@ -4,7 +4,6 @@ defmodule LanguageTranslator.Tasks.TranslateTaskTest do
   import Ecto.Query
 
   alias LanguageTranslator.Http.Cache
-  alias LanguageTranslator.Http.Wrapper
   alias LanguageTranslator.Models.Analysis
   alias LanguageTranslator.Models.Language
   alias LanguageTranslator.Models.Translation
@@ -64,7 +63,7 @@ defmodule LanguageTranslator.Tasks.TranslateTaskTest do
     end
   end
 
-  test "translation persists correctly", %{language: language, analysis: analysis} do
+  test "translation persists correctly" do
     with_mock(Aggregator, [],
       translate: fn _source_language, word -> [{"es", "#{word}_es"}, {"bg", "#{word}_bg"}] end
     ) do

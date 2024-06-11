@@ -11,7 +11,9 @@ defmodule LanguageTranslatorWeb.UserConfirmationLive do
       <.simple_form for={@form} id="confirmation_form" phx-submit="confirm_account">
         <.input field={@form[:token]} type="hidden" />
         <:actions>
-          <.button phx-disable-with="Confirming..." class="w-full">Confirm my account</.button>
+          <.button id="confirm_account" phx-disable-with="Confirming..." class="w-full">
+            Confirm my account
+          </.button>
         </:actions>
       </.simple_form>
 
@@ -25,7 +27,9 @@ defmodule LanguageTranslatorWeb.UserConfirmationLive do
 
   def mount(%{"token" => token}, _session, socket) do
     form = to_form(%{"token" => token}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: nil]}
+
+    {:ok, assign(socket, form: form, page_title: "Account Confirmation"),
+     temporary_assigns: [form: nil]}
   end
 
   # Do not log in the user after confirmation to avoid a

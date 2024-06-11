@@ -26,7 +26,7 @@ defmodule LanguageTranslatorWeb.UserLoginLive do
           </.link>
         </:actions>
         <:actions>
-          <.button phx-disable-with="Signing in..." class="w-full">
+          <.button id="login" phx-disable-with="Signing in..." class="w-full">
             Sign in <span aria-hidden="true">→</span>
           </.button>
         </:actions>
@@ -38,6 +38,6 @@ defmodule LanguageTranslatorWeb.UserLoginLive do
   def mount(_params, _session, socket) do
     username = live_flash(socket.assigns.flash, :username)
     form = to_form(%{"username" => username}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+    {:ok, assign(socket, form: form, page_title: "Login"), temporary_assigns: [form: form]}
   end
 end

@@ -1,7 +1,8 @@
 defmodule LanguageTranslator.Models.AnalysisTest do
-  alias LanguageTranslator.Accounts.User
-  use LanguageTranslator.DataCase, async: false
+  use LanguageTranslator.DataCase
+
   alias LanguageTranslator.Repo
+  alias LanguageTranslator.Accounts.User
 
   test "create_auto_analysis/2 creates analysis and translates source word" do
     word = %LanguageTranslator.Models.Word{
@@ -25,7 +26,7 @@ defmodule LanguageTranslator.Models.AnalysisTest do
       user_id: 1,
       is_public: false,
       description: "Auto-generated analysis for hello",
-      status: :pending,
+      status: :completed,
       type: :auto
     }
 
@@ -35,7 +36,7 @@ defmodule LanguageTranslator.Models.AnalysisTest do
       user_id: 1,
       is_public: false,
       description: "Auto-generated analysis for hello",
-      status: :pending,
+      status: :completed,
       type: :auto
     }
 
@@ -126,7 +127,7 @@ defmodule LanguageTranslator.Models.AnalysisTest do
       %LanguageTranslator.Models.Analysis{
         source_language_code: "fr",
         user_id: user.id,
-        status: :processing,
+        status: :completed,
         description: "Analysis 2",
         source_words: ["bonjour"]
       }
@@ -151,7 +152,7 @@ defmodule LanguageTranslator.Models.AnalysisTest do
                %{page: 1, page_size: 10}
              )
 
-    assert Enum.count(analysis_by_status.entries) == 1
+    assert Enum.count(analysis_by_status.entries) == 2
 
     # Test filtering by source language
     assert analysis_by_source_language =

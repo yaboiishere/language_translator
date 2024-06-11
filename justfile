@@ -31,3 +31,9 @@ dockerize:
 
 swarm:
   export $(cat .env.prod) > /dev/null 2>&1; docker stack deploy -c docker-compose.yml --with-registry-auth language_translator
+
+test_e2e:
+  /usr/bin/java -jar /usr/share/selenium-server/selenium-server-standalone.jar &
+  MIX_ENV=test mix test.e2e
+  bash -c 'kill -9 $(lsof -t -i:4444)'
+  

@@ -53,7 +53,9 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
         </.label>
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
+          <.button id="register" phx-disable-with="Creating account..." class="w-full">
+            Create an account
+          </.button>
         </:actions>
       </.simple_form>
     </div>
@@ -67,6 +69,7 @@ defmodule LanguageTranslatorWeb.UserRegistrationLive do
       socket
       |> assign(trigger_submit: false, check_errors: false)
       |> assign(languages: Language.languages_for_select())
+      |> assign(page_title: "Register")
       |> assign_form(changeset)
 
     {:ok, socket, temporary_assigns: [form: nil]}

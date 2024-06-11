@@ -228,6 +228,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       <.button>Send!</.button>
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
+  attr :id, :string, default: nil
   attr :type, :string, default: nil
   attr :class, :string, default: nil
   attr :rest, :global, include: ~w(disabled form name value)
@@ -237,6 +238,7 @@ defmodule LanguageTranslatorWeb.CoreComponents do
   def button(assigns) do
     ~H"""
     <button
+      id={@id}
       type={@type}
       class={[
         "phx-submit-loading:opacity-75 rounded-lg hover:bg-primary-200 bg-primary-300 py-2 px-3",
@@ -317,12 +319,11 @@ defmodule LanguageTranslatorWeb.CoreComponents do
       end)
 
     ~H"""
-    <div phx-feedback-for={@name}>
+    <div id={@id} phx-feedback-for={@name}>
       <label class="flex items-center gap-4 text-sm leading-6 text-secondary-950">
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"
-          id={@id}
           name={@name}
           value="true"
           checked={@value}

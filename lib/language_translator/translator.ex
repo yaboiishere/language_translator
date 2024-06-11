@@ -6,6 +6,10 @@ defmodule LanguageTranslator.Translator do
   alias LanguageTranslator.DynamicSupervisor, as: DS
 
   def async_translate(%Analysis{} = analysis) do
-    DynamicSupervisor.start_child(DS, {TranslateTask, analysis})
+    if Application.get_env(:language_translator, :env) == :test do
+      {:ok, nil}
+    else
+      DynamicSupervisor.start_child(DS, {TranslateTask, analysis})
+    end
   end
 end

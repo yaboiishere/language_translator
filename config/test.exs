@@ -20,9 +20,9 @@ config :language_translator, LanguageTranslator.Repo,
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :language_translator, LanguageTranslatorWeb.Endpoint,
-  http: [ip: {127, 0, 0, 1}, port: 4002],
+  http: [ip: {127, 0, 0, 1}, port: 4003],
   secret_key_base: "rH5BAHRDpE+uvdrGWDztTHE5j0pRqt681DlvKE1XxUy7+3bUOwsd32Q9SyGFVRJW",
-  server: false
+  server: true
 
 # In test we don't send emails.
 config :language_translator, LanguageTranslator.Mailer, adapter: Swoosh.Adapters.Test
@@ -31,7 +31,7 @@ config :language_translator, LanguageTranslator.Mailer, adapter: Swoosh.Adapters
 config :swoosh, :api_client, false
 
 # Print only warnings and errors during test
-config :logger, level: :debug, backends: [:console]
+config :logger, level: :debug, backends: []
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

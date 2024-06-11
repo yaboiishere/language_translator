@@ -28,7 +28,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       >
         <div class="grid grid-cols-6 gap-1">
           <div class="col-span-5">
-            <.input field={f[:description]} type="text" label="Description" />
+            <.input id="form_description" field={f[:description]} type="text" label="Description" />
           </div>
           <div class="ml-6">
             <div class="ml-2 flex  items-center mx-auto">
@@ -38,7 +38,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
             </div>
             <label class="flex items-center cursor-pointer mb-8">
               <div class="mt-4 ml-2">
-                <.input type="toggle" field={f[:is_public]} value={@is_public} class="sr-only peer" />
+                <.input
+                  id="is_public"
+                  type="toggle"
+                  field={f[:is_public]}
+                  value={@is_public}
+                  class="sr-only peer"
+                />
               </div>
             </label>
           </div>
@@ -86,7 +92,13 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                 <label class="flex mx-auto items-center cursor-pointer mb-8">
                   <div class="mt-4 ml-2">
                     <%= if !@merge do %>
-                      <.input type="toggle" class="sr-only peer" field={f[:is_file]} value={@is_file} />
+                      <.input
+                        id="is_file"
+                        type="toggle"
+                        class="sr-only peer"
+                        field={f[:is_file]}
+                        value={@is_file}
+                      />
                     <% end %>
                   </div>
                 </label>
@@ -103,6 +115,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                 <label class="text-start text-sm font-semibold leading-6">
                   Enter the words to be analyzed
                   <.input
+                    id="words_area"
                     type="textarea"
                     class="w-full h-40 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none text-md"
                     field={f[:words]}
@@ -115,7 +128,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
         <% end %>
 
         <div class={["flex justify-end", if(@is_file, do: "-mt-10", else: "mt-4")]}>
-          <.button phx-disable-with="Saving...">Save Analysis</.button>
+          <.button id="form_save" phx-disable-with="Saving...">Save Analysis</.button>
         </div>
       </.simple_form>
     </div>
@@ -225,8 +238,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
           assigns: %{current_user: current_user}
         } = socket
       ) do
-    IO.inspect(analysis_params)
-
     %AnalysisCreateChangeset{}
     |> AnalysisCreateChangeset.changeset(analysis_params)
     |> Map.put(:action, :validate)

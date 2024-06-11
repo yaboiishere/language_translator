@@ -91,7 +91,6 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
     )
     |> case do
       {:ok, initial_word} ->
-        IO.inspect(translations)
         persist_translations(translations, initial_word)
 
       {:error, changeset} ->
