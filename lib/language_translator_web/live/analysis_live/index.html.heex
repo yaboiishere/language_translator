@@ -14,6 +14,11 @@
     pagination={@pagination}
     order_by={@order_and_filter.order_by}
     show_cols={@order_and_filter.show_cols}
+    row_id={
+      fn analysis ->
+        "analysis_#{analysis.id}"
+      end
+    }
     row_click={
       fn analysis ->
         if analysis.status == :completed, do: JS.navigate(~p"/analysis/#{analysis}")

@@ -93,15 +93,19 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Show do
         end)
 
       columns =
-        entries
-        |> List.first()
-        |> elem(1)
-        |> Enum.map(fn %Table{
-                         language_display_name: language_display_name,
-                         language_code: language_code
-                       } ->
-          %{label: language_display_name, id: language_code}
-        end)
+        if entries != [] do
+          entries
+          |> List.first()
+          |> elem(1)
+          |> Enum.map(fn %Table{
+                           language_display_name: language_display_name,
+                           language_code: language_code
+                         } ->
+            %{label: language_display_name, id: language_code}
+          end)
+        else
+          []
+        end
 
       order_and_filter =
         %OrderAndFilterChangeset{show_cols: columns |> Enum.map(&Map.get(&1, :id))}
