@@ -273,11 +273,9 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
 
         AnalysisCreateChangeset.validate_words_changeset(changeset, %{
           words: Enum.join(words, separator),
-          separator: separator,
-          user_id: current_user.id
+          separator: separator
         })
         |> Map.put(:action, :validate)
-        |> tap(&IO.inspect/1)
         |> case do
           %{valid?: true} ->
             analysis = Map.put(analysis, "source_words", words)
@@ -308,10 +306,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
   end
 
   defp save_analysis(socket, :new, analysis_params) do
-    if Application.get_env(:language_translator, :env) == :test do
-      :ok = Ecto.Adapters.SQL.Sandbox.checkout(LanguageTranslator.Repo)
-    end
-
     case Models.create_analysis(analysis_params) do
       {:ok, analysis} ->
         analysis = Repo.preload(analysis, :source_language)
@@ -329,11 +323,6 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
-    |> tap(fn _resp ->
-      if Application.get_env(:language_translator, :env) == :test do
-        :ok = Ecto.Adapters.SQL.Sandbox.checkin(LanguageTranslator.Repo)
-      end
-    end)
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

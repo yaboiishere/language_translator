@@ -34,6 +34,10 @@ defmodule LanguageTranslatorWeb.Endpoint do
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :language_translator
   end
 
+  if Application.compile_env(:language_translator, :sql_sandbox) do
+    plug Phoenix.Ecto.SQL.Sandbox
+  end
+
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"

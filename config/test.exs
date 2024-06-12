@@ -31,7 +31,9 @@ config :language_translator, LanguageTranslator.Mailer, adapter: Swoosh.Adapters
 config :swoosh, :api_client, false
 
 # Print only warnings and errors during test
-config :logger, level: :debug, backends: [:console]
+config :logger, level: :debug, backends: []
+
+config :language_translator, sql_sandbox: true
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

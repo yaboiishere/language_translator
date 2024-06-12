@@ -1,15 +1,10 @@
 defmodule LanguageTranslatorWeb.E2e.CreateAnalysisTest do
-  use LanguageTranslatorWeb.ConnCase, async: false
-  use Hound.Helpers
+  use LanguageTranslatorWeb.IntegrationCase
 
   alias LanguageTranslator.Accounts.UserToken
   alias LanguageTranslator.Repo
 
   hound_session()
-
-  setup do
-    Ecto.Adapters.SQL.Sandbox.mode(LanguageTranslator.Repo, {:shared, self()})
-  end
 
   @tag :e2e
   test "user can create account and login" do

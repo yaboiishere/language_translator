@@ -331,11 +331,8 @@ defmodule LanguageTranslator.Models do
 
   """
   def create_analysis(attrs \\ %{}) do
-    IO.inspect(attrs)
-
     %Analysis{}
     |> Analysis.changeset(attrs)
-    |> tap(&IO.inspect/1)
     |> Repo.insert()
   end
 

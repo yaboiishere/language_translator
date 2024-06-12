@@ -1,18 +1,11 @@
 defmodule LanguageTranslatorWeb.E2e.CreateMergeAnalysisTest do
-  use LanguageTranslatorWeb.ConnCase
-  use Hound.Helpers
+  use LanguageTranslatorWeb.IntegrationCase
 
-  alias LanguageTranslator.Models.Translation
   alias LanguageTranslator.Accounts.UserToken
   alias LanguageTranslator.Models.Analysis
-  alias LanguageTranslator.Models.Word
   alias LanguageTranslator.Repo
 
   hound_session()
-
-  setup do
-    Ecto.Adapters.SQL.Sandbox.mode(LanguageTranslator.Repo, {:shared, self()})
-  end
 
   @tag :e2e
   test "user can create account and login" do
@@ -126,8 +119,6 @@ defmodule LanguageTranslatorWeb.E2e.CreateMergeAnalysisTest do
 
     click({:id, "save_merged_analysis"})
 
-    refresh_page()
-
     :id
     |> find_element("form_description")
     |> inner_text() =~ "Merged analysis"
@@ -135,5 +126,15 @@ defmodule LanguageTranslatorWeb.E2e.CreateMergeAnalysisTest do
     :id
     |> find_element("words_area")
     |> inner_text() =~ "Hello,World,New"
+
+    click({:id, "form_save"})
+    click({:id, "form_save"})
+
+    assert page_title() =~ "Listing Analysis"
+
+    assert visible_page_text() =~ "Analysis created successfully"
+    click({:class, "hero-x-mark-solid"})
+
+    assert visible_page_text() =~ "Merged analysis (#{first_analysis.id}, #{second_analysis.id})"
   end
 end
