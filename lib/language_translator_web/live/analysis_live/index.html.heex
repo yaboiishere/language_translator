@@ -2,9 +2,11 @@
   <.header>
     Listing Analysis
     <:actions>
+    <%= if @current_user do %>
       <.link patch={~p"/analysis/new"}>
         <.button>New Analysis</.button>
       </.link>
+    <% end %>
     </:actions>
   </.header>
   <.analysis_filters_form filter_by={@order_and_filter.filter_by} />
