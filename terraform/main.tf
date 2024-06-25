@@ -211,8 +211,7 @@ resource "hcloud_server" "worker" {
       "sudo scp -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no -o NoHostAuthenticationForLocalhost=yes -o UserKnownHostsFile=/dev/null root@${var.manager_private_ip}:/worker_token .",
       "cd language_translator",
       "docker swarm join --token $(cat /root/worker_token) ${var.manager_private_ip}:2377",
-      "echo PasswordAuthentication no >> /etc/ssh/sshd_config",
-      "docker node update --label-add=language_translator=true language-translator-worker-${count.index}"
+      "echo PasswordAuthentication no >> /etc/ssh/sshd_config"
     ]
   }
 
