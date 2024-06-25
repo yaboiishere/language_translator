@@ -46,8 +46,8 @@ defmodule LanguageTranslatorWeb.TranslationsTable do
       <% else %>
         <div class="relative overflow-x-auto shadow-md rounded-lg max-h-screen">
           <table class="w-full whitespace-nowrap text-md text-left rtl:text-right text-secondary-950 border border-2">
-            <thead class="text-sm w-full">
-              <tr class="sticky top-0 z-40 border-b">
+            <thead class="text-sm w-full -top-1">
+              <tr class="sticky -top-1 z-40 border-b">
                 <th
                   scope="col"
                   class="relative sticky -top-1 -left-1 px-6 py-3 text-secondary-950 uppercase bg-primary-300 flex shrink-0 grow-1"

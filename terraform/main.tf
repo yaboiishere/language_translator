@@ -29,12 +29,12 @@ resource "hcloud_volume" "language_translator_volume" {
   name = "language-translator-volume"
   size = 20
   format = "ext4"
-  #delete_protection = true
+  delete_protection = true
   location = "hel1"
 
-  #lifecycle {
-  #  prevent_destroy = true
-  #}
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "hcloud_volume_attachment" "language_translator_volume_attachment" {

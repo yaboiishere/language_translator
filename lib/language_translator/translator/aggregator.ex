@@ -129,7 +129,8 @@ defmodule LanguageTranslator.Translator.Aggregator do
         end
 
       _ ->
-        Process.send_after(self(), retry_params, 50)
+        Process.send_after(self(), retry_params, 500)
+        {:noreply, state}
     end
   end
 end

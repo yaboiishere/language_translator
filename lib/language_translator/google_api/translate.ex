@@ -23,7 +23,10 @@ defmodule LanguageTranslator.GoogleApi.Translate do
     |> Cache.fetch(source_language, target_language)
     |> case do
       nil ->
-        Logger.info("Cache miss for #{text}")
+        Logger.info(
+          "Cache miss for #{text} from #{source_language.display_name} to #{target_language.display_name}"
+        )
+
         url = "#{Config.google_translate_url()}:translateText"
 
         body =

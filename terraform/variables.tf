@@ -12,7 +12,7 @@ variable "image" {
 variable "manager_server_type" {
   description = "Hetzner Cloud server type for the manager"
   type        = string
-  default     = "cpx11"
+  default     = "cx22"
 }
 
 variable "manager_private_ip" {
@@ -24,13 +24,13 @@ variable "manager_private_ip" {
 variable "worker_server_type" {
   description = "Hetzner Cloud server type for the worker"
   type        = string
-  default     = "cx11"
+  default     = "cx22"
 }
 
 variable "worker_count" {
   description = "Number of worker nodes to create"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "ssh_public_key" {

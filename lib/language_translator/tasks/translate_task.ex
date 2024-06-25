@@ -46,7 +46,17 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
     end
   end
 
-  defp translate(
+  defp translate(%Analysis{} = analysis) do
+    if Application.get_env(:language_translator, :env) == :test do
+      do_translate(analysis)
+    else
+      Repo.transaction(fn ->
+        do_translate(analysis)
+      end)
+    end
+  end
+
+  defp do_translate(
          %Analysis{source_words: words, source_language: %Language{} = language} = analysis
        ) do
     parent = self()
@@ -61,7 +71,7 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
         translate_word(&1, language)
       end)
     )
-    |> Enum.flat_map(&Task.await(&1, 60_000))
+    |> Enum.flat_map(&Task.await(&1, 600_000))
     |> Enum.map(fn translation ->
       %{translation_id: translation.id, analysis_id: analysis.id}
     end)

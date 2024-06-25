@@ -180,7 +180,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.Index do
           socket
       ) do
     socket =
-      if analysis.is_public || (current_user && analysis.user_id == current_user.id) do
+      if analysis[:is_public] || (current_user && analysis.user_id == current_user.id) do
         {flash_type, flash_message} =
           case analysis.status do
             :completed -> {:info, "Analysis #{analysis.id} completed successfully."}

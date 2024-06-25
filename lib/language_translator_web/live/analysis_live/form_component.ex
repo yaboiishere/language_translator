@@ -57,7 +57,7 @@ defmodule LanguageTranslatorWeb.AnalysisLive.FormComponent do
                 field={f[:source_language_code]}
                 type="select"
                 label="Source Language"
-                options={@languages}
+                options={Enum.sort_by(@languages, &elem(&1, 0))}
                 disabled={@merge}
               />
               <%= if @merge do %>
