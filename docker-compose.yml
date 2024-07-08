@@ -92,6 +92,9 @@ services:
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+    placement:
+      constraints:
+        - node.role == manager
     volumes:
       - loki_data:/loki
 
