@@ -38,7 +38,7 @@ defmodule LanguageTranslator.Tasks.TranslateTask do
       end
     end
     |> case do
-      {:ok, analysis} ->
+      {:ok, {:ok, analysis}} ->
         ProcessGroups.Analysis.update_analysis(analysis)
 
       {:error, reason} ->
